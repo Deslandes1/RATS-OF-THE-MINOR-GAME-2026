@@ -6,7 +6,6 @@
   <title>Rats of the Manor · RTX Tactical Edition</title>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&family=JetBrains+Mono:wght@400;600;700;800&display=swap');
-
     :root {
       --nv-green: #76b900;
       --nv-green-bright: #a3e635;
@@ -17,13 +16,11 @@
       --nv-boom: #ff9e4a;
       --nv-flight: #00e5ff;
     }
-
     * {
       box-sizing: border-box;
       user-select: none;
       -webkit-user-select: none;
     }
-
     html, body {
       margin: 0;
       padding: 0;
@@ -35,13 +32,11 @@
       color: #f1f5f9;
       touch-action: none;
     }
-
     canvas {
       display: block;
       width: 100%;
       height: 100%;
     }
-
     .nv-card {
       background: var(--nv-panel);
       backdrop-filter: blur(12px);
@@ -50,7 +45,6 @@
       border-radius: 10px;
       box-shadow: 0 10px 30px rgba(0, 0, 0, 0.65), inset 0 0 12px rgba(118, 185, 0, 0.06);
     }
-
     .nv-badge {
       display: inline-flex;
       align-items: center;
@@ -66,7 +60,6 @@
       letter-spacing: 0.06em;
       text-transform: uppercase;
     }
-
     .nv-dot {
       width: 6px;
       height: 6px;
@@ -75,12 +68,10 @@
       box-shadow: 0 0 8px var(--nv-green);
       animation: nvPulse 1.5s infinite;
     }
-
     @keyframes nvPulse {
       0%, 100% { opacity: 1; transform: scale(1); }
       50% { opacity: 0.35; transform: scale(0.8); }
     }
-
     /* ── NVIDIA APP LEFT DRAWER ── */
     #nvidiaApp {
       position: fixed;
@@ -167,7 +158,6 @@
     .statValue.green { color: var(--nv-green); }
     .statValue.blue { color: #4a9eff; }
     .statValue.orange { color: #ff9e4a; }
-
     .sliderRow { margin-bottom: 10px; }
     .sliderLabel {
       display: flex;
@@ -196,7 +186,6 @@
       border-radius: 50%;
       box-shadow: 0 0 8px rgba(118, 185, 0, 0.6);
     }
-
     .toggleRow {
       display: flex;
       justify-content: space-between;
@@ -228,7 +217,6 @@
       transition: transform 0.2s;
     }
     .toggleSwitch.on::after { transform: translateX(16px); }
-
     #appToggle {
       position: fixed;
       top: 12px;
@@ -248,7 +236,6 @@
     }
     #appToggle.collapsed { left: 12px; }
     #appToggle:hover { transform: scale(1.04); }
-
     /* ── TOP-CENTER ROTATING DIRECTIONAL BAR & TURN/MOVEMENT HUD ── */
     #direction-bar-hud {
       position: fixed;
@@ -267,7 +254,6 @@
         width: min(520px, calc(100vw - 28px));
       }
     }
-
     .dir-top-strip {
       display: flex;
       justify-content: space-between;
@@ -314,7 +300,6 @@
       color: var(--nv-green-bright);
       box-shadow: 0 0 12px rgba(163, 230, 53, 0.35);
     }
-
     .move-vector-pill {
       display: inline-flex;
       align-items: center;
@@ -326,7 +311,12 @@
       color: #ecfccb;
       font-weight: 800;
     }
-
+    .move-vector-pill.lunge {
+      background: rgba(255, 158, 74, 0.24);
+      border-color: var(--nv-boom);
+      color: #ffd8a8;
+      box-shadow: 0 0 12px rgba(255, 158, 74, 0.35);
+    }
     #compass-viewport {
       position: relative;
       height: 36px;
@@ -404,7 +394,6 @@
       border-color: var(--nv-boom);
       color: #ffd8a8;
     }
-
     /* ── TOP LEFT MISSION & ROOM HUD ── */
     #mission-hud {
       position: fixed;
@@ -465,7 +454,6 @@
       color: #94a3b8;
     }
     .mission-stats strong { color: #fff; }
-
     /* ── TOP RIGHT ALT+Z OVERLAY HUD ── */
     #overlayHud {
       position: fixed;
@@ -540,7 +528,6 @@
       min-height: 2px;
       transition: height 0.15s;
     }
-
     /* ── BOTTOM LEFT HEALTH & FLIGHT/LANDING STATUS ── */
     #vitals-hud {
       position: fixed;
@@ -613,7 +600,6 @@
       color: var(--nv-boom);
       border-color: var(--nv-boom);
     }
-
     /* ── BOTTOM CENTER INFINITE WEAPONS & AMMO SLOTS ── */
     #weapon-hud {
       position: fixed;
@@ -662,7 +648,6 @@
       font-size: 9.5px;
       color: #bef264;
     }
-
     /* ── BOTTOM RIGHT CONTROLS ── */
     #controls-hud {
       position: fixed;
@@ -673,7 +658,7 @@
       font-size: 10px;
       line-height: 1.55;
       color: #cbd5e1;
-      max-width: 295px;
+      max-width: 315px;
     }
     #controls-hud kbd {
       background: rgba(118, 185, 0, 0.18);
@@ -685,7 +670,6 @@
       border-radius: 3px;
       font-weight: 700;
     }
-
     /* ── CROSSHAIR & HITMARKER ── */
     #crosshair {
       position: fixed;
@@ -744,7 +728,6 @@
       box-shadow: 0 0 16px rgba(255, 158, 74, 0.9);
       transform: scale(1.35);
     }
-
     #hitmarker {
       position: fixed;
       top: 50%;
@@ -765,7 +748,6 @@
     }
     #hitmarker::before { top: 11px; left: 0; width: 24px; height: 2px; }
     #hitmarker::after { left: 11px; top: 0; width: 2px; height: 24px; }
-
     /* ── TOAST BANNER ── */
     #banner-toast {
       position: fixed;
@@ -797,7 +779,6 @@
       color: #e2e8f0;
       margin-top: 2px;
     }
-
     /* ── DAMAGE FLASH VIGNETTE ── */
     #damage-overlay {
       position: fixed;
@@ -808,7 +789,6 @@
       opacity: 0;
       transition: opacity 0.15s ease;
     }
-
     /* ── START / VICTORY / GAME OVER MODAL ── */
     #modal-overlay {
       position: fixed;
@@ -822,7 +802,7 @@
       padding: 20px;
     }
     #modal-card {
-      max-width: 600px;
+      max-width: 610px;
       width: 100%;
       padding: 26px;
       text-align: center;
@@ -860,7 +840,6 @@
       transform: translateY(-2px);
       box-shadow: 0 0 32px rgba(118, 185, 0, 0.8);
     }
-
     @media (max-width: 820px) {
       #controls-hud, #weapon-hud { display: none; }
       #overlayHud { width: 200px; }
@@ -870,7 +849,6 @@
 </head>
 <body>
   <div id="damage-overlay"></div>
-
   <!-- COLLAPSIBLE NVIDIA APP DRAWER -->
   <div id="nvidiaApp" class="collapsed">
     <div id="appTabs">
@@ -892,12 +870,11 @@
         <div class="nvSection">
           <div class="nvSectionTitle">Game Profile</div>
           <div class="statRow"><span class="statLabel">Title</span><span class="statValue green">RATS OF THE MANOR</span></div>
-          <div class="statRow"><span class="statLabel">Targeting</span><span class="statValue blue">MOUSE LOCK-ON</span></div>
-          <div class="statRow"><span class="statLabel">Flight / Land</span><span class="statValue green">F TOGGLE · C DOWN</span></div>
+          <div class="statRow"><span class="statLabel">Flight Pose</span><span class="statValue blue">SUPERMAN FWD</span></div>
+          <div class="statRow"><span class="statLabel">Attack Lunge</span><span class="statValue orange">G / SHIFT+CLICK</span></div>
           <div class="statRow"><span class="statLabel">Ammo</span><span class="statValue orange">INFINITE ∞</span></div>
         </div>
       </div>
-
       <div id="tab-performance" class="tabPane" style="display:none;">
         <div class="nvSection">
           <div class="nvSectionTitle">Live Telemetry</div>
@@ -931,7 +908,6 @@
           </div>
         </div>
       </div>
-
       <div id="tab-overlay" class="tabPane" style="display:none;">
         <div class="nvSection">
           <div class="nvSectionTitle">Alt+Z Overlay Controls</div>
@@ -963,7 +939,6 @@
     </div>
   </div>
   <button id="appToggle" class="collapsed" onclick="toggleNvApp()">NV APP ▶</button>
-
   <!-- TOP-CENTER ROTATING DIRECTIONAL BAR & TURN/MOVEMENT TELEMETRY -->
   <div id="direction-bar-hud" class="nv-card">
     <div class="dir-top-strip">
@@ -979,7 +954,6 @@
       <div id="compass-track"></div>
     </div>
   </div>
-
   <!-- TOP LEFT: MISSION & ZONE HUD -->
   <div id="mission-hud" class="nv-card">
     <div class="mission-top">
@@ -987,7 +961,7 @@
       <span class="nv-badge"><span class="nv-dot"></span> STAGE <span id="stage-num">1</span>/5</span>
     </div>
     <div id="current-zone-title">STAGE 1: FRONT DOOR & FOYER</div>
-    <div id="mission-objective">Aim with mouse & shoot rats! Press F to fly, F or C to land.</div>
+    <div id="mission-objective">Fly Superman-style forward [F], walk/run [WASD], or lunge at rats [G / Shift+Click]!</div>
     <div class="progress-track">
       <div id="mission-progress-fill"></div>
     </div>
@@ -997,7 +971,6 @@
       <span>KILLS: <strong id="killCount">0</strong></span>
     </div>
   </div>
-
   <!-- TOP RIGHT: ALT+Z NVIDIA TELEMETRY HUD -->
   <div id="overlayHud" class="nv-card">
     <div class="hudHeader">
@@ -1029,13 +1002,11 @@
     <div class="hudBar"><div class="fill vram" id="hudVramBar" style="width:40%"></div></div>
     <div class="hudMiniChart" id="hudChart"></div>
   </div>
-
   <!-- CENTER TOAST -->
   <div id="banner-toast" class="nv-card">
     <div id="banner-title">MISSION UPDATE</div>
     <div id="banner-sub">Proceed to the next area.</div>
   </div>
-
   <!-- MOUSE-STEERED FIGHTER JET CROSSHAIR & HITMARKER -->
   <div id="crosshair">
     <div class="ch-ring"></div>
@@ -1043,7 +1014,6 @@
     <div class="ch-dot"></div>
   </div>
   <div id="hitmarker"></div>
-
   <!-- BOTTOM LEFT: HEALTH & FLIGHT/LANDING STATUS -->
   <div id="vitals-hud" class="nv-card">
     <div class="vitals-top">
@@ -1058,8 +1028,7 @@
       <span style="color:#94a3b8;">ALT: <strong id="alt-val" style="color:#fff;">0.0m</strong></span>
     </div>
   </div>
-
-  <!-- BOTTOM CENTER: INFINITE WEAPONS & AMMO -->
+  <!-- BOTTOM CENTER: INFINITE WEAPONS & AMMO SLOTS -->
   <div id="weapon-hud" class="nv-card">
     <div class="weapon-slot selected" id="slot-gun" onclick="switchWeapon()">
       <div class="slot-key">[E] GUN · INFINITE ∞</div>
@@ -1072,27 +1041,24 @@
       <div class="slot-meta" id="ammo-desc">Precision Lock-On Laser</div>
     </div>
   </div>
-
   <!-- BOTTOM RIGHT: COMPACT CONTROLS -->
   <div id="controls-hud" class="nv-card">
-    <kbd>MOUSE</kbd> Aim & Turn &nbsp; <kbd>L-CLICK</kbd>/<kbd>SPACE</kbd> Shoot<br>
-    <kbd>WASD</kbd> Fwd/Back/Strafe &nbsp; <kbd>F</kbd> Fly / Land Toggle<br>
-    <kbd>SPACE</kbd> Jump/Ascend &nbsp; <kbd>C</kbd> Land &nbsp; <kbd>B</kbd> Bed Heal
+    <kbd>MOUSE</kbd> Aim & Turn &nbsp; <kbd>L-CLICK</kbd>/<kbd>SPACE</kbd> Shoot/Jump<br>
+    <kbd>WASD</kbd> Walk/Run &nbsp; <kbd>G</kbd>/<kbd>SHIFT+CLICK</kbd> Rat Lunge<br>
+    <kbd>F</kbd> Superman Flight/Land &nbsp; <kbd>C</kbd> Down &nbsp; <kbd>B</kbd> Bed Heal
   </div>
-
   <!-- START / VICTORY / GAME OVER MODAL -->
   <div id="modal-overlay">
     <div id="modal-card" class="nv-card">
-      <span class="nv-badge"><span class="nv-dot"></span> NVIDIA RTX · FIGHTER AUDIO & JETPACK EDITION</span>
+      <span class="nv-badge"><span class="nv-dot"></span> NVIDIA RTX · SUPERMAN FLIGHT & TACTICAL LUNGE</span>
       <h1 id="modal-title">RATS OF THE MANOR</h1>
       <p id="modal-desc">
-        Move your <strong>Mouse</strong> to aim the tactical reticle directly at rats and fire with <strong>Left-Click</strong> or <strong>Spacebar</strong> using <strong>Fighter Jet Cannon</strong> sound effects and <strong>Infinite Ammo</strong>.<br><br>
-        Watch the top <strong>Directional Bar</strong> rotate as you turn left, right, or around (180°) and move forward/backward. Press <strong>F</strong> to fly up to ceiling height or land back to the ground, and clear every room out to the <strong>Backyard Courtyard</strong> or <strong>Front Door</strong>!
+        Fly head-first/chest-forward like <strong>Superman</strong> along your forward travel path when airborne with <strong>F</strong> (tap <strong>F</strong> again or press <strong>C</strong> / touch floor to land).<br><br>
+        Walk or run with <strong>WASD / Shift</strong>, aim and turn with your <strong>Mouse</strong>, fire infinite <strong>Fighter Jet Cannon</strong> rounds with <strong>Left-Click</strong>, and launch a <strong>Strategic Attack Lunge</strong> directly toward rats using <strong>G</strong> or <strong>Shift + Left-Click</strong>!
       </p>
       <button class="cta-btn" id="start-btn" type="button">DEPLOY INTO MANOR</button>
     </div>
   </div>
-
   <script type="importmap">
     {
       "imports": {
@@ -1100,7 +1066,6 @@
       }
     }
   </script>
-
   <script type="module">
     import * as THREE from 'three';
 
@@ -1126,7 +1091,6 @@
         compressor.ratio.value = 6;
         compressor.attack.value = 0.003;
         compressor.release.value = 0.25;
-
         masterGain = audioCtx.createGain();
         masterGain.gain.value = 0.85;
         compressor.connect(masterGain);
@@ -1149,7 +1113,6 @@
       if (!audioReady || audioMuted) return;
       const t = audioCtx.currentTime;
       const pitch = isLongGun ? 0.84 : 1.04;
-
       const osc1 = audioCtx.createOscillator();
       const g1 = audioCtx.createGain();
       osc1.type = 'sawtooth';
@@ -1206,7 +1169,6 @@
     function playBoom() {
       if (!audioReady || audioMuted) return;
       const t = audioCtx.currentTime;
-
       const sub = audioCtx.createOscillator();
       const sg = audioCtx.createGain();
       sub.type = 'sine';
@@ -1278,7 +1240,6 @@
     function playHit() {
       if (!audioReady || audioMuted) return;
       const t = audioCtx.currentTime;
-
       const osc = audioCtx.createOscillator();
       const g = audioCtx.createGain();
       osc.type = 'sawtooth';
@@ -1343,10 +1304,10 @@
       const osc = audioCtx.createOscillator();
       const g = audioCtx.createGain();
       osc.type = 'sawtooth';
-      osc.frequency.setValueAtTime(ascending ? 85 : 210, t);
-      osc.frequency.exponentialRampToValueAtTime(ascending ? 215 : 75, t + 0.24);
+      osc.frequency.setValueAtTime(ascending ? 95 : 220, t);
+      osc.frequency.exponentialRampToValueAtTime(ascending ? 245 : 80, t + 0.24);
       g.gain.setValueAtTime(0.0001, t);
-      g.gain.exponentialRampToValueAtTime(0.14, t + 0.03);
+      g.gain.exponentialRampToValueAtTime(0.15, t + 0.03);
       g.gain.exponentialRampToValueAtTime(0.0001, t + 0.3);
       osc.connect(g);
       g.connect(compressor);
@@ -1395,7 +1356,6 @@
       const og = audioCtx.createGain();
       og.gain.setValueAtTime(0.0001, t);
       og.gain.exponentialRampToValueAtTime(0.045, t + 1.2);
-
       const noise = audioCtx.createBufferSource();
       noise.buffer = makeNoiseBuffer(4);
       noise.loop = true;
@@ -1406,7 +1366,6 @@
       const ng = audioCtx.createGain();
       ng.gain.setValueAtTime(0.0001, t);
       ng.gain.exponentialRampToValueAtTime(0.035, t + 1.6);
-
       osc.connect(og);
       og.connect(compressor);
       noise.connect(lp);
@@ -1462,7 +1421,7 @@
       {
         stage: 1,
         name: 'STAGE 1: FRONT DOOR & FOYER',
-        objective: 'Aim with mouse & shoot rats! Press F to fly, F or C to land.',
+        objective: 'Fly Superman-style forward [F], walk/run [WASD], or lunge at rats [G / Shift+Click]!',
         unlockHint: 'Front Door & Foyer cleared! Move left into the Grand Living Room.',
         beaconPos: new THREE.Vector3(-6.5, 0.2, 2.5),
         spawns: [
@@ -1474,7 +1433,7 @@
       {
         stage: 2,
         name: 'STAGE 2: GRAND LIVING ROOM',
-        objective: 'Fly to ceiling [F + SPACE] or land [F / C] and clear the Living Room pack.',
+        objective: 'Superman-fly forward [F + SPACE] or lunge [G] into the Living Room pack.',
         unlockHint: 'Living Room secured! Advance north into the Manor Kitchen.',
         beaconPos: new THREE.Vector3(-8.0, 0.2, -10.5),
         spawns: [
@@ -1487,7 +1446,7 @@
       {
         stage: 3,
         name: 'STAGE 3: MANOR KITCHEN',
-        objective: 'Use BIG BOOM SHOTS [Q / Right-Click] to blast up to 3 giant rats at once!',
+        objective: 'Lunge [G] or fire BIG BOOM SHOTS [Q / Right-Click] to blast giant rats!',
         unlockHint: 'Kitchen cleared! Head east across the hall into the Master Bedroom.',
         beaconPos: new THREE.Vector3(7.5, 0.2, -12.5),
         spawns: [
@@ -1549,6 +1508,12 @@
       turnLabel: '● STEADY',
       turnClass: '',
       moveLabel: '■ IDLE',
+      isLungingMove: false,
+      lungeTimer: 0,
+      lungeCooldown: 0,
+      lungeDir: new THREE.Vector3(0, 0, -1),
+      lungeTargetRat: null,
+      flightPitchVisual: 0,
       reticleX: window.innerWidth * 0.5,
       reticleY: window.innerHeight * 0.48,
       playerPos: new THREE.Vector3(0, 0, 9.2),
@@ -1578,9 +1543,7 @@
     const scene = new THREE.Scene();
     scene.background = new THREE.Color(0x0b1018);
     scene.fog = new THREE.FogExp2(0x0b1018, 0.017);
-
     const camera = new THREE.PerspectiveCamera(65, window.innerWidth / window.innerHeight, 0.1, 180);
-
     const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
     renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
@@ -1604,7 +1567,6 @@
     // =========================================================================
     const ambientLight = new THREE.AmbientLight(0x64748b, 0.88);
     scene.add(ambientLight);
-
     const moonLight = new THREE.DirectionalLight(0x93c5fd, 1.2);
     moonLight.position.set(16, 30, -24);
     moonLight.castShadow = true;
@@ -1616,7 +1578,6 @@
       const light = new THREE.PointLight(color, intensity, 18);
       light.position.set(x, y, z);
       scene.add(light);
-
       const bulb = new THREE.Mesh(
         new THREE.SphereGeometry(0.14, 8, 8),
         new THREE.MeshBasicMaterial({ color })
@@ -1632,8 +1593,8 @@
     const woodMat = new THREE.MeshStandardMaterial({ color: 0x6b4423, roughness: 0.75 });
     const darkWoodMat = new THREE.MeshStandardMaterial({ color: 0x3e2412, roughness: 0.8 });
     const doorAccentMat = new THREE.MeshStandardMaterial({ color: 0x76b900, emissive: 0x263e00, roughness: 0.5 });
-
     const wallColliders = [];
+
     function addCollider(minX, maxX, minZ, maxZ) {
       wallColliders.push({ minX, maxX, minZ, maxZ });
     }
@@ -1658,11 +1619,9 @@
     }
 
     createFloor(0, -3, 24, 30, floorMat);
-
     const yardMat = new THREE.MeshStandardMaterial({ color: 0x223b24, roughness: 0.95 });
     createFloor(0, -27, 40, 18, yardMat);
     createFloor(0, 17.5, 40, 11, yardMat);
-
     const ceilingMesh = new THREE.Mesh(new THREE.BoxGeometry(24, 0.25, 30), ceilingMat);
     ceilingMesh.position.set(0, HOUSE_CEILING_Y + 0.12, -3);
     scene.add(ceilingMesh);
@@ -1689,15 +1648,12 @@
     createWall(-10.4, 3.1, -8, 3.2, 6.2, 0.3);
     createWall(-4.6, 3.1, -8, 1.2, 6.2, 0.3);
     createWall(-7.0, 5.4, -8, 3.6, 1.6, 0.3, wallMat, false);
-
     createWall(-4, 3.1, -16.4, 0.3, 6.2, 3.2);
     createWall(-4, 3.1, -9.6, 0.3, 6.2, 3.2);
     createWall(-4, 5.4, -13.0, 0.3, 1.6, 3.6, wallMat, false);
-
     createWall(4, 3.1, -16.4, 0.3, 6.2, 3.2);
     createWall(4, 3.1, -9.6, 0.3, 6.2, 3.2);
     createWall(4, 5.4, -13.0, 0.3, 1.6, 3.6, wallMat, false);
-
     createWall(5.1, 3.1, -8, 2.2, 6.2, 0.3);
     createWall(10.9, 3.1, -8, 2.2, 6.2, 0.3);
     createWall(8.0, 5.4, -8, 3.6, 1.6, 0.3, wallMat, false);
@@ -1791,10 +1747,16 @@
     scene.add(missionBeacon);
 
     // =========================================================================
-    // 5. VISIBLE 3D SHOOTER CHARACTER WITH JETPACK & DUAL GUNS
+    // 5. VISIBLE 3D SHOOTER CHARACTER WITH JETPACK, SUPERMAN POSE & DUAL GUNS
     // =========================================================================
+    // Character local convention: -Z is straight ahead (forward).
+    // Pitching around local +X by a NEGATIVE angle (-pitchMagnitude) tilts the top/head (-Y/-Z)
+    // forward along the -Z travel vector like Superman!
     const playerGroup = new THREE.Group();
     scene.add(playerGroup);
+
+    const characterBodyGroup = new THREE.Group();
+    playerGroup.add(characterBodyGroup);
 
     const armorMat = new THREE.MeshStandardMaterial({ color: 0x1e293b, roughness: 0.45, metalness: 0.45 });
     const vestMat = new THREE.MeshStandardMaterial({ color: 0x2f3e24, roughness: 0.7 });
@@ -1806,11 +1768,11 @@
     const torso = new THREE.Mesh(new THREE.BoxGeometry(0.56, 0.72, 0.32), vestMat);
     torso.position.y = 1.18;
     torso.castShadow = true;
-    playerGroup.add(torso);
+    characterBodyGroup.add(torso);
 
     const jetpackGroup = new THREE.Group();
     jetpackGroup.position.set(0, 1.24, 0.22);
-    playerGroup.add(jetpackGroup);
+    characterBodyGroup.add(jetpackGroup);
 
     const jpHousing = new THREE.Mesh(new THREE.BoxGeometry(0.44, 0.5, 0.2), armorMat);
     jpHousing.castShadow = true;
@@ -1821,7 +1783,6 @@
       transparent: true,
       opacity: 0.0
     });
-
     const nozzleL = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.08, 0.26, 10), armorMat);
     nozzleL.position.set(-0.14, -0.18, 0.04);
     jetpackGroup.add(nozzleL);
@@ -1852,31 +1813,34 @@
     const visor = new THREE.Mesh(new THREE.BoxGeometry(0.28, 0.09, 0.12), visorMat);
     visor.position.set(0, 0.02, -0.17);
     headGroup.add(visor);
-    playerGroup.add(headGroup);
+    characterBodyGroup.add(headGroup);
 
     const legGeo = new THREE.BoxGeometry(0.2, 0.78, 0.22);
     const leftLeg = new THREE.Mesh(legGeo, armorMat);
     leftLeg.position.set(-0.15, 0.42, 0);
     leftLeg.castShadow = true;
-    playerGroup.add(leftLeg);
+    characterBodyGroup.add(leftLeg);
 
     const rightLeg = new THREE.Mesh(legGeo, armorMat);
     rightLeg.position.set(0.15, 0.42, 0);
     rightLeg.castShadow = true;
-    playerGroup.add(rightLeg);
+    characterBodyGroup.add(rightLeg);
 
     const weaponArmGroup = new THREE.Group();
     weaponArmGroup.position.set(0.34, 1.42, -0.05);
-    playerGroup.add(weaponArmGroup);
+    characterBodyGroup.add(weaponArmGroup);
 
     const rightArm = new THREE.Mesh(new THREE.BoxGeometry(0.16, 0.16, 0.52), skinMat);
     rightArm.position.set(0, -0.05, -0.2);
     weaponArmGroup.add(rightArm);
 
-    const leftArm = new THREE.Mesh(new THREE.BoxGeometry(0.15, 0.15, 0.54), skinMat);
-    leftArm.position.set(-0.26, 1.34, -0.28);
-    leftArm.rotation.y = -0.35;
-    playerGroup.add(leftArm);
+    const leftArmGroup = new THREE.Group();
+    leftArmGroup.position.set(-0.28, 1.38, -0.06);
+    characterBodyGroup.add(leftArmGroup);
+
+    const leftArm = new THREE.Mesh(new THREE.BoxGeometry(0.15, 0.15, 0.56), skinMat);
+    leftArm.position.set(0, 0, -0.24);
+    leftArmGroup.add(leftArm);
 
     const shortGunMesh = new THREE.Group();
     const sgBody = new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.15, 0.42), gunMetalMat);
@@ -1926,7 +1890,6 @@
       const scale = isBig ? 1.85 : 1.15;
       const group = new THREE.Group();
       const bodyMaterial = isBig ? bigRatMat.clone() : ratMat.clone();
-
       const body = new THREE.Mesh(new THREE.SphereGeometry(0.52 * scale, 10, 10), bodyMaterial);
       body.scale.set(1, 0.72, 1.55);
       body.position.y = 0.36 * scale;
@@ -1941,7 +1904,6 @@
       const earL = new THREE.Mesh(earGeo, ratTailMat);
       earL.position.set(-0.24 * scale, 0.68 * scale, 0.62 * scale);
       group.add(earL);
-
       const earR = new THREE.Mesh(earGeo, ratTailMat);
       earR.position.set(0.24 * scale, 0.68 * scale, 0.62 * scale);
       group.add(earR);
@@ -1950,7 +1912,6 @@
       const eyeL = new THREE.Mesh(eyeGeo, ratEyeMat);
       eyeL.position.set(-0.14 * scale, 0.52 * scale, 0.94 * scale);
       group.add(eyeL);
-
       const eyeR = new THREE.Mesh(eyeGeo, ratEyeMat);
       eyeR.position.set(0.14 * scale, 0.52 * scale, 0.94 * scale);
       group.add(eyeR);
@@ -1975,7 +1936,6 @@
         wanderTimer: Math.random() * 2,
         biteCooldown: 0
       };
-
       scene.add(group);
       rats.push(group);
       return group;
@@ -1984,7 +1944,6 @@
     function initAllRats() {
       rats.forEach(r => scene.remove(r));
       rats.length = 0;
-
       MISSIONS.forEach((m, idx) => {
         m.spawns.forEach(sp => {
           const rat = spawnRat(sp.x, sp.z, sp.big, idx);
@@ -1994,7 +1953,6 @@
     }
 
     const activeEffects = [];
-
     function spawnTracer(startPos, endPos, isBoom) {
       const dist = startPos.distanceTo(endPos);
       const geo = new THREE.CylinderGeometry(isBoom ? 0.11 : 0.032, isBoom ? 0.11 : 0.032, dist, 6);
@@ -2023,11 +1981,9 @@
         ring.position.set(endPos.x, 0.16, endPos.z);
         ring.scale.set(0.1, 0.1, 0.1);
         scene.add(ring);
-
         const boomLight = new THREE.PointLight(0xff7700, 4.5, 16);
         boomLight.position.copy(endPos).add(new THREE.Vector3(0, 1.2, 0));
         scene.add(boomLight);
-
         activeEffects.push({ mesh: ring, light: boomLight, life: 0.45, maxLife: 0.45, type: 'boom' });
       }
     }
@@ -2051,7 +2007,6 @@
         const fx = activeEffects[i];
         fx.life -= delta;
         const p = 1 - Math.max(0, fx.life / fx.maxLife);
-
         if (fx.type === 'tracer') {
           fx.mesh.material.opacity = 1 - p;
         } else if (fx.type === 'boom') {
@@ -2064,7 +2019,6 @@
           fx.mesh.scale.setScalar(1 + p * 1.3);
           fx.mesh.material.opacity = (1 - p) * 0.75;
         }
-
         if (fx.life <= 0) {
           scene.remove(fx.mesh);
           if (fx.light) scene.remove(fx.light);
@@ -2086,7 +2040,6 @@
       { deg: 270, label: 'W', isCardinal: true },
       { deg: 315, label: 'NW', isCardinal: true }
     ];
-
     const LANDMARK_POIS = [
       { label: 'BACKYARD', x: 0, z: -27.5, isObjective: true },
       { label: 'FRONT DOOR', x: 0, z: 12.0 },
@@ -2098,11 +2051,11 @@
 
     const compassTrackEl = document.getElementById('compass-track');
     const compassDomNodes = [];
-
     COMPASS_POINTS.forEach(pt => {
       const el = document.createElement('div');
       el.className = 'compass-item';
-      el.innerHTML = `<div class="compass-cardinal ${pt.isNorth ? 'north' : ''}">${pt.label}</div><div class="compass-degree">${String(pt.deg).padStart(3, '0')}°</div>`;
+      const northCls = pt.isNorth ? ' north' : '';
+      el.innerHTML = `<div class="compass-cardinal${northCls}">${pt.label}</div><div class="compass-degree">${String(pt.deg).padStart(3, '0')}°</div>`;
       compassTrackEl.appendChild(el);
       compassDomNodes.push({ type: 'cardinal', deg: pt.deg, el });
     });
@@ -2124,17 +2077,14 @@
 
     function getCardinalFromDeg(deg) {
       const dirs = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'];
-      const idx = Math.round(((deg % 360) + 360) % 360 / 45) % 8;
+      const idx = Math.round((((deg % 360) + 360) % 360) / 45) % 8;
       return dirs[idx];
     }
 
     function updateDirectionBar(delta) {
-      // In Three.js, yaw=0 faces -Z (North). Positive yaw turns left (+X forward vector is -sin(yaw)).
-      // Convert yaw to clockwise compass heading 0..360 where 0 = North (-Z), 90 = East (+X), 180 = South (+Z), 270 = West (-X).
       const dYaw = normalizeAngle(state.yaw - state.prevYaw);
       state.prevYaw = state.yaw;
       state.turnAccum += dYaw;
-
       if (Math.abs(dYaw) > 0.003) {
         state.turnStatusTimer = 0.28;
         if (Math.abs(state.turnAccum) >= Math.PI * 0.78) {
@@ -2157,17 +2107,17 @@
       }
 
       const moveParts = [];
-      if (state.moveForward) moveParts.push('FWD ▲');
+      if (state.isLungingMove) moveParts.push('⚔ RAT LUNGE');
+      if (state.moveForward) moveParts.push(state.isRunning ? 'SPRINT ▲' : 'FWD ▲');
       if (state.moveBackward) moveParts.push('BACK ▼');
       if (state.moveLeft) moveParts.push('LEFT ◀');
       if (state.moveRight) moveParts.push('RIGHT ▶');
-      if (state.isFlying && state.ascendHeld) moveParts.push('CLIMB ⇑');
+      if (state.isFlying && state.ascendHeld) moveParts.push('SUPERMAN CLIMB ⇑');
       if (state.isFlying && state.descendHeld) moveParts.push('LAND ⇓');
       state.moveLabel = moveParts.length ? moveParts.join(' · ') : '■ IDLE';
 
       const headingRad = normalizeAngle(-state.yaw);
-      const headingDeg = Math.round(((headingRad * 180 / Math.PI) % 360 + 360) % 360);
-
+      const headingDeg = Math.round((((headingRad * 180) / Math.PI) % 360 + 360) % 360);
       document.getElementById('heading-deg').textContent = `${String(headingDeg).padStart(3, '0')}°`;
       document.getElementById('heading-cardinal').textContent = getCardinalFromDeg(headingDeg);
 
@@ -2175,11 +2125,12 @@
       turnEl.textContent = state.turnLabel;
       turnEl.className = `turn-indicator ${state.turnClass}`.trim();
 
-      document.getElementById('move-vector-pill').textContent = state.moveLabel;
+      const movePill = document.getElementById('move-vector-pill');
+      movePill.textContent = state.moveLabel;
+      movePill.className = `move-vector-pill${state.isLungingMove ? ' lunge' : ''}`;
 
       const viewportWidth = compassTrackEl.clientWidth || 440;
-      const pxPerDeg = viewportWidth / 150; // 150° visible window across bar
-
+      const pxPerDeg = viewportWidth / 150;
       compassDomNodes.forEach(item => {
         let targetDeg = 0;
         if (item.type === 'cardinal') {
@@ -2187,13 +2138,10 @@
         } else {
           const dx = item.poi.x - state.playerPos.x;
           const dz = item.poi.z - state.playerPos.z;
-          // Compass bearing from player to POI: 0 is -Z (North), 90 is +X (East)
           const bearingRad = Math.atan2(dx, -dz);
-          targetDeg = ((bearingRad * 180 / Math.PI) % 360 + 360) % 360;
+          targetDeg = (((bearingRad * 180) / Math.PI) % 360 + 360) % 360;
         }
-
-        // Shortest signed angle difference (-180..+180)
-        let deltaDeg = ((targetDeg - headingDeg + 540) % 360) - 180;
+        const deltaDeg = ((targetDeg - headingDeg + 540) % 360) - 180;
         const xPx = viewportWidth * 0.5 + deltaDeg * pxPerDeg;
         const visible = Math.abs(deltaDeg) <= 82;
         item.el.style.display = visible ? 'block' : 'none';
@@ -2204,7 +2152,7 @@
     }
 
     // =========================================================================
-    // 8. FIGHTER-JET MOUSE RETICLE TARGETING & SHOOTING
+    // 8. STRATEGIC ATTACK LUNGE TOWARD RATS + FIGHTER-JET RETICLE SHOOTING
     // =========================================================================
     const raycaster = new THREE.Raycaster();
 
@@ -2231,13 +2179,72 @@
       hm._t = setTimeout(() => { hm.style.opacity = '0'; }, 120);
     }
 
+    function findBestStrategicRat() {
+      const stageRats = rats.filter(r => r.userData.alive && r.visible && r.userData.stageIdx === state.currentStageIdx);
+      if (!stageRats.length) return null;
+      if (state.lockedRat && state.lockedRat.userData.alive && state.lockedRat.userData.stageIdx === state.currentStageIdx) {
+        return state.lockedRat;
+      }
+      const forward = new THREE.Vector3(-Math.sin(state.yaw), 0, -Math.cos(state.yaw));
+      let bestRat = null;
+      let bestScore = Infinity;
+      for (const rat of stageRats) {
+        const toRat = rat.position.clone().sub(state.playerPos);
+        toRat.y = 0;
+        const dist = toRat.length();
+        if (dist < 0.1 || dist > 26) continue;
+        const dir = toRat.clone().normalize();
+        const align = forward.dot(dir); // 1 = directly in front, -1 = behind
+        const frontPenalty = align >= -0.15 ? (1 - align) * 6.5 : 25 + Math.abs(align) * 8;
+        const score = dist + frontPenalty;
+        if (score < bestScore) {
+          bestScore = score;
+          bestRat = rat;
+        }
+      }
+      return bestRat;
+    }
+
+    function triggerStrategicRatLunge() {
+      if (!state.started || state.gameOver || state.won || state.isSleeping) return;
+      if (state.lungeCooldown > 0) return;
+
+      const targetRat = findBestStrategicRat();
+      const forward = new THREE.Vector3(-Math.sin(state.yaw), 0, -Math.cos(state.yaw)).normalize();
+
+      if (targetRat) {
+        const toRat = targetRat.position.clone().sub(state.playerPos);
+        toRat.y = 0;
+        if (toRat.lengthSq() > 0.01) {
+          state.lungeDir.copy(toRat).normalize();
+          state.yaw = Math.atan2(-state.lungeDir.x, -state.lungeDir.z);
+        } else {
+          state.lungeDir.copy(forward);
+        }
+        state.lungeTargetRat = targetRat;
+      } else {
+        state.lungeDir.copy(forward);
+        state.lungeTargetRat = null;
+      }
+
+      state.isLungingMove = true;
+      state.lungeTimer = 0.28;
+      state.lungeCooldown = 0.42;
+      state.recoilKick = Math.max(state.recoilKick, 0.22);
+      playThrusterSweep(true);
+      shoot();
+      showToast(
+        '⚔ STRATEGIC RAT LUNGE',
+        targetRat ? `Charging directly toward ${targetRat.userData.isBig ? 'Alpha Rat' : 'Rat'}!` : 'Lunging forward along attack vector!',
+        1200
+      );
+    }
+
     function damageRat(rat, amount, impulseDir) {
       if (!rat.userData.alive) return;
       rat.userData.hp -= amount;
-
       rat.position.x += impulseDir.x * 0.7;
       rat.position.z += impulseDir.z * 0.7;
-
       rat.children[0].material.emissive.setHex(0xff0000);
       rat.children[0].material.emissiveIntensity = 1.3;
       setTimeout(() => {
@@ -2246,7 +2253,6 @@
           rat.children[0].material.emissiveIntensity = 0;
         }
       }, 110);
-
       showHitmarker();
 
       if (rat.userData.hp <= 0) {
@@ -2254,18 +2260,15 @@
         state.kills++;
         state.lastEliminatedArea = getAreaNameAt(rat.position);
         playBoom();
-
         rat.rotation.z = Math.PI;
         rat.position.y = 0.35 * rat.userData.scale;
         setTimeout(() => { rat.visible = false; }, 1600);
-
         checkMissionProgress();
       }
     }
 
     function shoot() {
       if (!state.started || state.gameOver || state.won || state.isSleeping) return;
-
       const now = performance.now();
       const cooldown = state.bulletType === 'boom'
         ? 430
@@ -2284,7 +2287,6 @@
       muzzleLight.intensity = 3.6;
       muzzleSphere.material.color.setHex(state.bulletType === 'boom' ? 0xff8800 : 0xffff88);
       muzzleSphere.material.opacity = 0.95;
-
       setTimeout(() => {
         muzzleLight.intensity = 0;
         muzzleSphere.material.opacity = 0;
@@ -2297,8 +2299,8 @@
 
       const barrelWorldPos = new THREE.Vector3();
       muzzleSphere.getWorldPosition(barrelWorldPos);
-
       const stageRats = rats.filter(r => r.userData.alive && r.userData.stageIdx === state.currentStageIdx);
+
       let impactPoint = aimOrigin.clone().addScaledVector(aimDir, 36);
       let bestRat = null;
       let bestScore = Infinity;
@@ -2335,7 +2337,6 @@
           .filter(item => item.d <= blastRadius)
           .sort((a, b) => a.d - b.d)
           .slice(0, 3);
-
         targets.forEach(item => {
           const push = item.rat.position.clone().sub(impactPoint);
           if (push.lengthSq() < 0.01) push.copy(aimDir);
@@ -2353,15 +2354,15 @@
     }
 
     // =========================================================================
-    // 9. UNIFIED FLIGHT & LANDING ('F' KEY) + SUPER-HIGH JUMP ('SPACE')
+    // 9. SUPERMAN FLIGHT & LANDING ('F' KEY) + JUMP ('SPACE')
     // =========================================================================
     function syncFlightBadge() {
       const badge = document.getElementById('flight-badge');
       if (state.isFlying) {
-        badge.textContent = 'FLYING · TAP [F] TO LAND';
+        badge.textContent = 'SUPERMAN FLIGHT · [F] LAND';
         badge.className = 'airborne';
       } else {
-        badge.textContent = 'GROUND · TAP [F] FLY / [SPACE] JUMP';
+        badge.textContent = 'GROUND · [F] FLY / [G] LUNGE';
         badge.className = '';
       }
     }
@@ -2370,34 +2371,31 @@
       if (!state.started || state.gameOver || state.won) return;
       const nextFlying = forceState !== null ? forceState : !state.isFlying;
       if (nextFlying === state.isFlying) return;
-
       state.isFlying = nextFlying;
+
       if (state.isFlying) {
         playThrusterSweep(true);
-        state.velocity.y = Math.max(state.velocity.y, 4.8);
+        state.velocity.y = Math.max(state.velocity.y, 5.2);
         state.canJump = false;
-        thrusterFlameMat.opacity = 0.85;
-        jetLight.intensity = 2.4;
-        showToast('🚀 FLIGHT MODE ON [TAP F TO LAND]', 'Hold SPACE to ascend, C to descend. Tap F again to step back onto the floor!', 2500);
+        thrusterFlameMat.opacity = 0.9;
+        jetLight.intensity = 2.6;
+        showToast('🦸 SUPERMAN FORWARD FLIGHT [F TO LAND]', 'Soaring chest-forward along your travel path! Press F or C to land.', 2500);
       } else {
-        // Tap-back F: immediately cut flight mode and bring character down onto floor
         playThrusterSweep(false);
         state.ascendHeld = false;
         state.descendHeld = false;
-        state.velocity.y = Math.min(state.velocity.y, -7.5);
+        state.velocity.y = Math.min(state.velocity.y, -8.0);
         thrusterFlameMat.opacity = 0.0;
         jetLight.intensity = 0.0;
-        showToast('👣 FLIGHT OFF — STEPPING ONTO FLOOR', 'Thrusters disengaged; landing back on the floor.', 1600);
+        showToast('👣 LANDING BACK TO FLOOR', 'Thrusters disengaged; returning to normal ground stance.', 1600);
       }
       syncFlightBadge();
     }
-
     window.toggleFlightMode = toggleFlightMode;
 
     function handleSpaceAction() {
       if (!state.started || state.gameOver || state.won || state.isSleeping) return;
       const now = performance.now();
-
       if (!state.canJump && !state.isFlying && now - state.lastSpaceTap < 340) {
         toggleFlightMode(true);
         state.lastSpaceTap = 0;
@@ -2416,7 +2414,6 @@
         state.velocity.y = jumpVel * state.thrustPower;
         state.canJump = false;
         playThrusterSweep(true);
-
         if (underAttack) {
           const badge = document.getElementById('flight-badge');
           badge.textContent = '⚡ EMERGENCY SUPER-LEAP!';
@@ -2444,7 +2441,6 @@
       const totalAlive = rats.filter(r => r.userData.alive).length;
       const total = rats.length;
       const cleared = total - totalAlive;
-
       document.getElementById('stage-num').textContent = m.stage;
       document.getElementById('current-zone-title').textContent = m.name;
       document.getElementById('mission-objective').textContent = m.objective;
@@ -2458,7 +2454,6 @@
     function checkMissionProgress() {
       const stageAlive = rats.filter(r => r.userData.alive && r.userData.stageIdx === state.currentStageIdx).length;
       updateMissionHUD();
-
       if (stageAlive === 0) {
         const doneMission = MISSIONS[state.currentStageIdx];
         if (state.currentStageIdx < MISSIONS.length - 1) {
@@ -2477,11 +2472,11 @@
     function triggerVictory() {
       state.won = true;
       state.isFlying = false;
+      state.isLungingMove = false;
       thrusterFlameMat.opacity = 0;
       jetLight.intensity = 0;
       stopAmbient();
       playBoom();
-
       const modal = document.getElementById('modal-overlay');
       document.getElementById('modal-card').style.borderColor = '#76b900';
       document.getElementById('modal-title').innerHTML = '🏆 VICTORY — MANOR & BACKYARD CLEARED! 🏆';
@@ -2497,24 +2492,23 @@
       if (state.gameOver) return;
       state.gameOver = true;
       state.isFlying = false;
+      state.isLungingMove = false;
       state.health = 0;
       thrusterFlameMat.opacity = 0;
       jetLight.intensity = 0;
       updateHealthUI();
       stopAmbient();
       playGameOverStinger();
-
       const area = getAreaNameAt(state.playerPos);
-      playerGroup.rotation.x = -Math.PI / 2;
+      characterBodyGroup.rotation.set(-Math.PI / 2, 0, 0);
       playerGroup.position.y = 0.25;
-
       const modal = document.getElementById('modal-overlay');
       document.getElementById('modal-card').style.borderColor = '#ff3b30';
       document.getElementById('modal-title').innerHTML = '💀 GAME OVER — THE RATS DEVOURED YOU 💀';
       document.getElementById('modal-title').style.color = '#ff3b30';
       document.getElementById('modal-desc').innerHTML =
         `The rats devoured you in the <strong>${area}</strong>.<br><br>
-         Press <strong>SPACE</strong> to super-jump over attacking rats or <strong>F</strong> to fly up to ceiling height!`;
+         Press <strong>G</strong> or <strong>Shift + Left-Click</strong> to lunge at rats, or <strong>F</strong> to fly Superman-style above the pack!`;
       document.getElementById('start-btn').textContent = 'RESTART MISSION [R]';
       modal.style.display = 'flex';
     }
@@ -2660,7 +2654,7 @@
     }
 
     // =========================================================================
-    // 12. INPUT LISTENERS (MOUSE AIM + SHOOTING + FLIGHT/LANDING)
+    // 12. INPUT LISTENERS (MOUSE AIM + SHOOTING + LUNGE + FLIGHT/LANDING)
     // =========================================================================
     function startOrRestartGame() {
       initAudio();
@@ -2672,6 +2666,10 @@
       state.currentStageIdx = 0;
       state.lastEliminatedArea = 'Front Door & Foyer';
       state.isFlying = false;
+      state.isLungingMove = false;
+      state.lungeTimer = 0;
+      state.lungeCooldown = 0;
+      state.flightPitchVisual = 0;
       state.playerPos.set(0, 0, 9.2);
       state.yaw = 0;
       state.prevYaw = 0;
@@ -2681,20 +2679,18 @@
       state.reticleY = window.innerHeight * 0.48;
       syncReticleDOM();
       syncFlightBadge();
-
       thrusterFlameMat.opacity = 0;
       jetLight.intensity = 0;
+      characterBodyGroup.rotation.set(0, 0, 0);
       playerGroup.rotation.set(0, 0, 0);
       playerGroup.position.copy(state.playerPos);
-
       updateHealthUI();
       initAllRats();
       updateMissionHUD();
       updateDirectionBar(0.016);
       startAmbient();
-
       document.getElementById('modal-overlay').style.display = 'none';
-      showToast('🎯 MISSION 1: FRONT DOOR & FOYER', 'Move the mouse to aim & turn, Left-Click to fire, F to fly/land!', 3400);
+      showToast('🎯 MISSION 1: FRONT DOOR & FOYER', 'Fly Superman-style [F], walk/run [WASD], or lunge at rats [G / Shift+Click]!', 3400);
     }
 
     document.getElementById('start-btn').addEventListener('click', startOrRestartGame);
@@ -2704,8 +2700,6 @@
       state.reticleX = Math.max(24, Math.min(window.innerWidth - 24, e.clientX));
       state.reticleY = Math.max(24, Math.min(window.innerHeight - 24, e.clientY));
       syncReticleDOM();
-
-      // Steering with mouse left/right turns yaw smoothly so the compass bar & character turn dynamically
       const nx = (state.reticleX / window.innerWidth) * 2 - 1;
       if (Math.abs(nx) > 0.25) {
         state.yaw -= (nx - Math.sign(nx) * 0.25) * 0.032 * state.aimSensitivity;
@@ -2717,8 +2711,12 @@
       if (e.target.closest('button') || e.target.closest('#nvidiaApp') || e.target.closest('.weapon-slot') || e.target.closest('#flight-badge')) return;
       initAudio();
       if (e.button === 0) {
-        state.mouseDown = true;
-        shoot();
+        if (e.shiftKey) {
+          triggerStrategicRatLunge();
+        } else {
+          state.mouseDown = true;
+          shoot();
+        }
       } else if (e.button === 2) {
         window.switchAmmoType();
       }
@@ -2760,7 +2758,6 @@
         window.toggleOverlayHud();
         return;
       }
-
       switch (e.code) {
         case 'KeyW': case 'ArrowUp': state.moveForward = true; break;
         case 'KeyS': case 'ArrowDown': state.moveBackward = true; break;
@@ -2771,6 +2768,9 @@
         case 'ShiftLeft': case 'ShiftRight':
           state.isRunning = true;
           if (state.isFlying) state.descendHeld = true;
+          break;
+        case 'KeyG':
+          if (!e.repeat) triggerStrategicRatLunge();
           break;
         case 'Space':
           e.preventDefault();
@@ -2818,7 +2818,7 @@
     });
 
     // =========================================================================
-    // 13. SOLID RAT COLLISION, RAT AI, LOCK-ON RETICLE & MAIN ANIMATION LOOP
+    // 13. SOLID RAT COLLISION, SUPERMAN POSE, RAT AI & MAIN ANIMATION LOOP
     // =========================================================================
     const PLAYER_SOLID_RADIUS = 0.56;
 
@@ -2840,40 +2840,33 @@
 
     function resolveSolidRatCollisions(delta) {
       if (!state.started || state.gameOver || state.won) return;
-
       for (const rat of rats) {
         if (!rat.userData.alive || !rat.visible) continue;
         const d = rat.userData;
         if (d.stageIdx !== state.currentStageIdx) continue;
-
         const ratRadius = 0.68 * d.scale;
         const minDist = PLAYER_SOLID_RADIUS + ratRadius;
         const verticalClearance = state.playerPos.y - (rat.position.y + 0.72 * d.scale);
-
-        // If player is high up (flying/super-jumping well above rat), do not get snagged underneath
         if (verticalClearance > 0.45) continue;
 
         const dx = state.playerPos.x - rat.position.x;
         const dz = state.playerPos.z - rat.position.z;
         const distSq = dx * dx + dz * dz;
-
         if (distSq < minDist * minDist) {
           const dist = Math.sqrt(distSq) || 0.001;
           const nx = dx / dist;
           const nz = dz / dist;
           const overlap = minDist - dist;
 
-          // Push player and rat apart solidly so neither passes through the other
           const playerPush = new THREE.Vector3(
-            state.playerPos.x + nx * overlap * 0.65,
+            state.playerPos.x + nx * overlap * 0.68,
             state.playerPos.y,
-            state.playerPos.z + nz * overlap * 0.65
+            state.playerPos.z + nz * overlap * 0.68
           );
           if (!checkCollision(playerPush)) {
             state.playerPos.x = playerPush.x;
             state.playerPos.z = playerPush.z;
           } else {
-            // If wall is behind player, push rat back away from player instead
             const ratPush = new THREE.Vector3(
               rat.position.x - nx * overlap,
               rat.position.y,
@@ -2885,25 +2878,26 @@
             }
           }
 
+          if (state.isLungingMove && state.lungeTargetRat === rat) {
+            state.isLungingMove = false;
+            state.lungeTimer = 0;
+            damageRat(rat, 2, new THREE.Vector3(-nx, 0, -nz));
+          }
+
           clampToArenaBounds(state.playerPos);
           clampToArenaBounds(rat.position);
-
-          // Bounce rat slightly away after contact
           d.dir.set(-nx, 0, -nz).normalize();
 
-          // Bite damage & stagger when colliding at ground/low height
           d.biteCooldown = Math.max(0, d.biteCooldown - delta);
-          if (state.playerPos.y < 1.35 && d.biteCooldown <= 0 && !state.isSleeping) {
+          if (state.playerPos.y < 1.35 && d.biteCooldown <= 0 && !state.isSleeping && !state.isLungingMove) {
             d.biteCooldown = 0.75;
             state.lastAttackedTime = performance.now();
             state.health -= d.isBig ? 14 : 8;
             updateHealthUI();
             playHit();
-
             const dmgOverlay = document.getElementById('damage-overlay');
             dmgOverlay.style.opacity = '1';
             setTimeout(() => { dmgOverlay.style.opacity = '0'; }, 180);
-
             if (state.health <= 0) {
               triggerGameOver();
               return;
@@ -2933,11 +2927,9 @@
         if (!rat.userData.alive || !rat.visible) return;
         const d = rat.userData;
         if (d.stageIdx !== state.currentStageIdx) return;
-
         const toPlayer = state.playerPos.clone().sub(rat.position);
         toPlayer.y = 0;
         const horizDist = toPlayer.length();
-
         if (horizDist < 22 && !state.isSleeping) {
           toPlayer.normalize();
           d.dir.lerp(toPlayer, delta * 3.6).normalize();
@@ -2948,7 +2940,6 @@
             d.dir.set(Math.random() - 0.5, 0, Math.random() - 0.5).normalize();
           }
         }
-
         const solidStopDist = PLAYER_SOLID_RADIUS + 0.68 * d.scale;
         if (horizDist > solidStopDist) {
           const nextPos = rat.position.clone().addScaledVector(d.dir, d.speed * delta);
@@ -2961,7 +2952,6 @@
             d.dir.z *= -1;
           }
         }
-
         rat.rotation.y = Math.atan2(d.dir.x, d.dir.z);
         rat.position.y = Math.abs(Math.sin(performance.now() * 0.015 + rat.id)) * 0.06;
         d.biteCooldown = Math.max(0, d.biteCooldown - delta);
@@ -2973,7 +2963,6 @@
       raycaster.setFromCamera(getReticleNDC(), camera);
       const aimDir = raycaster.ray.direction;
       const stageRats = rats.filter(r => r.userData.alive && r.userData.stageIdx === state.currentStageIdx);
-
       let foundLock = null;
       for (const rat of stageRats) {
         const ratCenter = rat.position.clone().add(new THREE.Vector3(0, 0.45 * rat.userData.scale, 0));
@@ -2987,13 +2976,73 @@
           }
         }
       }
-
       const ch = document.getElementById('crosshair');
       if (foundLock && state.lockedRat !== foundLock) {
         playLock();
       }
       state.lockedRat = foundLock;
       ch.classList.toggle('locked', !!foundLock);
+    }
+
+    function updateCharacterPoseAndFlight(delta, hasMoveInput) {
+      // Negative rotation.x tilts top/head (-Y/-Z) forward along the -Z local travel axis (Superman dive/flight)
+      let targetPitch = 0;
+      let targetRoll = 0;
+
+      if (state.isFlying) {
+        const forward = new THREE.Vector3(-Math.sin(state.yaw), 0, -Math.cos(state.yaw));
+        const right = new THREE.Vector3(Math.cos(state.yaw), 0, -Math.sin(state.yaw));
+        const travel = new THREE.Vector3();
+        if (state.moveForward) travel.add(forward);
+        if (state.moveBackward) travel.sub(forward);
+        if (state.moveRight) travel.add(right);
+        if (state.moveLeft) travel.sub(right);
+        if (travel.lengthSq() < 0.001) {
+          travel.copy(forward);
+        } else {
+          travel.normalize();
+          // Orient yaw directly toward forward travel vector so character never crabs sideways
+          const desiredYaw = Math.atan2(-travel.x, -travel.z);
+          const diff = normalizeAngle(desiredYaw - state.yaw);
+          state.yaw = normalizeAngle(state.yaw + diff * Math.min(1, delta * 12));
+        }
+
+        const climbFactor = state.ascendHeld ? -0.32 : (state.descendHeld ? 0.25 : 0);
+        targetPitch = -1.18 + climbFactor;
+        targetRoll = 0;
+
+        // Superman extended-forward arms & trailing legs
+        leftArmGroup.rotation.set(-1.15, 0.14, 0);
+        weaponArmGroup.rotation.set(-1.15, -0.14, 0);
+        headGroup.rotation.set(0.45, 0, 0);
+        leftLeg.rotation.set(0.24, 0, -0.04);
+        rightLeg.rotation.set(0.32, 0, 0.04);
+      } else if (state.isLungingMove) {
+        targetPitch = -0.52;
+        targetRoll = 0;
+        leftArmGroup.rotation.set(-0.78, 0.22, 0);
+        weaponArmGroup.rotation.set(-0.65, 0, 0);
+        headGroup.rotation.set(0.22, 0, 0);
+        leftLeg.rotation.set(-0.55, 0, 0);
+        rightLeg.rotation.set(0.62, 0, 0);
+      } else {
+        targetPitch = 0;
+        targetRoll = 0;
+        leftArmGroup.rotation.set(hasMoveInput ? Math.sin(state.walkCycle) * 0.28 : 0, -0.25, 0);
+        weaponArmGroup.rotation.set(0, 0, 0);
+        headGroup.rotation.set(0, 0, 0);
+        if (!state.canJump) {
+          leftLeg.rotation.set(0.35, 0, 0);
+          rightLeg.rotation.set(-0.25, 0, 0);
+        }
+      }
+
+      state.flightPitchVisual += (targetPitch - state.flightPitchVisual) * Math.min(1, delta * 11);
+      characterBodyGroup.rotation.x = state.flightPitchVisual;
+      characterBodyGroup.rotation.z = targetRoll;
+      // Lift body center slightly when pitched horizontal so Superman chest/head clears ground/ceiling cleanly
+      const pitchLift = Math.max(0, -state.flightPitchVisual) * 0.42;
+      characterBodyGroup.position.y = pitchLift;
     }
 
     let frameCounter = 0;
@@ -3003,15 +3052,14 @@
     function animate() {
       requestAnimationFrame(animate);
       const delta = Math.min(clock.getDelta(), 0.1);
-
       frameCounter++;
       const now = performance.now();
+
       if (now - lastFpsTick >= 350) {
         const fps = Math.min(240, Math.round((frameCounter * 1000) / (now - lastFpsTick)));
         const ms = (1000 / Math.max(1, fps)).toFixed(1);
         const gpuLoad = Math.min(98, Math.round(58 + rats.filter(r => r.visible).length * 4 + (state.isFlying ? 12 : 0)));
         const cpuLoad = Math.min(92, Math.round(32 + activeEffects.length * 3));
-
         const hudFps = document.getElementById('hudFps');
         hudFps.textContent = fps;
         hudFps.className = 'hValue fps' + (fps < 50 ? ' bad' : fps < 90 ? ' warn' : '');
@@ -3020,13 +3068,11 @@
         document.getElementById('hudGpuBar').style.width = `${gpuLoad}%`;
         document.getElementById('hudCpu').textContent = cpuLoad;
         document.getElementById('hudCpuBar').style.width = `${cpuLoad}%`;
-
         document.getElementById('perfFps').textContent = fps;
         document.getElementById('perfFrameTime').textContent = `${ms} ms`;
         document.getElementById('perfGpu').textContent = `${gpuLoad}%`;
         document.getElementById('perfCpu').textContent = `${cpuLoad}%`;
         document.getElementById('dashGpuUtil').textContent = `${gpuLoad}%`;
-
         fpsHistory.push(fps);
         if (fpsHistory.length > CHART_BARS) fpsHistory.shift();
         const bars = chartEl.children;
@@ -3034,7 +3080,6 @@
           const v = fpsHistory[i] || 60;
           bars[i].style.height = `${Math.max(3, (v / 165) * 24)}px`;
         }
-
         frameCounter = 0;
         lastFpsTick = now;
       }
@@ -3043,50 +3088,69 @@
         shoot();
       }
 
+      let hasMoveInput = false;
       if (state.started && !state.gameOver && !state.won && !state.isSleeping) {
+        state.lungeCooldown = Math.max(0, state.lungeCooldown - delta);
+
         const turnSpeed = 2.35 * state.aimSensitivity;
         if (state.turnLeftHeld) state.yaw += turnSpeed * delta;
         if (state.turnRightHeld) state.yaw -= turnSpeed * delta;
         state.yaw = normalizeAngle(state.yaw);
 
-        const baseSpeed = state.isFlying ? (state.isRunning ? 11.2 : 7.8) : (state.isRunning ? 8.6 : 5.4);
+        const baseSpeed = state.isFlying ? (state.isRunning ? 11.6 : 8.2) : (state.isRunning ? 8.8 : 5.5);
         const speed = baseSpeed * state.thrustPower;
-
         const forward = new THREE.Vector3(-Math.sin(state.yaw), 0, -Math.cos(state.yaw));
         const right = new THREE.Vector3(Math.cos(state.yaw), 0, -Math.sin(state.yaw));
-
         const moveVec = new THREE.Vector3();
-        if (state.moveForward) moveVec.add(forward);
-        if (state.moveBackward) moveVec.sub(forward);
-        if (state.moveRight) moveVec.add(right);
-        if (state.moveLeft) moveVec.sub(right);
 
-        if (moveVec.lengthSq() > 0.001) {
-          moveVec.normalize().multiplyScalar(speed * delta);
+        if (state.lungeTimer > 0) {
+          state.lungeTimer -= delta;
+          if (state.lungeTargetRat && state.lungeTargetRat.userData.alive && state.lungeTargetRat.visible) {
+            const toRat = state.lungeTargetRat.position.clone().sub(state.playerPos);
+            toRat.y = 0;
+            if (toRat.lengthSq() > 0.02) {
+              state.lungeDir.copy(toRat).normalize();
+              state.yaw = Math.atan2(-state.lungeDir.x, -state.lungeDir.z);
+            }
+          }
+          moveVec.copy(state.lungeDir).multiplyScalar(17.5 * state.thrustPower * delta);
+          hasMoveInput = true;
+          if (state.lungeTimer <= 0) {
+            state.isLungingMove = false;
+          }
+        } else {
+          state.isLungingMove = false;
+          if (state.moveForward) moveVec.add(forward);
+          if (state.moveBackward) moveVec.sub(forward);
+          if (state.moveRight) moveVec.add(right);
+          if (state.moveLeft) moveVec.sub(right);
+          if (moveVec.lengthSq() > 0.001) {
+            hasMoveInput = true;
+            moveVec.normalize().multiplyScalar(speed * delta);
+          }
+        }
 
+        if (moveVec.lengthSq() > 0.0001) {
           const tryX = state.playerPos.clone();
           tryX.x += moveVec.x;
           if (!checkCollision(tryX)) state.playerPos.x = tryX.x;
-
           const tryZ = state.playerPos.clone();
           tryZ.z += moveVec.z;
           if (!checkCollision(tryZ)) state.playerPos.z = tryZ.z;
-
           clampToArenaBounds(state.playerPos);
 
-          if (!state.isFlying && state.canJump) {
+          if (!state.isFlying && !state.isLungingMove && state.canJump) {
             const stepRate = state.isRunning ? 15 : 10;
             state.walkCycle += delta * stepRate;
             leftLeg.rotation.x = Math.sin(state.walkCycle) * 0.65;
             rightLeg.rotation.x = -Math.sin(state.walkCycle) * 0.65;
-
             state.stepSoundAccum += delta * stepRate;
             if (state.stepSoundAccum >= Math.PI) {
               state.stepSoundAccum -= Math.PI;
               playLandingThud(false);
             }
           }
-        } else {
+        } else if (!state.isFlying && !state.isLungingMove) {
           leftLeg.rotation.x *= 0.8;
           rightLeg.rotation.x *= 0.8;
         }
@@ -3097,7 +3161,7 @@
         const maxCeilingY = isInsideHouse(state.playerPos) ? (HOUSE_CEILING_Y - 1.85) : 14.0;
 
         if (state.isFlying) {
-          const vertSpeed = 6.4 * state.thrustPower;
+          const vertSpeed = 6.6 * state.thrustPower;
           if (state.ascendHeld) {
             state.velocity.y = vertSpeed;
           } else if (state.descendHeld) {
@@ -3105,14 +3169,11 @@
           } else {
             state.velocity.y *= 0.82;
           }
-
           state.playerPos.y += state.velocity.y * delta;
           if (state.playerPos.y > maxCeilingY) {
             state.playerPos.y = maxCeilingY;
             state.velocity.y = 0;
           }
-
-          // Touching down onto the floor while descending or landing automatically grounds the character
           if (state.playerPos.y <= groundY && state.velocity.y <= 0.05) {
             state.playerPos.y = groundY;
             state.velocity.y = 0;
@@ -3123,8 +3184,6 @@
             syncFlightBadge();
             playLandingThud(true);
           } else {
-            leftLeg.rotation.x = 0.25;
-            rightLeg.rotation.x = 0.45;
             thrusterFlameMat.opacity = state.ascendHeld ? 0.95 : 0.65;
             jetLight.intensity = state.ascendHeld ? 3.0 : 1.8;
             if (Math.random() < 0.55) spawnJetParticle();
@@ -3132,12 +3191,10 @@
         } else {
           state.velocity.y -= 23 * delta;
           state.playerPos.y += state.velocity.y * delta;
-
           if (state.playerPos.y > maxCeilingY) {
             state.playerPos.y = maxCeilingY;
             state.velocity.y = Math.min(0, state.velocity.y);
           }
-
           if (state.playerPos.y <= groundY) {
             state.playerPos.y = groundY;
             if (wasAirborne && prevVy < -2.2) {
@@ -3148,18 +3205,15 @@
           }
         }
 
-        // Solid physical separation between player and alive rats
         resolveSolidRatCollisions(delta);
+        updateCharacterPoseAndFlight(delta, hasMoveInput);
 
         document.getElementById('alt-val').textContent = `${state.playerPos.y.toFixed(1)}m`;
-
         playerGroup.position.copy(state.playerPos);
-        playerGroup.rotation.y = state.yaw;
-        playerGroup.rotation.x = state.isFlying && state.moveForward ? -0.18 : 0;
+        playerGroup.rotation.set(0, state.yaw, 0);
       }
 
       updateDirectionBar(delta);
-
       state.recoilKick *= 0.82;
       weaponArmGroup.position.z = -0.05 + state.recoilKick * 0.25;
 
@@ -3175,19 +3229,15 @@
       const camDist = state.cameraMode === 'ots' ? 3.3 : 5.5;
       const shoulderOffset = state.cameraMode === 'ots' ? 0.72 : 0.4;
       const camHeight = state.cameraMode === 'ots' ? 1.85 : 2.45;
-
       const backDir = new THREE.Vector3(Math.sin(state.yaw), 0, Math.cos(state.yaw));
       const rightDir = new THREE.Vector3(Math.cos(state.yaw), 0, -Math.sin(state.yaw));
-
       const desiredCamPos = state.playerPos.clone()
         .addScaledVector(backDir, camDist)
         .addScaledVector(rightDir, shoulderOffset);
-
       const ceilingClamp = isInsideHouse(desiredCamPos) ? (HOUSE_CEILING_Y - 0.35) : 18.0;
       desiredCamPos.y = Math.max(0.7, Math.min(ceilingClamp, state.playerPos.y + camHeight));
       desiredCamPos.x = Math.max(-18.2, Math.min(18.2, desiredCamPos.x));
       desiredCamPos.z = Math.max(-35.2, Math.min(22.2, desiredCamPos.z));
-
       camera.position.lerp(desiredCamPos, 0.3);
 
       const lookTarget = state.playerPos.clone()
@@ -3195,7 +3245,6 @@
         .addScaledVector(rightDir, shoulderOffset * 0.35);
       lookTarget.y = state.playerPos.y + 1.35;
       camera.lookAt(lookTarget);
-
       renderer.render(scene, camera);
     }
 
