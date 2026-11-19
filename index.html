@@ -2,7 +2,10 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="theme-color" content="#07090c" />
   <title>Rats of the Manor · RTX Tactical Edition</title>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&family=JetBrains+Mono:wght@400;600;700;800&display=swap');
@@ -15,11 +18,16 @@
       --nv-danger: #ff3b30;
       --nv-boom: #ff9e4a;
       --nv-flight: #00e5ff;
+      --safe-top: env(safe-area-inset-top, 0px);
+      --safe-bottom: env(safe-area-inset-bottom, 0px);
+      --safe-left: env(safe-area-inset-left, 0px);
+      --safe-right: env(safe-area-inset-right, 0px);
     }
     * {
       box-sizing: border-box;
       user-select: none;
       -webkit-user-select: none;
+      -webkit-touch-callout: none;
     }
     html, body {
       margin: 0;
@@ -36,6 +44,7 @@
       display: block;
       width: 100%;
       height: 100%;
+      touch-action: none;
     }
     .nv-card {
       background: var(--nv-panel);
@@ -78,17 +87,20 @@
       top: 0;
       left: 0;
       width: 312px;
+      max-width: 85vw;
       height: 100%;
-      z-index: 45;
-      background: rgba(12, 14, 16, 0.95);
+      z-index: 65;
+      background: rgba(12, 14, 16, 0.96);
       backdrop-filter: blur(14px);
       border-right: 1px solid #24292e;
       display: flex;
       flex-direction: column;
       transition: transform 0.28s cubic-bezier(0.22, 1, 0.36, 1);
+      padding-top: var(--safe-top);
+      padding-bottom: var(--safe-bottom);
     }
     #nvidiaApp.collapsed {
-      transform: translateX(-312px);
+      transform: translateX(-105%);
     }
     #appTabs {
       display: flex;
@@ -172,16 +184,16 @@
       -webkit-appearance: none;
       appearance: none;
       width: 100%;
-      height: 4px;
+      height: 6px;
       background: #2a2f36;
-      border-radius: 2px;
+      border-radius: 3px;
       outline: none;
       cursor: pointer;
     }
     input[type=range]::-webkit-slider-thumb {
       -webkit-appearance: none;
-      width: 13px;
-      height: 13px;
+      width: 16px;
+      height: 16px;
       background: var(--nv-green);
       border-radius: 50%;
       box-shadow: 0 0 8px rgba(118, 185, 0, 0.6);
@@ -197,9 +209,9 @@
     .toggleRow:last-child { border-bottom: none; }
     .toggleSwitch {
       position: relative;
-      width: 34px;
-      height: 18px;
-      border-radius: 9px;
+      width: 36px;
+      height: 20px;
+      border-radius: 10px;
       background: #2c3138;
       cursor: pointer;
       transition: background 0.2s;
@@ -210,8 +222,8 @@
       position: absolute;
       top: 2px;
       left: 2px;
-      width: 14px;
-      height: 14px;
+      width: 16px;
+      height: 16px;
       border-radius: 50%;
       background: #fff;
       transition: transform 0.2s;
@@ -219,9 +231,9 @@
     .toggleSwitch.on::after { transform: translateX(16px); }
     #appToggle {
       position: fixed;
-      top: 12px;
-      left: 320px;
-      z-index: 46;
+      top: calc(10px + var(--safe-top));
+      left: calc(320px + var(--safe-left));
+      z-index: 66;
       background: var(--nv-green);
       border: none;
       color: #060900;
@@ -229,58 +241,81 @@
       border-radius: 6px;
       cursor: pointer;
       font-family: 'JetBrains Mono', monospace;
-      font-size: 11px;
+      font-size: 10.5px;
       font-weight: 800;
       transition: left 0.28s cubic-bezier(0.22, 1, 0.36, 1), transform 0.15s;
       box-shadow: 0 0 14px rgba(118, 185, 0, 0.5);
     }
-    #appToggle.collapsed { left: 12px; }
+    #appToggle.collapsed { left: calc(10px + var(--safe-left)); }
     #appToggle:hover { transform: scale(1.04); }
+
+    #touchPadToggle {
+      position: fixed;
+      top: calc(10px + var(--safe-top));
+      left: calc(96px + var(--safe-left));
+      z-index: 46;
+      background: rgba(12, 14, 18, 0.9);
+      border: 1px solid var(--nv-green);
+      color: var(--nv-green-bright);
+      padding: 5px 9px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      font-weight: 800;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+    }
+    #touchPadToggle.active {
+      background: rgba(118, 185, 0, 0.24);
+      color: #ffffff;
+    }
+
     /* ── TOP-CENTER ROTATING DIRECTIONAL BAR & TURN/MOVEMENT HUD ── */
     #direction-bar-hud {
       position: fixed;
-      top: 12px;
+      top: calc(10px + var(--safe-top));
       left: 50%;
       transform: translateX(-50%);
       width: min(560px, calc(100vw - 540px));
-      min-width: 280px;
-      padding: 8px 12px 9px 12px;
+      min-width: 260px;
+      padding: 7px 11px 8px 11px;
       z-index: 30;
       border-top: 3px solid var(--nv-green);
     }
     @media (max-width: 1120px) {
       #direction-bar-hud {
-        top: 238px;
-        width: min(520px, calc(100vw - 28px));
+        top: calc(44px + var(--safe-top));
+        width: min(520px, calc(100vw - 24px));
       }
     }
     .dir-top-strip {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      gap: 8px;
-      margin-bottom: 6px;
+      gap: 6px;
+      margin-bottom: 5px;
       font-family: 'JetBrains Mono', monospace;
-      font-size: 10.5px;
+      font-size: 10px;
     }
     .heading-readout {
       display: flex;
       align-items: center;
-      gap: 7px;
+      gap: 6px;
       font-weight: 800;
       color: var(--nv-green-bright);
     }
     .turn-indicator {
       display: inline-flex;
       align-items: center;
-      gap: 5px;
-      padding: 2px 8px;
+      gap: 4px;
+      padding: 2px 7px;
       border-radius: 5px;
       background: rgba(255, 255, 255, 0.06);
       border: 1px solid rgba(255, 255, 255, 0.14);
       font-weight: 800;
       color: #e2e8f0;
       transition: all 0.12s ease;
+      white-space: nowrap;
     }
     .turn-indicator.turning-left {
       background: rgba(0, 229, 255, 0.18);
@@ -309,13 +344,17 @@
     .move-vector-pill {
       display: inline-flex;
       align-items: center;
-      gap: 5px;
-      padding: 2px 8px;
+      gap: 4px;
+      padding: 2px 7px;
       border-radius: 5px;
       background: rgba(118, 185, 0, 0.15);
       border: 1px solid rgba(118, 185, 0, 0.45);
       color: #ecfccb;
       font-weight: 800;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 170px;
     }
     .move-vector-pill.lunge {
       background: rgba(255, 158, 74, 0.24);
@@ -325,7 +364,7 @@
     }
     #compass-viewport {
       position: relative;
-      height: 36px;
+      height: 32px;
       background: rgba(5, 8, 12, 0.85);
       border: 1px solid rgba(118, 185, 0, 0.28);
       border-radius: 6px;
@@ -370,7 +409,7 @@
       text-align: center;
     }
     .compass-cardinal {
-      font-size: 12px;
+      font-size: 11px;
       font-weight: 900;
       color: #f8fafc;
       text-shadow: 0 0 8px rgba(255, 255, 255, 0.25);
@@ -380,16 +419,16 @@
       text-shadow: 0 0 10px rgba(255, 107, 107, 0.65);
     }
     .compass-degree {
-      font-size: 9px;
+      font-size: 8.5px;
       color: #64748b;
       font-weight: 700;
     }
     .compass-poi {
-      top: 6px;
+      top: 5px;
       transform: translateX(-50%);
-      font-size: 9px;
+      font-size: 8.5px;
       font-weight: 800;
-      padding: 1px 5px;
+      padding: 1px 4px;
       border-radius: 3px;
       background: rgba(118, 185, 0, 0.2);
       border: 1px solid rgba(118, 185, 0, 0.55);
@@ -403,11 +442,11 @@
     /* ── TOP LEFT MISSION & ROOM HUD ── */
     #mission-hud {
       position: fixed;
-      top: 50px;
-      left: 12px;
-      width: 318px;
-      max-width: calc(100vw - 24px);
-      padding: 11px 14px;
+      top: calc(46px + var(--safe-top));
+      left: calc(10px + var(--safe-left));
+      width: 314px;
+      max-width: calc(100vw - 20px);
+      padding: 10px 12px;
       z-index: 20;
       border-left: 4px solid var(--nv-green);
     }
@@ -415,35 +454,35 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 4px;
+      margin-bottom: 3px;
     }
     .mission-label {
-      font-size: 10px;
+      font-size: 9.5px;
       font-weight: 800;
       letter-spacing: 0.06em;
       color: #94a3b8;
       text-transform: uppercase;
     }
     #current-zone-title {
-      font-size: 13.5px;
+      font-size: 13px;
       font-weight: 900;
       color: var(--nv-green);
-      margin: 2px 0 4px 0;
+      margin: 2px 0 3px 0;
       text-shadow: 0 0 12px var(--nv-green-glow);
     }
     #mission-objective {
-      font-size: 11px;
+      font-size: 10.5px;
       color: #cbd5e1;
-      line-height: 1.35;
-      margin-bottom: 7px;
+      line-height: 1.32;
+      margin-bottom: 6px;
     }
     .progress-track {
       width: 100%;
-      height: 6px;
+      height: 5px;
       background: rgba(255, 255, 255, 0.1);
       border-radius: 99px;
       overflow: hidden;
-      margin-bottom: 7px;
+      margin-bottom: 6px;
     }
     #mission-progress-fill {
       height: 100%;
@@ -457,18 +496,18 @@
       justify-content: space-between;
       gap: 6px;
       font-family: 'JetBrains Mono', monospace;
-      font-size: 10px;
+      font-size: 9.5px;
       color: #94a3b8;
     }
     .mission-stats strong { color: #fff; }
     /* ── TOP RIGHT ALT+Z OVERLAY HUD ── */
     #overlayHud {
       position: fixed;
-      top: 12px;
-      right: 12px;
+      top: calc(10px + var(--safe-top));
+      right: calc(10px + var(--safe-right));
       z-index: 35;
-      width: 238px;
-      padding: 10px 12px;
+      width: 232px;
+      padding: 9px 11px;
       font-family: 'JetBrains Mono', monospace;
       border-right: 4px solid var(--nv-green);
       transition: opacity 0.22s ease, transform 0.22s ease;
@@ -482,32 +521,32 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 5px;
-      padding-bottom: 4px;
+      margin-bottom: 4px;
+      padding-bottom: 3px;
       border-bottom: 1px solid rgba(118, 185, 0, 0.22);
     }
     .hudTitle {
-      font-size: 9.5px;
+      font-size: 9px;
       font-weight: 800;
       color: var(--nv-green);
       letter-spacing: 0.7px;
       display: flex;
       align-items: center;
-      gap: 6px;
+      gap: 5px;
     }
     .hudStat {
       display: flex;
       justify-content: space-between;
       align-items: baseline;
-      padding: 1.5px 0;
-      font-size: 10px;
+      padding: 1px 0;
+      font-size: 9.5px;
     }
     .hudStat .hLabel { color: #8b949e; }
-    .hudStat .hValue { font-size: 12.5px; font-weight: 700; color: #f8fafc; }
+    .hudStat .hValue { font-size: 12px; font-weight: 700; color: #f8fafc; }
     .hudStat .hValue.fps { color: var(--nv-green); }
     .hudStat .hValue.warn { color: #ff9e4a; }
     .hudStat .hValue.bad { color: #ff5f57; }
-    .hudUnit { font-size: 8.5px; color: #6e7681; margin-left: 2px; }
+    .hudUnit { font-size: 8px; color: #6e7681; margin-left: 2px; }
     .hudBar {
       height: 3px;
       background: rgba(255, 255, 255, 0.08);
@@ -523,9 +562,9 @@
       display: flex;
       align-items: flex-end;
       gap: 2px;
-      height: 22px;
-      margin-top: 5px;
-      padding-top: 4px;
+      height: 20px;
+      margin-top: 4px;
+      padding-top: 3px;
       border-top: 1px solid rgba(118, 185, 0, 0.16);
     }
     .hudMiniChart .bar {
@@ -538,10 +577,10 @@
     /* ── BOTTOM LEFT HEALTH & FLIGHT/LANDING STATUS ── */
     #vitals-hud {
       position: fixed;
-      bottom: 12px;
-      left: 12px;
-      width: 292px;
-      padding: 10px 13px;
+      bottom: calc(12px + var(--safe-bottom));
+      left: calc(12px + var(--safe-left));
+      width: 286px;
+      padding: 9px 12px;
       z-index: 20;
       border-left: 4px solid var(--nv-green);
     }
@@ -552,14 +591,14 @@
       margin-bottom: 4px;
     }
     .vitals-label {
-      font-size: 10px;
+      font-size: 9.5px;
       font-weight: 800;
       letter-spacing: 0.06em;
       color: #94a3b8;
     }
     #healthVal {
       font-family: 'JetBrains Mono', monospace;
-      font-size: 20px;
+      font-size: 19px;
       font-weight: 800;
       color: #fff;
     }
@@ -569,7 +608,7 @@
       background: rgba(255, 255, 255, 0.12);
       border-radius: 6px;
       overflow: hidden;
-      margin-bottom: 7px;
+      margin-bottom: 6px;
     }
     #hp-bar-fill {
       height: 100%;
@@ -582,7 +621,7 @@
       justify-content: space-between;
       align-items: center;
       font-family: 'JetBrains Mono', monospace;
-      font-size: 10px;
+      font-size: 9.5px;
       padding-top: 5px;
       border-top: 1px solid rgba(255, 255, 255, 0.08);
       gap: 6px;
@@ -610,7 +649,7 @@
     /* ── BOTTOM CENTER INFINITE WEAPONS & AMMO SLOTS ── */
     #weapon-hud {
       position: fixed;
-      bottom: 12px;
+      bottom: calc(12px + var(--safe-bottom));
       left: 50%;
       transform: translateX(-50%);
       display: flex;
@@ -658,8 +697,8 @@
     /* ── BOTTOM RIGHT CONTROLS ── */
     #controls-hud {
       position: fixed;
-      bottom: 12px;
-      right: 12px;
+      bottom: calc(12px + var(--safe-bottom));
+      right: calc(12px + var(--safe-right));
       padding: 8px 11px;
       z-index: 20;
       font-size: 10px;
@@ -677,6 +716,168 @@
       border-radius: 3px;
       font-weight: 700;
     }
+
+    /* ── ANDROID MULTI-TOUCH GAMEPAD OVERLAY ── */
+    #touch-controls-layer {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 40;
+      display: none;
+    }
+    #touch-controls-layer.visible {
+      display: block;
+    }
+    #touch-joystick-zone {
+      position: fixed;
+      left: calc(16px + var(--safe-left));
+      bottom: calc(18px + var(--safe-bottom));
+      width: 132px;
+      height: 132px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(118, 185, 0, 0.14) 0%, rgba(12, 16, 22, 0.68) 72%);
+      border: 2px solid rgba(118, 185, 0, 0.52);
+      box-shadow: 0 0 24px rgba(0, 0, 0, 0.65), inset 0 0 18px rgba(118, 185, 0, 0.16);
+      pointer-events: auto;
+      touch-action: none;
+    }
+    #touch-joystick-zone::after {
+      content: 'MOVE / SPRINT';
+      position: absolute;
+      bottom: -18px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 8.5px;
+      font-weight: 800;
+      color: #a3e635;
+      white-space: nowrap;
+      letter-spacing: 0.05em;
+    }
+    #touch-joystick-nub {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 54px;
+      height: 54px;
+      transform: translate(-50%, -50%);
+      border-radius: 50%;
+      background: radial-gradient(circle at 35% 35%, #bef264, #76b900 65%, #3f6212);
+      border: 2px solid #ecfccb;
+      box-shadow: 0 4px 16px rgba(118, 185, 0, 0.65);
+      pointer-events: none;
+    }
+    #touch-right-cluster {
+      position: fixed;
+      right: calc(14px + var(--safe-right));
+      bottom: calc(16px + var(--safe-bottom));
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 9px;
+      pointer-events: none;
+    }
+    .touch-utility-row {
+      display: flex;
+      gap: 7px;
+      pointer-events: auto;
+    }
+    .touch-pill-btn {
+      background: rgba(12, 16, 22, 0.84);
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(118, 185, 0, 0.55);
+      color: #ecfccb;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      font-weight: 800;
+      padding: 8px 10px;
+      border-radius: 10px;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.55);
+      active-scale: 0.94;
+      touch-action: none;
+    }
+    .touch-pill-btn:active, .touch-pill-btn.pressed {
+      background: rgba(118, 185, 0, 0.35);
+      border-color: #bef264;
+      transform: scale(0.94);
+    }
+    .touch-action-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 58px);
+      grid-template-rows: repeat(2, 58px);
+      gap: 8px;
+      align-items: center;
+      justify-items: center;
+      pointer-events: auto;
+    }
+    .touch-btn {
+      width: 58px;
+      height: 58px;
+      border-radius: 50%;
+      border: 2px solid rgba(255, 255, 255, 0.28);
+      background: rgba(14, 18, 24, 0.82);
+      backdrop-filter: blur(8px);
+      color: #f8fafc;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 9.5px;
+      font-weight: 900;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      line-height: 1.1;
+      text-align: center;
+      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.65);
+      touch-action: none;
+    }
+    .touch-btn:active, .touch-btn.pressed {
+      transform: scale(0.91);
+    }
+    #tbtn-fire {
+      grid-column: 3;
+      grid-row: 1 / span 2;
+      width: 74px;
+      height: 74px;
+      background: radial-gradient(circle at 35% 30%, #ff6b6b, #dc2626 70%, #7f1d1d);
+      border: 2px solid #fecaca;
+      color: #fff;
+      font-size: 11px;
+      box-shadow: 0 0 24px rgba(239, 68, 68, 0.6);
+    }
+    #tbtn-fire.pressed {
+      box-shadow: 0 0 34px rgba(255, 59, 48, 0.95);
+    }
+    #tbtn-lunge {
+      grid-column: 2;
+      grid-row: 1;
+      border-color: var(--nv-boom);
+      color: #ffd8a8;
+      background: rgba(67, 20, 7, 0.82);
+    }
+    #tbtn-fly {
+      grid-column: 1;
+      grid-row: 1;
+      border-color: var(--nv-flight);
+      color: #a5f3fc;
+      background: rgba(8, 51, 68, 0.82);
+    }
+    #tbtn-fly.active-fly {
+      background: rgba(0, 229, 255, 0.34);
+      box-shadow: 0 0 18px rgba(0, 229, 255, 0.65);
+    }
+    #tbtn-up {
+      grid-column: 2;
+      grid-row: 2;
+      border-color: var(--nv-green);
+      color: #bef264;
+    }
+    #tbtn-down {
+      grid-column: 1;
+      grid-row: 2;
+      border-color: #94a3b8;
+      color: #e2e8f0;
+    }
+
     /* ── CROSSHAIR & HITMARKER ── */
     #crosshair {
       position: fixed;
@@ -758,31 +959,31 @@
     /* ── TOAST BANNER ── */
     #banner-toast {
       position: fixed;
-      top: 98px;
+      top: calc(108px + var(--safe-top));
       left: 50%;
       transform: translateX(-50%);
-      padding: 9px 20px;
-      z-index: 32;
+      padding: 8px 18px;
+      z-index: 50;
       text-align: center;
       pointer-events: none;
       opacity: 0;
       transition: opacity 0.22s ease, transform 0.22s ease;
       border-top: 3px solid var(--nv-green);
-      max-width: 90vw;
+      max-width: 92vw;
     }
     #banner-toast.visible {
       opacity: 1;
       transform: translateX(-50%) translateY(3px);
     }
     #banner-title {
-      font-size: 13px;
+      font-size: 12.5px;
       font-weight: 900;
       color: var(--nv-green);
       letter-spacing: 0.08em;
       text-transform: uppercase;
     }
     #banner-sub {
-      font-size: 11.5px;
+      font-size: 11px;
       color: #e2e8f0;
       margin-top: 2px;
     }
@@ -796,66 +997,197 @@
       opacity: 0;
       transition: opacity 0.15s ease;
     }
-    /* ── START / VICTORY / GAME OVER MODAL ── */
+    /* ── START / VICTORY / GAME OVER MODAL & DEVELOPER WELCOME CARD ── */
     #modal-overlay {
       position: fixed;
       inset: 0;
-      background: rgba(5, 7, 10, 0.85);
-      backdrop-filter: blur(8px);
+      background: rgba(5, 7, 10, 0.88);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
       display: flex;
       align-items: center;
       justify-content: center;
       z-index: 100;
-      padding: 20px;
+      padding: calc(14px + var(--safe-top)) 14px calc(14px + var(--safe-bottom)) 14px;
+      overflow-y: auto;
     }
     #modal-card {
-      max-width: 630px;
+      max-width: 660px;
       width: 100%;
-      padding: 26px;
+      padding: 20px 22px;
       text-align: center;
-      border: 1px solid var(--nv-green);
-      box-shadow: 0 0 50px rgba(118, 185, 0, 0.25);
+      border: 1.5px solid var(--nv-green);
+      box-shadow: 0 0 55px rgba(118, 185, 0, 0.3);
+      max-height: 94vh;
+      overflow-y: auto;
+    }
+    .dev-welcome-banner {
+      background: linear-gradient(135deg, rgba(118, 185, 0, 0.24) 0%, rgba(16, 24, 14, 0.96) 50%, rgba(0, 229, 255, 0.16) 100%);
+      border: 2px solid var(--nv-green-bright);
+      border-radius: 12px;
+      padding: 13px 16px;
+      margin-bottom: 14px;
+      box-shadow: 0 0 28px rgba(118, 185, 0, 0.42), inset 0 0 18px rgba(163, 230, 53, 0.16);
+      text-align: center;
+      animation: devGlowPulse 2.4s infinite ease-in-out;
+    }
+    @keyframes devGlowPulse {
+      0%, 100% { box-shadow: 0 0 24px rgba(118, 185, 0, 0.38), inset 0 0 14px rgba(163, 230, 53, 0.14); }
+      50% { box-shadow: 0 0 38px rgba(163, 230, 53, 0.68), inset 0 0 22px rgba(163, 230, 53, 0.26); }
+    }
+    .dev-welcome-kicker {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: #bef264;
+      margin-bottom: 4px;
+    }
+    .dev-welcome-name {
+      font-size: 17px;
+      font-weight: 900;
+      color: #ffffff;
+      letter-spacing: 0.02em;
+      text-shadow: 0 0 14px rgba(163, 230, 53, 0.65);
+      margin-bottom: 5px;
+    }
+    .dev-welcome-name span {
+      color: var(--nv-green-bright);
+    }
+    .dev-welcome-contact {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 8px 14px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11.5px;
+      font-weight: 800;
+      color: #ecfccb;
+    }
+    .dev-contact-chip {
+      background: rgba(5, 8, 12, 0.72);
+      border: 1px solid rgba(163, 230, 53, 0.55);
+      padding: 4px 10px;
+      border-radius: 6px;
+      color: #ffffff;
     }
     #modal-card h1 {
-      margin: 12px 0 8px 0;
-      font-size: 25px;
+      margin: 10px 0 8px 0;
+      font-size: clamp(20px, 4.8vw, 26px);
       font-weight: 900;
       color: #fff;
     }
     #modal-card p {
       color: #cbd5e1;
-      font-size: 13px;
-      line-height: 1.62;
-      margin-bottom: 18px;
+      font-size: 12.5px;
+      line-height: 1.56;
+      margin-bottom: 16px;
     }
     .cta-btn {
       background: linear-gradient(135deg, #76b900, #5a8f00);
       color: #050800;
       font-family: 'Inter', sans-serif;
       font-weight: 900;
-      font-size: 13.5px;
+      font-size: 14px;
       letter-spacing: 0.06em;
       text-transform: uppercase;
       border: none;
-      padding: 12px 28px;
-      border-radius: 8px;
+      padding: 14px 28px;
+      border-radius: 10px;
       cursor: pointer;
-      box-shadow: 0 0 24px rgba(118, 185, 0, 0.5);
+      box-shadow: 0 0 26px rgba(118, 185, 0, 0.55);
       transition: transform 0.15s ease, box-shadow 0.15s ease;
+      width: 100%;
+      max-width: 360px;
     }
-    .cta-btn:hover {
+    .cta-btn:hover, .cta-btn:active {
       transform: translateY(-2px);
-      box-shadow: 0 0 32px rgba(118, 185, 0, 0.8);
+      box-shadow: 0 0 34px rgba(118, 185, 0, 0.85);
     }
-    @media (max-width: 820px) {
+
+    /* ── ANDROID PHONE & COMPACT SCREEN RESPONSIVE LAYOUT ── */
+    @media (max-width: 920px) {
       #controls-hud, #weapon-hud { display: none; }
-      #overlayHud { width: 200px; }
-      #mission-hud { width: 250px; top: 48px; }
+      #overlayHud {
+        width: 158px;
+        padding: 6px 8px;
+        top: calc(8px + var(--safe-top));
+        right: calc(8px + var(--safe-right));
+      }
+      .hudMiniChart, #hudVramBar, #hudCpuBar { display: none; }
+      #direction-bar-hud {
+        top: calc(40px + var(--safe-top));
+        width: calc(100vw - 184px);
+        left: calc(8px + var(--safe-left));
+        transform: none;
+        min-width: 0;
+        padding: 5px 8px 6px 8px;
+      }
+      #compass-viewport { height: 24px; }
+      #mission-hud {
+        top: calc(108px + var(--safe-top));
+        left: calc(8px + var(--safe-left));
+        width: min(275px, calc(100vw - 16px));
+        padding: 7px 9px;
+      }
+      #current-zone-title { font-size: 11.5px; }
+      #mission-objective { display: none; }
+      #vitals-hud {
+        top: calc(184px + var(--safe-top));
+        bottom: auto;
+        left: calc(8px + var(--safe-left));
+        width: min(230px, 60vw);
+        padding: 6px 9px;
+      }
+      #healthVal { font-size: 15px; }
+      #banner-toast {
+        top: calc(254px + var(--safe-top));
+      }
+    }
+
+    /* Android Landscape Phone Optimization */
+    @media (max-height: 500px) and (orientation: landscape) {
+      #overlayHud { display: none; }
+      #direction-bar-hud {
+        top: calc(6px + var(--safe-top));
+        left: 50%;
+        transform: translateX(-50%);
+        width: min(360px, 46vw);
+        padding: 4px 8px;
+      }
+      #compass-viewport { height: 20px; }
+      #mission-hud {
+        top: calc(42px + var(--safe-top));
+        left: calc(8px + var(--safe-left));
+        width: 220px;
+        padding: 5px 8px;
+      }
+      #mission-objective { display: none; }
+      #vitals-hud {
+        top: calc(6px + var(--safe-top));
+        right: calc(8px + var(--safe-right));
+        left: auto;
+        bottom: auto;
+        width: 215px;
+        padding: 5px 8px;
+      }
+      #touch-joystick-zone {
+        width: 112px;
+        height: 112px;
+        bottom: calc(12px + var(--safe-bottom));
+      }
+      #touch-right-cluster {
+        bottom: calc(10px + var(--safe-bottom));
+      }
+      .touch-btn { width: 52px; height: 52px; font-size: 9px; }
+      #tbtn-fire { width: 66px; height: 66px; }
     }
   </style>
 </head>
 <body>
   <div id="damage-overlay"></div>
+
   <!-- COLLAPSIBLE NVIDIA APP DRAWER -->
   <div id="nvidiaApp" class="collapsed">
     <div id="appTabs">
@@ -866,9 +1198,16 @@
     <div id="appContent">
       <div id="tab-dashboard" class="tabPane">
         <div class="nvSection">
+          <div class="nvSectionTitle">Developer Credits</div>
+          <div class="statRow"><span class="statLabel">Author</span><span class="statValue green">Gesner Deslandes</span></div>
+          <div class="statRow"><span class="statLabel">Role</span><span class="statValue">Software Developper</span></div>
+          <div class="statRow"><span class="statLabel">Phone</span><span class="statValue orange">(509)-47385663</span></div>
+          <div class="statRow"><span class="statLabel">Email</span><span class="statValue blue">deslandes78@gmail.com</span></div>
+        </div>
+        <div class="nvSection">
           <div class="nvSectionTitle">System Summary</div>
           <div class="statRow"><span class="statLabel">GPU</span><span class="statValue" id="nv-gpu-label">RTX 4080</span></div>
-          <div class="statRow"><span class="statLabel">Driver</span><span class="statValue blue">566.14 WHQL</span></div>
+          <div class="statRow"><span class="statLabel">Platform</span><span class="statValue green">ANDROID + DESKTOP</span></div>
           <div class="statRow"><span class="statLabel">GPU Temp</span><span class="statValue orange" id="dashTemp">61°C</span></div>
           <div class="statRow"><span class="statLabel">GPU Load</span><span class="statValue green" id="dashGpuUtil">74%</span></div>
           <div class="statRow"><span class="statLabel">VRAM</span><span class="statValue blue" id="dashVram">6.4 GB</span></div>
@@ -878,7 +1217,7 @@
           <div class="nvSectionTitle">Game Profile</div>
           <div class="statRow"><span class="statLabel">Title</span><span class="statValue green">RATS OF THE MANOR</span></div>
           <div class="statRow"><span class="statLabel">Structure</span><span class="statValue blue">3-STORY + FOREST</span></div>
-          <div class="statRow"><span class="statLabel">Attack Lunge</span><span class="statValue orange">G / SHIFT+CLICK</span></div>
+          <div class="statRow"><span class="statLabel">Attack Lunge</span><span class="statValue orange">G / LUNGE BTN</span></div>
           <div class="statRow"><span class="statLabel">Ammo</span><span class="statValue orange">INFINITE ∞</span></div>
         </div>
       </div>
@@ -917,7 +1256,11 @@
       </div>
       <div id="tab-overlay" class="tabPane" style="display:none;">
         <div class="nvSection">
-          <div class="nvSectionTitle">Alt+Z Overlay Controls</div>
+          <div class="nvSectionTitle">Controls & Overlay</div>
+          <div class="toggleRow">
+            <span>Android Touch Controls</span>
+            <div class="toggleSwitch" id="toggleTouchPad" onclick="toggleTouchControls()"></div>
+          </div>
           <div class="toggleRow">
             <span>Performance HUD</span>
             <div class="toggleSwitch on" id="toggleOverlay" onclick="toggleOverlayHud()"></div>
@@ -946,6 +1289,8 @@
     </div>
   </div>
   <button id="appToggle" class="collapsed" onclick="toggleNvApp()">NV APP ▶</button>
+  <button id="touchPadToggle" onclick="toggleTouchControls()">📱 TOUCH PAD</button>
+
   <!-- TOP-CENTER ROTATING DIRECTIONAL BAR & TURN/MOVEMENT TELEMETRY -->
   <div id="direction-bar-hud" class="nv-card">
     <div class="dir-top-strip">
@@ -961,6 +1306,7 @@
       <div id="compass-track"></div>
     </div>
   </div>
+
   <!-- TOP LEFT: MISSION & ZONE HUD -->
   <div id="mission-hud" class="nv-card">
     <div class="mission-top">
@@ -968,7 +1314,7 @@
       <span class="nv-badge"><span class="nv-dot"></span> STAGE <span id="stage-num">1</span>/8</span>
     </div>
     <div id="current-zone-title">STAGE 1: FRONT DOOR & FOYER (F1)</div>
-    <div id="mission-objective">Fly Superman-style forward [F], walk/run/climb [WASD], or lunge at rats [G / Shift+Click]!</div>
+    <div id="mission-objective">Fly Superman-style forward [F], walk/run/climb [WASD / Stick], or lunge at rats [G / Lunge]!</div>
     <div class="progress-track">
       <div id="mission-progress-fill"></div>
     </div>
@@ -978,10 +1324,11 @@
       <span>KILLS: <strong id="killCount">0</strong></span>
     </div>
   </div>
+
   <!-- TOP RIGHT: ALT+Z NVIDIA TELEMETRY HUD -->
   <div id="overlayHud" class="nv-card">
     <div class="hudHeader">
-      <div class="hudTitle"><span class="nv-dot"></span> RTX TELEMETRY · ALT+Z</div>
+      <div class="hudTitle"><span class="nv-dot"></span> RTX TELEMETRY</div>
       <span style="cursor:pointer;color:#8b949e;font-size:12px;" onclick="toggleOverlayHud()">✕</span>
     </div>
     <div class="hudStat">
@@ -1009,23 +1356,26 @@
     <div class="hudBar"><div class="fill vram" id="hudVramBar" style="width:40%"></div></div>
     <div class="hudMiniChart" id="hudChart"></div>
   </div>
+
   <!-- CENTER TOAST -->
   <div id="banner-toast" class="nv-card">
     <div id="banner-title">MISSION UPDATE</div>
     <div id="banner-sub">Proceed to the next area.</div>
   </div>
-  <!-- MOUSE-STEERED FIGHTER JET CROSSHAIR & HITMARKER -->
+
+  <!-- MOUSE / TOUCH STEERED FIGHTER JET CROSSHAIR & HITMARKER -->
   <div id="crosshair">
     <div class="ch-ring"></div>
     <div class="ch-ticks"></div>
     <div class="ch-dot"></div>
   </div>
   <div id="hitmarker"></div>
+
   <!-- BOTTOM LEFT: HEALTH & FLIGHT/LANDING STATUS -->
   <div id="vitals-hud" class="nv-card">
     <div class="vitals-top">
       <span class="vitals-label">EXTERMINATOR HP</span>
-      <span><span id="healthVal">100</span><span style="color:#64748b;font-size:13px;">/100</span></span>
+      <span><span id="healthVal">100</span><span style="color:#64748b;font-size:12px;">/100</span></span>
     </div>
     <div class="hp-track">
       <div id="hp-bar-fill"></div>
@@ -1035,6 +1385,7 @@
       <span style="color:#94a3b8;">ALT: <strong id="alt-val" style="color:#fff;">0.0m · F1</strong></span>
     </div>
   </div>
+
   <!-- BOTTOM CENTER: INFINITE WEAPONS & AMMO SLOTS -->
   <div id="weapon-hud" class="nv-card">
     <div class="weapon-slot selected" id="slot-gun" onclick="switchWeapon()">
@@ -1048,24 +1399,60 @@
       <div class="slot-meta" id="ammo-desc">Precision Lock-On Laser</div>
     </div>
   </div>
-  <!-- BOTTOM RIGHT: COMPACT CONTROLS -->
+
+  <!-- BOTTOM RIGHT: COMPACT DESKTOP CONTROLS -->
   <div id="controls-hud" class="nv-card">
     <kbd>MOUSE</kbd> Aim & Turn &nbsp; <kbd>L-CLICK</kbd>/<kbd>SPACE</kbd> Shoot/Jump<br>
     <kbd>WASD</kbd> Walk/Climb/Run &nbsp; <kbd>G</kbd>/<kbd>SHIFT+CLICK</kbd> Rat Lunge<br>
     <kbd>F</kbd> Superman Flight/Land &nbsp; <kbd>C</kbd> Down &nbsp; <kbd>B</kbd> Bed Heal
   </div>
+
+  <!-- ANDROID PHONE MULTI-TOUCH CONTROLS LAYER -->
+  <div id="touch-controls-layer">
+    <div id="touch-joystick-zone">
+      <div id="touch-joystick-nub"></div>
+    </div>
+    <div id="touch-right-cluster">
+      <div class="touch-utility-row">
+        <button type="button" class="touch-pill-btn" id="tbtn-gun">🔫 GUN</button>
+        <button type="button" class="touch-pill-btn" id="tbtn-ammo">💥 BOOM</button>
+        <button type="button" class="touch-pill-btn" id="tbtn-heal">🛏️ HEAL</button>
+        <button type="button" class="touch-pill-btn" id="tbtn-cam">🎥 CAM</button>
+      </div>
+      <div class="touch-action-grid">
+        <button type="button" class="touch-btn" id="tbtn-fly">🦸<br>FLY</button>
+        <button type="button" class="touch-btn" id="tbtn-lunge">⚔<br>LUNGE</button>
+        <button type="button" class="touch-btn" id="tbtn-fire">🔥<br>FIRE</button>
+        <button type="button" class="touch-btn" id="tbtn-down">▼<br>DOWN</button>
+        <button type="button" class="touch-btn" id="tbtn-up">▲<br>JUMP</button>
+      </div>
+    </div>
+  </div>
+
   <!-- START / VICTORY / GAME OVER MODAL -->
   <div id="modal-overlay">
     <div id="modal-card" class="nv-card">
-      <span class="nv-badge"><span class="nv-dot"></span> NVIDIA RTX · 3-STORY MANOR & SURROUNDING FOREST</span>
+      <!-- EMPHASIZED DEVELOPER WELCOME BANNER -->
+      <div class="dev-welcome-banner" role="banner" aria-label="Developer Welcome Information">
+        <div class="dev-welcome-kicker">★ WELCOME TO RATS OF THE MANOR · OFFICIAL EDITION ★</div>
+        <div class="dev-welcome-name">Built by <span>Gesner Deslandes</span> / Software Developper</div>
+        <div class="dev-welcome-contact">
+          <span class="dev-contact-chip">📞 Contact Info : (509)-47385663</span>
+          <span class="dev-contact-chip">✉️ Email : deslandes78@gmail.com</span>
+        </div>
+      </div>
+
+      <span class="nv-badge"><span class="nv-dot"></span> ANDROID TOUCH & DESKTOP RTX · 3-STORY MANOR & FOREST</span>
       <h1 id="modal-title">RATS OF THE MANOR</h1>
       <p id="modal-desc">
-        Explore and battle across a full <strong>3-Story Manor</strong> (Floor 1 at 0.0m, Floor 2 at 6.0m, Floor 3 at 12.0m, roof at 18.0m) with real walkable staircases and landings between every story, surrounded by a vast <strong>Forest</strong> (-95m to +95m) with winding trails, clearings, and dense pine & oak trees.<br><br>
-        Fly head-first/chest-forward like <strong>Superman</strong> with <strong>F</strong> (tap <strong>F</strong> or press <strong>C</strong> / touch any floor or stair to land), walk/run/climb with <strong>WASD / Shift</strong>, aim with your <strong>Mouse</strong> (full 3D body smoothly turns toward targeted rats), fire infinite <strong>Fighter Jet Cannon</strong> rounds with <strong>Left-Click</strong>, and lunge at rats with <strong>G</strong> or <strong>Shift + Left-Click</strong>!
+        Explore and battle across a full <strong>3-Story Manor</strong> (Floor 1 at 0.0m, Floor 2 at 6.0m, Floor 3 at 12.0m, roof at 18.0m) with walkable staircases and landings between every story, surrounded by a vast <strong>Forest</strong> (-94m to +94m) with winding trails, clearings, and dense pine & oak trees.<br><br>
+        <strong>Android & Touch Controls:</strong> Use the left virtual thumbstick to walk/run/climb, drag anywhere on the screen to aim & turn, and tap <strong>🔥 FIRE</strong>, <strong>⚔ LUNGE</strong>, <strong>🦸 FLY</strong>, or <strong>▲ JUMP</strong>!<br>
+        <strong>Desktop Controls:</strong> Move with <strong>WASD</strong>, aim with <strong>Mouse</strong>, shoot with <strong>Left-Click</strong>, fly Superman-style with <strong>F</strong>, and lunge at rats with <strong>G</strong>.
       </p>
       <button class="cta-btn" id="start-btn" type="button">DEPLOY INTO MANOR & FOREST</button>
     </div>
   </div>
+
   <script type="importmap">
     {
       "imports": {
@@ -1400,7 +1787,7 @@
       {
         stage: 1,
         name: 'STAGE 1: FRONT DOOR & FOYER (F1)',
-        objective: 'Clear the Foyer rats [WASD / L-Click / G Lunge / F Flight] and advance to the Grand Living Room.',
+        objective: 'Clear the Foyer rats and advance to the Grand Living Room.',
         unlockHint: 'Foyer cleared! Move left into the Grand Living Room.',
         beaconPos: new THREE.Vector3(-8.0, FLOOR_1_Y + 0.15, 2.5),
         spawns: [
@@ -1464,7 +1851,7 @@
       {
         stage: 6,
         name: 'STAGE 6: WEST WHISPERING WOODS',
-        objective: 'Chase, fly [F], or lunge [G] through the West Whispering Woods pine & oak groves!',
+        objective: 'Chase, fly, or lunge through the West Whispering Woods pine & oak groves!',
         unlockHint: 'West Woods cleared! Sweep across to the East Timber Forest!',
         beaconPos: new THREE.Vector3(44.0, 0.15, -12.0),
         spawns: [
@@ -1541,6 +1928,9 @@
       moveBackward: false,
       moveLeft: false,
       moveRight: false,
+      joyX: 0,
+      joyY: 0,
+      joyActive: false,
       turnLeftHeld: false,
       turnRightHeld: false,
       ascendHeld: false,
@@ -1726,19 +2116,15 @@
       }
       createWall(-12, midY, -3, 0.35, h, 30, wMat, true);
       createWall(12, midY, -3, 0.35, h, 30, wMat, true);
-
       createWall(-10.4, midY, -8, 3.2, h, 0.3, wMat, true);
       createWall(-4.6, midY, -8, 1.2, h, 0.3, wMat, true);
       createWall(-7.0, baseY + 5.3, -8, 3.6, 1.4, 0.3, wMat, false);
-
       createWall(-4, midY, -16.4, 0.3, h, 3.2, wMat, true);
       createWall(-4, midY, -9.6, 0.3, h, 3.2, wMat, true);
       createWall(-4, baseY + 5.3, -13.0, 0.3, 1.4, 3.6, wMat, false);
-
       createWall(4, midY, -16.4, 0.3, h, 3.2, wMat, true);
       createWall(4, midY, -9.6, 0.3, h, 3.2, wMat, true);
       createWall(4, baseY + 5.3, -13.0, 0.3, 1.4, 3.6, wMat, false);
-
       createWall(5.1, midY, -8, 2.2, h, 0.3, wMat, true);
       createWall(10.9, midY, -8, 2.2, h, 0.3, wMat, true);
       createWall(8.0, baseY + 5.3, -8, 3.6, 1.4, 0.3, wMat, false);
@@ -1782,13 +2168,10 @@
         topY: landingTopY
       });
     }
-
-    // 20 steps * 0.30m = 6.0m rise (Floor 1 -> Floor 2)
     createStaircase(9.0, FLOOR_1_Y, 20, 0.30, 0.32, 1.5, woodMat);
-    // 20 steps * 0.30m = 6.0m rise (Floor 2 -> Floor 3)
     createStaircase(-9.0, FLOOR_2_Y, 20, 0.30, 0.32, 1.5, darkWoodMat);
 
-    // Master Bedroom Bed on Floor 1 (Heal with B)
+    // Master Bedroom Bed on Floor 1 (Heal with B / Heal button)
     const bedGroup = new THREE.Group();
     const bedFrame = new THREE.Mesh(new THREE.BoxGeometry(3.0, 0.4, 4.6), woodMat);
     bedFrame.position.y = 0.35;
@@ -1843,7 +2226,6 @@
       trunk.position.set(x, trunkH / 2, z);
       trunk.castShadow = true;
       scene.add(trunk);
-
       if (isPine) {
         for (let tier = 0; tier < 3; tier++) {
           const cone = new THREE.Mesh(
@@ -1866,7 +2248,6 @@
       addCollider(x - 0.65 * scale, x + 0.65 * scale, z - 0.65 * scale, z + 0.65 * scale, 0, trunkH + 4.2 * scale);
     }
 
-    // Perimeter forest border around -92..+92
     for (let gx = -92; gx <= 92; gx += 16) {
       createForestTree(gx, -92, 1.3, true);
       createForestTree(gx, 92, 1.3, true);
@@ -1902,15 +2283,12 @@
     addRoomLight(-8, FLOOR_1_Y + 5.3, 1, 0xffaa55, 1.15);
     addRoomLight(-8, FLOOR_1_Y + 5.3, -13, 0xffd180, 1.2);
     addRoomLight(8, FLOOR_1_Y + 5.3, -13, 0xffaa66, 1.2);
-
     addRoomLight(0, FLOOR_2_Y + 5.3, 4, 0xffb870, 1.25);
     addRoomLight(-8, FLOOR_2_Y + 5.3, -12, 0xffcc88, 1.2);
     addRoomLight(8, FLOOR_2_Y + 5.3, -12, 0x93c5fd, 1.15);
-
     addRoomLight(0, FLOOR_3_Y + 5.3, 2, 0xffe099, 1.3);
     addRoomLight(-8, FLOOR_3_Y + 5.3, -10, 0x93c5fd, 1.15);
     addRoomLight(8, FLOOR_3_Y + 5.3, -10, 0xffb870, 1.15);
-
     addRoomLight(0, 7.0, -26, 0x76b900, 1.2);
     addRoomLight(0, 9.0, -68, 0x76b900, 1.3);
 
@@ -1925,7 +2303,6 @@
     // =========================================================================
     const playerGroup = new THREE.Group();
     scene.add(playerGroup);
-
     const characterBodyGroup = new THREE.Group();
     playerGroup.add(characterBodyGroup);
 
@@ -1954,6 +2331,7 @@
       transparent: true,
       opacity: 0.0
     });
+
     const nozzleL = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.08, 0.26, 10), armorMat);
     nozzleL.position.set(-0.14, -0.18, 0.04);
     jetpackGroup.add(nozzleL);
@@ -2153,7 +2531,6 @@
         ring.position.set(endPos.x, endPos.y + 0.16, endPos.z);
         ring.scale.set(0.1, 0.1, 0.1);
         scene.add(ring);
-
         const boomLight = new THREE.PointLight(0xff7700, 4.5, 16);
         boomLight.position.copy(endPos).add(new THREE.Vector3(0, 1.2, 0));
         scene.add(boomLight);
@@ -2225,7 +2602,6 @@
 
     const compassTrackEl = document.getElementById('compass-track');
     const compassDomNodes = [];
-
     COMPASS_POINTS.forEach(pt => {
       const el = document.createElement('div');
       el.className = 'compass-item';
@@ -2260,7 +2636,6 @@
       const dYaw = normalizeAngle(state.yaw - state.prevYaw);
       state.prevYaw = state.yaw;
       state.turnAccum += dYaw;
-
       if (Math.abs(dYaw) > 0.003) {
         state.turnStatusTimer = 0.28;
         if (state.targetedRat && state.targetedRat.userData && state.targetedRat.userData.alive) {
@@ -2291,11 +2666,15 @@
 
       const moveParts = [];
       if (state.isLungingMove) moveParts.push('⚔ RAT LUNGE');
-      if (state.moveForward) moveParts.push(state.isRunning ? 'SPRINT ▲' : 'FWD ▲');
-      if (state.moveBackward) moveParts.push('BACK ▼');
-      if (state.moveLeft) moveParts.push('LEFT ◀');
-      if (state.moveRight) moveParts.push('RIGHT ▶');
-      if (state.isFlying && state.ascendHeld) moveParts.push('SUPERMAN CLIMB ⇑');
+      if (state.joyActive && (Math.abs(state.joyX) > 0.12 || Math.abs(state.joyY) > 0.12)) {
+        moveParts.push(state.isRunning ? 'SPRINT ▲' : 'STICK ▲');
+      } else {
+        if (state.moveForward) moveParts.push(state.isRunning ? 'SPRINT ▲' : 'FWD ▲');
+        if (state.moveBackward) moveParts.push('BACK ▼');
+        if (state.moveLeft) moveParts.push('LEFT ◀');
+        if (state.moveRight) moveParts.push('RIGHT ▶');
+      }
+      if (state.isFlying && state.ascendHeld) moveParts.push('CLIMB ⇑');
       if (state.isFlying && state.descendHeld) moveParts.push('LAND ⇓');
       state.moveLabel = moveParts.length ? moveParts.join(' · ') : '■ IDLE';
 
@@ -2312,7 +2691,7 @@
       movePill.textContent = state.moveLabel;
       movePill.className = `move-vector-pill${state.isLungingMove ? ' lunge' : ''}`;
 
-      const viewportWidth = compassTrackEl.clientWidth || 440;
+      const viewportWidth = compassTrackEl.clientWidth || 320;
       const pxPerDeg = viewportWidth / 150;
       compassDomNodes.forEach(item => {
         let targetDeg = 0;
@@ -2338,7 +2717,6 @@
     // 8. FULL-BODY RAT TARGET TURNING, STRATEGIC LUNGE & FIGHTER-JET SHOOTING
     // =========================================================================
     const raycaster = new THREE.Raycaster();
-
     function getReticleNDC() {
       return new THREE.Vector2(
         (state.reticleX / window.innerWidth) * 2 - 1,
@@ -2520,10 +2898,11 @@
       const aimOrigin = raycaster.ray.origin.clone();
       const aimDir = raycaster.ray.direction.clone().normalize();
       const stageRats = rats.filter(r => r.userData.alive && r.userData.stageIdx === state.currentStageIdx);
-
       let impactPoint = aimOrigin.clone().addScaledVector(aimDir, 44);
       let bestRat = null;
       let bestScore = Infinity;
+
+      const touchAssistBonus = touchControlsActive ? 1.38 : 1.0;
 
       for (const rat of stageRats) {
         const ratCenter = getRatAimWorldPos(rat);
@@ -2532,7 +2911,7 @@
         if (proj > 0 && proj < 46) {
           const closestPt = aimOrigin.clone().addScaledVector(aimDir, proj);
           const perpDist = closestPt.distanceTo(ratCenter);
-          const lockRadius = (state.bulletType === 'boom' ? 1.65 : 1.25) * rat.userData.scale;
+          const lockRadius = (state.bulletType === 'boom' ? 1.65 : 1.25) * rat.userData.scale * touchAssistBonus;
           if (perpDist <= lockRadius && perpDist < bestScore) {
             bestScore = perpDist;
             bestRat = rat;
@@ -2543,7 +2922,7 @@
 
       if (!bestRat) {
         let nearestAimedRat = null;
-        let minBeamDist = 2.4;
+        let minBeamDist = 2.4 * touchAssistBonus;
         for (const rat of stageRats) {
           const ratCenter = getRatAimWorldPos(rat);
           const toRat = ratCenter.clone().sub(aimOrigin);
@@ -2601,16 +2980,19 @@
     }
 
     // =========================================================================
-    // 9. SUPERMAN FLIGHT & LANDING ('F' KEY) + JUMP ('SPACE')
+    // 9. SUPERMAN FLIGHT & LANDING ('F' KEY / FLY BTN) + JUMP ('SPACE' / JUMP BTN)
     // =========================================================================
     function syncFlightBadge() {
       const badge = document.getElementById('flight-badge');
+      const flyBtn = document.getElementById('tbtn-fly');
       if (state.isFlying) {
-        badge.textContent = 'SUPERMAN FLIGHT · [F] LAND';
+        badge.textContent = 'SUPERMAN FLIGHT · LAND';
         badge.className = 'airborne';
+        if (flyBtn) flyBtn.classList.add('active-fly');
       } else {
-        badge.textContent = 'GROUND · [F] FLY / [G] LUNGE';
+        badge.textContent = 'GROUND · FLY / LUNGE';
         badge.className = '';
+        if (flyBtn) flyBtn.classList.remove('active-fly');
       }
     }
 
@@ -2625,7 +3007,7 @@
         state.canJump = false;
         thrusterFlameMat.opacity = 0.9;
         jetLight.intensity = 2.6;
-        showToast('🦸 SUPERMAN FORWARD FLIGHT [F TO LAND]', 'Soaring chest-forward across all 3 stories & forest! Press F or C to land.', 2500);
+        showToast('🦸 SUPERMAN FORWARD FLIGHT', 'Soaring chest-forward across all 3 stories & forest! Tap FLY or DOWN to land.', 2300);
       } else {
         playThrusterSweep(false);
         state.ascendHeld = false;
@@ -2633,7 +3015,7 @@
         state.velocity.y = Math.min(state.velocity.y, -8.0);
         thrusterFlameMat.opacity = 0.0;
         jetLight.intensity = 0.0;
-        showToast('👣 LANDING BACK TO SURFACE', 'Thrusters disengaged; landing onto nearest floor or stair.', 1600);
+        showToast('👣 LANDING BACK TO SURFACE', 'Thrusters disengaged; landing onto nearest floor or stair.', 1500);
       }
       syncFlightBadge();
     }
@@ -2642,7 +3024,7 @@
     function handleSpaceAction() {
       if (!state.started || state.gameOver || state.won || state.isSleeping) return;
       const now = performance.now();
-      if (!state.canJump && !state.isFlying && now - state.lastSpaceTap < 340) {
+      if (!state.canJump && !state.isFlying && now - state.lastSpaceTap < 360) {
         toggleFlightMode(true);
         state.lastSpaceTap = 0;
         return;
@@ -2729,7 +3111,7 @@
       document.getElementById('modal-desc').innerHTML =
         `Final rat shot in: <strong>${state.lastEliminatedArea}</strong>.<br><br>
          <strong>Total Rats Eliminated:</strong> ${state.kills} &nbsp;|&nbsp; <strong>Remaining HP:</strong> ${Math.ceil(state.health)}%`;
-      document.getElementById('start-btn').textContent = 'PLAY AGAIN [R]';
+      document.getElementById('start-btn').textContent = 'PLAY AGAIN';
       modal.style.display = 'flex';
     }
 
@@ -2753,8 +3135,8 @@
       document.getElementById('modal-title').style.color = '#ff3b30';
       document.getElementById('modal-desc').innerHTML =
         `The rats devoured you in <strong>${area}</strong>.<br><br>
-         Press <strong>G</strong> or <strong>Shift + Left-Click</strong> to lunge at rats, or <strong>F</strong> to fly Superman-style above the pack!`;
-      document.getElementById('start-btn').textContent = 'RESTART MISSION [R]';
+         Tap <strong>⚔ LUNGE</strong> (or press <strong>G</strong>) to strike rats, or <strong>🦸 FLY</strong> (<strong>F</strong>) to soar above the pack!`;
+      document.getElementById('start-btn').textContent = 'RESTART MISSION';
       modal.style.display = 'flex';
     }
 
@@ -2773,18 +3155,23 @@
     // =========================================================================
     window.switchWeapon = function () {
       playLock();
+      const tGun = document.getElementById('tbtn-gun');
       if (state.weapon === 'short') {
         state.weapon = 'long';
         shortGunMesh.visible = false;
         longGunMesh.visible = true;
         document.getElementById('gun-label').textContent = 'LONG GUN (HEAVY RIFLE)';
         document.getElementById('gun-desc').textContent = 'High-Rate Fighter Cannon';
+        if (tGun) tGun.textContent = '🔫 RIFLE';
+        showToast('🔫 HEAVY RIFLE EQUIPPED', 'High-rate precision cannon active!', 1400);
       } else {
         state.weapon = 'short';
         longGunMesh.visible = false;
         shortGunMesh.visible = true;
         document.getElementById('gun-label').textContent = 'SHORT GUN (SMG)';
         document.getElementById('gun-desc').textContent = 'Agile Fighter Jet Cannon';
+        if (tGun) tGun.textContent = '🔫 SMG';
+        showToast('🔫 SHORT GUN (SMG) EQUIPPED', 'Agile rapid-fire cannon active!', 1400);
       }
     };
 
@@ -2792,12 +3179,14 @@
       playLock();
       const slotAmmo = document.getElementById('slot-ammo');
       const ch = document.getElementById('crosshair');
+      const tAmmo = document.getElementById('tbtn-ammo');
       if (state.bulletType === 'rifle') {
         state.bulletType = 'boom';
         slotAmmo.classList.add('boom-selected');
         ch.classList.add('boom-mode');
         document.getElementById('ammo-label').textContent = 'BIG BOOM SHOTS';
         document.getElementById('ammo-desc').textContent = 'Hits & Explodes 3 Big Rats!';
+        if (tAmmo) tAmmo.textContent = '💥 BOOM ON';
         showToast('💥 BIG BOOM SHOTS READY', 'Blasts up to 3 big rats at once with fighter explosion sound!', 2200);
       } else {
         state.bulletType = 'rifle';
@@ -2805,12 +3194,14 @@
         ch.classList.remove('boom-mode');
         document.getElementById('ammo-label').textContent = 'RIFLE CANNON ROUNDS';
         document.getElementById('ammo-desc').textContent = 'Precision Lock-On Laser';
+        if (tAmmo) tAmmo.textContent = '💥 AMMO';
+        showToast('🎯 RIFLE CANNON ROUNDS', 'Precision laser rounds selected!', 1400);
       }
     };
 
     function trySleepHeal() {
       if (!state.started || state.gameOver || state.won) return;
-      if (state.playerPos.distanceTo(BED_POS) < 4.0) {
+      if (state.playerPos.distanceTo(BED_POS) < 4.5) {
         state.isSleeping = true;
         showToast('🛏️ RESTING ON BED', 'Healing HP back to 100%...', 2000);
         const iv = setInterval(() => {
@@ -2824,7 +3215,7 @@
         }, 100);
         setTimeout(() => { state.isSleeping = false; }, 2000);
       } else {
-        showToast('🛏️ MOVE NEAR THE BED', 'Walk or fly to the Master Bedroom bed (F1) and press B to heal.', 1800);
+        showToast('🛏️ MOVE NEAR THE BED', 'Walk or fly to the Master Bedroom bed (F1 East) and tap HEAL.', 1800);
       }
     }
 
@@ -2899,8 +3290,219 @@
     }
 
     // =========================================================================
-    // 12. INPUT LISTENERS (MOUSE AIM + SHOOTING + LUNGE + FLIGHT/LANDING)
+    // 12. ANDROID MULTI-TOUCH GAMEPAD + DESKTOP INPUT LISTENERS
     // =========================================================================
+    const isTouchCapable = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0) || (window.innerWidth <= 920);
+    let touchControlsActive = isTouchCapable;
+
+    function applyTouchControlsVisibility(visible) {
+      touchControlsActive = visible;
+      const layer = document.getElementById('touch-controls-layer');
+      const toggleBtn = document.getElementById('touchPadToggle');
+      const sw = document.getElementById('toggleTouchPad');
+      layer.classList.toggle('visible', visible);
+      if (toggleBtn) toggleBtn.classList.toggle('active', visible);
+      if (sw) sw.classList.toggle('on', visible);
+    }
+
+    window.toggleTouchControls = function () {
+      applyTouchControlsVisibility(!touchControlsActive);
+    };
+
+    applyTouchControlsVisibility(touchControlsActive);
+
+    // Virtual Left Analog Joystick (Multi-Touch Identifier Tracked)
+    const joyZone = document.getElementById('touch-joystick-zone');
+    const joyNub = document.getElementById('touch-joystick-nub');
+    let joyTouchId = null;
+
+    function updateJoystickFromTouch(touch) {
+      const rect = joyZone.getBoundingClientRect();
+      const centerX = rect.left + rect.width * 0.5;
+      const centerY = rect.top + rect.height * 0.5;
+      const maxRadius = rect.width * 0.42;
+      let dx = touch.clientX - centerX;
+      let dy = touch.clientY - centerY;
+      const dist = Math.hypot(dx, dy);
+      if (dist > maxRadius) {
+        dx = (dx / dist) * maxRadius;
+        dy = (dy / dist) * maxRadius;
+      }
+      joyNub.style.transform = `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px))`;
+      state.joyX = dx / maxRadius;
+      state.joyY = dy / maxRadius;
+      state.joyActive = true;
+      state.isRunning = dist > maxRadius * 0.72;
+    }
+
+    function resetJoystick() {
+      joyTouchId = null;
+      state.joyX = 0;
+      state.joyY = 0;
+      state.joyActive = false;
+      state.isRunning = false;
+      joyNub.style.transform = 'translate(-50%, -50%)';
+    }
+
+    joyZone.addEventListener('touchstart', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      initAudio();
+      if (joyTouchId === null && e.changedTouches.length > 0) {
+        const t = e.changedTouches[0];
+        joyTouchId = t.identifier;
+        updateJoystickFromTouch(t);
+      }
+    }, { passive: false });
+
+    joyZone.addEventListener('touchmove', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      for (let i = 0; i < e.changedTouches.length; i++) {
+        const t = e.changedTouches[i];
+        if (t.identifier === joyTouchId) {
+          updateJoystickFromTouch(t);
+          break;
+        }
+      }
+    }, { passive: false });
+
+    const endJoyHandler = (e) => {
+      for (let i = 0; i < e.changedTouches.length; i++) {
+        if (e.changedTouches[i].identifier === joyTouchId) {
+          resetJoystick();
+          break;
+        }
+      }
+    };
+    joyZone.addEventListener('touchend', endJoyHandler);
+    joyZone.addEventListener('touchcancel', endJoyHandler);
+
+    // Right-Thumb Ergonomic Multi-Touch Buttons
+    function bindHoldButton(id, onPress, onRelease) {
+      const el = document.getElementById(id);
+      if (!el) return;
+      el.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        initAudio();
+        el.classList.add('pressed');
+        onPress();
+      }, { passive: false });
+      const rel = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        el.classList.remove('pressed');
+        if (onRelease) onRelease();
+      };
+      el.addEventListener('touchend', rel, { passive: false });
+      el.addEventListener('touchcancel', rel, { passive: false });
+      el.addEventListener('mousedown', (e) => {
+        e.stopPropagation();
+        initAudio();
+        el.classList.add('pressed');
+        onPress();
+      });
+      el.addEventListener('mouseup', (e) => {
+        e.stopPropagation();
+        el.classList.remove('pressed');
+        if (onRelease) onRelease();
+      });
+    }
+
+    bindHoldButton('tbtn-fire', () => {
+      state.mouseDown = true;
+      shoot();
+    }, () => {
+      state.mouseDown = false;
+    });
+
+    bindHoldButton('tbtn-lunge', () => {
+      triggerStrategicRatLunge();
+    });
+
+    bindHoldButton('tbtn-fly', () => {
+      toggleFlightMode();
+    });
+
+    bindHoldButton('tbtn-up', () => {
+      handleSpaceAction();
+    }, () => {
+      state.ascendHeld = false;
+    });
+
+    bindHoldButton('tbtn-down', () => {
+      state.descendHeld = true;
+    }, () => {
+      state.descendHeld = false;
+    });
+
+    bindHoldButton('tbtn-gun', () => {
+      window.switchWeapon();
+    });
+
+    bindHoldButton('tbtn-ammo', () => {
+      window.switchAmmoType();
+    });
+
+    bindHoldButton('tbtn-heal', () => {
+      trySleepHeal();
+    });
+
+    bindHoldButton('tbtn-cam', () => {
+      state.cameraMode = state.cameraMode === 'ots' ? 'far' : 'ots';
+      showToast('🎥 CAMERA VIEW', state.cameraMode === 'ots' ? 'Over-the-Shoulder Tactical View' : 'Wide Action View', 1100);
+    });
+
+    // Full-Screen Canvas Multi-Touch Drag-to-Aim & Turn (Works simultaneously with Joystick & Fire)
+    let aimTouchId = null;
+    let lastAimX = 0;
+    let lastAimY = 0;
+
+    renderer.domElement.addEventListener('touchstart', (e) => {
+      if (!state.started || state.gameOver || state.won) return;
+      initAudio();
+      for (let i = 0; i < e.changedTouches.length; i++) {
+        const t = e.changedTouches[i];
+        if (aimTouchId === null && t.identifier !== joyTouchId) {
+          aimTouchId = t.identifier;
+          lastAimX = t.clientX;
+          lastAimY = t.clientY;
+          break;
+        }
+      }
+    }, { passive: true });
+
+    renderer.domElement.addEventListener('touchmove', (e) => {
+      if (!state.started || state.gameOver || state.won) return;
+      for (let i = 0; i < e.changedTouches.length; i++) {
+        const t = e.changedTouches[i];
+        if (t.identifier === aimTouchId) {
+          const dx = t.clientX - lastAimX;
+          const dy = t.clientY - lastAimY;
+          lastAimX = t.clientX;
+          lastAimY = t.clientY;
+          state.yaw -= dx * 0.0068 * state.aimSensitivity;
+          state.reticleX = Math.max(32, Math.min(window.innerWidth - 32, state.reticleX + dx * 0.85));
+          state.reticleY = Math.max(48, Math.min(window.innerHeight - 48, state.reticleY + dy * 0.85));
+          syncReticleDOM();
+          break;
+        }
+      }
+    }, { passive: true });
+
+    const endAimTouch = (e) => {
+      for (let i = 0; i < e.changedTouches.length; i++) {
+        if (e.changedTouches[i].identifier === aimTouchId) {
+          aimTouchId = null;
+          break;
+        }
+      }
+    };
+    renderer.domElement.addEventListener('touchend', endAimTouch);
+    renderer.domElement.addEventListener('touchcancel', endAimTouch);
+
+    // Start / Restart Game
     function startOrRestartGame() {
       initAudio();
       state.started = true;
@@ -2925,7 +3527,8 @@
       state.turnAccum = 0;
       state.velocity.set(0, 0, 0);
       state.reticleX = window.innerWidth * 0.5;
-      state.reticleY = window.innerHeight * 0.48;
+      state.reticleY = window.innerHeight * 0.46;
+      resetJoystick();
       syncReticleDOM();
       syncFlightBadge();
       thrusterFlameMat.opacity = 0;
@@ -2939,11 +3542,15 @@
       updateDirectionBar(0.016);
       startAmbient();
       document.getElementById('modal-overlay').style.display = 'none';
-      showToast('🎯 MISSION 1: FRONT DOOR & FOYER (F1)', 'Climb stairs [WASD], fly Superman-style [F], or lunge at rats [G / Shift+Click]!', 3400);
+      showToast(
+        '★ BUILT BY GESNER DESLANDES · MISSION 1',
+        'Clear the Foyer rats! Touch Controls & Desktop Controls active.',
+        3600
+      );
     }
-
     document.getElementById('start-btn').addEventListener('click', startOrRestartGame);
 
+    // Desktop Mouse & Keyboard Listeners
     window.addEventListener('mousemove', (e) => {
       if (!state.started || state.gameOver || state.won) return;
       state.reticleX = Math.max(24, Math.min(window.innerWidth - 24, e.clientX));
@@ -2957,7 +3564,7 @@
 
     window.addEventListener('mousedown', (e) => {
       if (!state.started || state.gameOver || state.won) return;
-      if (e.target.closest('button') || e.target.closest('#nvidiaApp') || e.target.closest('.weapon-slot') || e.target.closest('#flight-badge')) return;
+      if (e.target.closest('button') || e.target.closest('#nvidiaApp') || e.target.closest('.weapon-slot') || e.target.closest('#flight-badge') || e.target.closest('#touch-controls-layer')) return;
       initAudio();
       if (e.button === 0) {
         if (e.shiftKey) {
@@ -2974,32 +3581,7 @@
     window.addEventListener('mouseup', (e) => {
       if (e.button === 0) state.mouseDown = false;
     });
-
     window.addEventListener('contextmenu', (e) => e.preventDefault());
-
-    window.addEventListener('touchstart', (e) => {
-      if (!state.started || state.gameOver || state.won) return;
-      if (e.target.closest('button') || e.target.closest('#nvidiaApp') || e.target.closest('.weapon-slot')) return;
-      initAudio();
-      const t = e.touches[0];
-      state.reticleX = t.clientX;
-      state.reticleY = t.clientY;
-      syncReticleDOM();
-      state.mouseDown = true;
-      shoot();
-    }, { passive: true });
-
-    window.addEventListener('touchmove', (e) => {
-      if (!state.started || state.gameOver || state.won) return;
-      const t = e.touches[0];
-      state.reticleX = t.clientX;
-      state.reticleY = t.clientY;
-      syncReticleDOM();
-    }, { passive: true });
-
-    window.addEventListener('touchend', () => {
-      state.mouseDown = false;
-    });
 
     window.addEventListener('keydown', (e) => {
       if (e.altKey && e.key.toLowerCase() === 'z') {
@@ -3070,7 +3652,6 @@
     // 13. MULTI-STORY COLLISION, STAIR CLIMBING, RAT AI & MAIN ANIMATION LOOP
     // =========================================================================
     const PLAYER_SOLID_RADIUS = 0.56;
-
     function clampToArenaBounds(pos) {
       pos.x = Math.max(-94.0, Math.min(94.0, pos.x));
       pos.z = Math.max(-94.0, Math.min(94.0, pos.z));
@@ -3093,7 +3674,6 @@
     function getGroundOrFloorHeight(pos) {
       let bestY = 0;
       const insideHouse = Math.abs(pos.x) <= 12.2 && pos.z >= -18.2 && pos.z <= 12.2;
-
       for (const seg of stairSegments) {
         if (pos.x >= seg.minX && pos.x <= seg.maxX &&
             pos.z >= seg.minZ && pos.z <= seg.maxZ) {
@@ -3102,7 +3682,6 @@
           }
         }
       }
-
       if (insideHouse) {
         const inEastStairOpening = pos.x > 7.4 && pos.x < 10.6 && pos.z > 1.0 && pos.z < 9.2;
         if (!inEastStairOpening && pos.y + 0.75 >= FLOOR_2_Y && FLOOR_2_Y > bestY) {
@@ -3130,7 +3709,6 @@
         const minDist = PLAYER_SOLID_RADIUS + ratRadius;
         const verticalClearance = state.playerPos.y - (rat.position.y + 0.72 * d.scale);
         if (verticalClearance > 0.45) continue;
-
         const dx = state.playerPos.x - rat.position.x;
         const dz = state.playerPos.z - rat.position.z;
         const distSq = dx * dx + dz * dz;
@@ -3139,7 +3717,6 @@
           const nx = dx / dist;
           const nz = dz / dist;
           const overlap = minDist - dist;
-
           const playerPush = new THREE.Vector3(
             state.playerPos.x + nx * overlap * 0.68,
             state.playerPos.y,
@@ -3159,18 +3736,15 @@
               rat.position.z = ratPush.z;
             }
           }
-
           if (state.isLungingMove && state.lungeTargetRat === rat) {
             state.isLungingMove = false;
             state.lungeTimer = 0;
             damageRat(rat, 2, new THREE.Vector3(-nx, 0, -nz));
           }
-
           clampToArenaBounds(state.playerPos);
           clampToArenaBounds(rat.position);
           d.dir.set(-nx, 0, -nz).normalize();
           d.biteCooldown = Math.max(0, d.biteCooldown - delta);
-
           if (Math.abs(state.playerPos.y - rat.position.y) < 1.35 && d.biteCooldown <= 0 && !state.isSleeping && !state.isLungingMove) {
             d.biteCooldown = 0.75;
             state.lastAttackedTime = performance.now();
@@ -3198,7 +3772,6 @@
         toPlayer.y = 0;
         const horizDist = toPlayer.length();
         const vertDiff = Math.abs(state.playerPos.y - rat.position.y);
-
         if (horizDist < 30 && vertDiff < 3.5 && !state.isSleeping) {
           toPlayer.normalize();
           d.dir.lerp(toPlayer, delta * 3.6).normalize();
@@ -3209,7 +3782,6 @@
             d.dir.set(Math.random() - 0.5, 0, Math.random() - 0.5).normalize();
           }
         }
-
         const solidStopDist = PLAYER_SOLID_RADIUS + 0.68 * d.scale;
         if (horizDist > solidStopDist) {
           const nextPos = rat.position.clone().addScaledVector(d.dir, d.speed * delta);
@@ -3235,6 +3807,7 @@
       const stageRats = rats.filter(r => r.userData.alive && r.userData.stageIdx === state.currentStageIdx);
       let foundLock = null;
       let bestPerp = Infinity;
+      const lockAssist = touchControlsActive ? 1.38 : 1.0;
       for (const rat of stageRats) {
         const ratCenter = getRatAimWorldPos(rat);
         const toRat = ratCenter.clone().sub(raycaster.ray.origin);
@@ -3242,7 +3815,7 @@
         if (proj > 0 && proj < 46) {
           const closestPt = raycaster.ray.origin.clone().addScaledVector(aimDir, proj);
           const perp = closestPt.distanceTo(ratCenter);
-          if (perp <= 1.25 * rat.userData.scale && perp < bestPerp) {
+          if (perp <= 1.25 * rat.userData.scale * lockAssist && perp < bestPerp) {
             bestPerp = perp;
             foundLock = rat;
           }
@@ -3270,11 +3843,9 @@
       } else {
         state.targetedRat = null;
       }
-
       if (state.targetTurnHoldTimer > 0) {
         state.targetTurnHoldTimer = Math.max(0, state.targetTurnHoldTimer - delta);
       }
-
       if (state.targetFaceWorldPos && (state.lockedRat || state.targetTurnHoldTimer > 0 || state.isLungingMove || state.mouseDown)) {
         turnWholeBodyTowardTarget(state.targetFaceWorldPos, delta, state.isLungingMove ? 24 : 15);
       } else if (state.targetTurnHoldTimer <= 0 && !state.lockedRat && !state.isLungingMove && !state.mouseDown) {
@@ -3285,7 +3856,6 @@
     function updateCharacterPoseAndFlight(delta, hasMoveInput) {
       let targetPitch = 0;
       let targetRoll = 0;
-
       if (state.isFlying) {
         const forward = new THREE.Vector3(-Math.sin(state.yaw), 0, -Math.cos(state.yaw));
         const right = new THREE.Vector3(Math.cos(state.yaw), 0, -Math.sin(state.yaw));
@@ -3294,7 +3864,10 @@
         if (state.moveBackward) travel.sub(forward);
         if (state.moveRight) travel.add(right);
         if (state.moveLeft) travel.sub(right);
-
+        if (state.joyActive) {
+          travel.addScaledVector(forward, -state.joyY);
+          travel.addScaledVector(right, state.joyX);
+        }
         if (state.targetFaceWorldPos && (state.lockedRat || state.targetTurnHoldTimer > 0)) {
           const toTarget = state.targetFaceWorldPos.clone().sub(state.playerPos);
           toTarget.y = 0;
@@ -3304,13 +3877,12 @@
             const diff = normalizeAngle(desiredYaw - state.yaw);
             state.yaw = normalizeAngle(state.yaw + diff * Math.min(1, delta * 15));
           }
-        } else if (travel.lengthSq() >= 0.001) {
+        } else if (travel.lengthSq() >= 0.01) {
           travel.normalize();
           const desiredYaw = Math.atan2(-travel.x, -travel.z);
           const diff = normalizeAngle(desiredYaw - state.yaw);
           state.yaw = normalizeAngle(state.yaw + diff * Math.min(1, delta * 12));
         }
-
         const climbFactor = state.ascendHeld ? -0.32 : (state.descendHeld ? 0.25 : 0);
         targetPitch = -1.18 + climbFactor;
         targetRoll = 0;
@@ -3338,7 +3910,6 @@
           rightLeg.rotation.set(-0.25, 0, 0);
         }
       }
-
       state.flightPitchVisual += (targetPitch - state.flightPitchVisual) * Math.min(1, delta * 11);
       characterBodyGroup.rotation.x = state.flightPitchVisual;
       characterBodyGroup.rotation.z = targetRoll;
@@ -3355,7 +3926,6 @@
       const delta = Math.min(clock.getDelta(), 0.1);
       frameCounter++;
       const now = performance.now();
-
       if (now - lastFpsTick >= 350) {
         const fps = Math.min(240, Math.round((frameCounter * 1000) / (now - lastFpsTick)));
         const ms = (1000 / Math.max(1, fps)).toFixed(1);
@@ -3379,7 +3949,7 @@
         const bars = chartEl.children;
         for (let i = 0; i < bars.length; i++) {
           const v = fpsHistory[i] || 60;
-          bars[i].style.height = `${Math.max(3, (v / 165) * 24)}px`;
+          bars[i].style.height = `${Math.max(3, (v / 165) * 20)}px`;
         }
         frameCounter = 0;
         lastFpsTick = now;
@@ -3426,9 +3996,14 @@
           if (state.moveBackward) moveVec.sub(forward);
           if (state.moveRight) moveVec.add(right);
           if (state.moveLeft) moveVec.sub(right);
+          if (state.joyActive && (Math.abs(state.joyX) > 0.08 || Math.abs(state.joyY) > 0.08)) {
+            moveVec.addScaledVector(forward, -state.joyY);
+            moveVec.addScaledVector(right, state.joyX);
+          }
           if (moveVec.lengthSq() > 0.001) {
             hasMoveInput = true;
-            moveVec.normalize().multiplyScalar(speed * delta);
+            if (moveVec.length() > 1) moveVec.normalize();
+            moveVec.multiplyScalar(speed * delta);
           }
         }
 
@@ -3436,11 +4011,9 @@
           const tryX = state.playerPos.clone();
           tryX.x += moveVec.x;
           if (!checkCollision(tryX)) state.playerPos.x = tryX.x;
-
           const tryZ = state.playerPos.clone();
           tryZ.z += moveVec.z;
           if (!checkCollision(tryZ)) state.playerPos.z = tryZ.z;
-
           clampToArenaBounds(state.playerPos);
 
           if (!state.isFlying && !state.isLungingMove && state.canJump) {
@@ -3526,7 +4099,6 @@
         const floorCode = getFloorCode(state.playerPos.y);
         document.getElementById('alt-val').textContent = `${state.playerPos.y.toFixed(1)}m · ${floorCode}`;
         document.getElementById('liveLocLabel').textContent = `${floorCode} · ${getAreaNameAt(state.playerPos).replace(/^F[123]\s+/, '')}`;
-
         playerGroup.position.copy(state.playerPos);
         playerGroup.rotation.set(0, state.yaw, 0);
       }
@@ -3535,7 +4107,6 @@
       state.recoilKick *= 0.82;
       weaponArmGroup.position.z = -0.05 + state.recoilKick * 0.25;
       updateEffects(delta);
-
       missionBeacon.rotation.y += delta * 2;
       missionBeacon.scale.setScalar(0.9 + Math.sin(performance.now() * 0.005) * 0.15);
 
@@ -3544,11 +4115,9 @@
       const camHeight = state.cameraMode === 'ots' ? 1.85 : 2.45;
       const backDir = new THREE.Vector3(Math.sin(state.yaw), 0, Math.cos(state.yaw));
       const rightDir = new THREE.Vector3(Math.cos(state.yaw), 0, -Math.sin(state.yaw));
-
       const desiredCamPos = state.playerPos.clone()
         .addScaledVector(backDir, camDist)
         .addScaledVector(rightDir, shoulderOffset);
-
       const ceilingClamp = isInsideHouse(desiredCamPos) ? (ROOF_Y - 0.35) : 28.0;
       desiredCamPos.y = Math.max(0.7, Math.min(ceilingClamp, state.playerPos.y + camHeight));
       desiredCamPos.x = Math.max(-94.0, Math.min(94.0, desiredCamPos.x));
@@ -3560,7 +4129,6 @@
         .addScaledVector(rightDir, shoulderOffset * 0.35);
       lookTarget.y = state.playerPos.y + 1.35;
       camera.lookAt(lookTarget);
-
       renderer.render(scene, camera);
     }
 
