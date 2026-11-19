@@ -1354,6 +1354,37 @@
       osc.stop(t + 0.32);
     }
 
+    function playLandingThud(heavy = false) {
+      if (!audioReady || audioMuted) return;
+      const t = audioCtx.currentTime;
+      const osc = audioCtx.createOscillator();
+      const g = audioCtx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(heavy ? 125 : 95, t);
+      osc.frequency.exponentialRampToValueAtTime(34, t + 0.16);
+      g.gain.setValueAtTime(0.0001, t);
+      g.gain.exponentialRampToValueAtTime(heavy ? 0.26 : 0.14, t + 0.01);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + 0.18);
+      osc.connect(g);
+      g.connect(compressor);
+      osc.start(t);
+      osc.stop(t + 0.2);
+
+      const noise = audioCtx.createBufferSource();
+      noise.buffer = makeNoiseBuffer(0.09);
+      const lp = audioCtx.createBiquadFilter();
+      lp.type = 'lowpass';
+      lp.frequency.value = heavy ? 650 : 420;
+      const ng = audioCtx.createGain();
+      ng.gain.setValueAtTime(heavy ? 0.12 : 0.06, t);
+      ng.gain.exponentialRampToValueAtTime(0.0001, t + 0.09);
+      noise.connect(lp);
+      lp.connect(ng);
+      ng.connect(compressor);
+      noise.start(t);
+      noise.stop(t + 0.1);
+    }
+
     let ambientNodes = null;
     function startAmbient() {
       if (!audioReady || ambientNodes || audioMuted) return;
@@ -1527,6 +1558,8 @@
       moveBackward: false,
       moveLeft: false,
       moveRight: false,
+      turnLeftHeld: false,
+      turnRightHeld: false,
       ascendHeld: false,
       descendHeld: false,
       isRunning: false,
@@ -1535,6 +1568,7 @@
       mouseDown: false,
       recoilKick: 0,
       walkCycle: 0,
+      stepSoundAccum: 0,
       lockedRat: null
     };
 
@@ -2324,10 +2358,10 @@
     function syncFlightBadge() {
       const badge = document.getElementById('flight-badge');
       if (state.isFlying) {
-        badge.textContent = 'FLYING · [F] LAND / [SPACE] UP';
+        badge.textContent = 'FLYING · TAP [F] TO LAND';
         badge.className = 'airborne';
       } else {
-        badge.textContent = 'GROUND · [F] FLY / [SPACE] JUMP';
+        badge.textContent = 'GROUND · TAP [F] FLY / [SPACE] JUMP';
         badge.className = '';
       }
     }
@@ -2340,18 +2374,20 @@
       state.isFlying = nextFlying;
       if (state.isFlying) {
         playThrusterSweep(true);
-        state.velocity.y = Math.max(state.velocity.y, 4.4);
+        state.velocity.y = Math.max(state.velocity.y, 4.8);
+        state.canJump = false;
         thrusterFlameMat.opacity = 0.85;
         jetLight.intensity = 2.4;
-        showToast('🚀 FLIGHT MODE ON [F]', 'Hold SPACE to rise to ceiling, press F or C to land back on ground!', 2400);
+        showToast('🚀 FLIGHT MODE ON [TAP F TO LAND]', 'Hold SPACE to ascend, C to descend. Tap F again to step back onto the floor!', 2500);
       } else {
+        // Tap-back F: immediately cut flight mode and bring character down onto floor
         playThrusterSweep(false);
         state.ascendHeld = false;
         state.descendHeld = false;
-        state.velocity.y = -4.2;
-        thrusterFlameMat.opacity = 0.25;
-        jetLight.intensity = 0.6;
-        showToast('🛬 LANDING TO GROUND [F]', 'Returning to floor level.', 1500);
+        state.velocity.y = Math.min(state.velocity.y, -7.5);
+        thrusterFlameMat.opacity = 0.0;
+        jetLight.intensity = 0.0;
+        showToast('👣 FLIGHT OFF — STEPPING ONTO FLOOR', 'Thrusters disengaged; landing back on the floor.', 1600);
       }
       syncFlightBadge();
     }
@@ -2728,8 +2764,10 @@
       switch (e.code) {
         case 'KeyW': case 'ArrowUp': state.moveForward = true; break;
         case 'KeyS': case 'ArrowDown': state.moveBackward = true; break;
-        case 'KeyA': case 'ArrowLeft': state.moveLeft = true; break;
-        case 'KeyD': case 'ArrowRight': state.moveRight = true; break;
+        case 'KeyA': state.moveLeft = true; break;
+        case 'KeyD': state.moveRight = true; break;
+        case 'ArrowLeft': state.turnLeftHeld = true; break;
+        case 'ArrowRight': state.turnRightHeld = true; break;
         case 'ShiftLeft': case 'ShiftRight':
           state.isRunning = true;
           if (state.isFlying) state.descendHeld = true;
@@ -2742,7 +2780,7 @@
           state.descendHeld = true;
           break;
         case 'KeyF':
-          toggleFlightMode();
+          if (!e.repeat) toggleFlightMode();
           break;
         case 'KeyE':
           window.switchWeapon();
@@ -2766,8 +2804,10 @@
       switch (e.code) {
         case 'KeyW': case 'ArrowUp': state.moveForward = false; break;
         case 'KeyS': case 'ArrowDown': state.moveBackward = false; break;
-        case 'KeyA': case 'ArrowLeft': state.moveLeft = false; break;
-        case 'KeyD': case 'ArrowRight': state.moveRight = false; break;
+        case 'KeyA': state.moveLeft = false; break;
+        case 'KeyD': state.moveRight = false; break;
+        case 'ArrowLeft': state.turnLeftHeld = false; break;
+        case 'ArrowRight': state.turnRightHeld = false; break;
         case 'ShiftLeft': case 'ShiftRight':
           state.isRunning = false;
           state.descendHeld = false;
@@ -2778,10 +2818,17 @@
     });
 
     // =========================================================================
-    // 13. COLLISION, RAT AI, LOCK-ON RETICLE & MAIN ANIMATION LOOP
+    // 13. SOLID RAT COLLISION, RAT AI, LOCK-ON RETICLE & MAIN ANIMATION LOOP
     // =========================================================================
+    const PLAYER_SOLID_RADIUS = 0.56;
+
+    function clampToArenaBounds(pos) {
+      pos.x = Math.max(-18.0, Math.min(18.0, pos.x));
+      pos.z = Math.max(-35.0, Math.min(22.0, pos.z));
+    }
+
     function checkCollision(pos) {
-      const r = 0.42;
+      const r = PLAYER_SOLID_RADIUS;
       for (const c of wallColliders) {
         if (pos.x > c.minX - r && pos.x < c.maxX + r &&
             pos.z > c.minZ - r && pos.z < c.maxZ + r) {
@@ -2789,6 +2836,81 @@
         }
       }
       return false;
+    }
+
+    function resolveSolidRatCollisions(delta) {
+      if (!state.started || state.gameOver || state.won) return;
+
+      for (const rat of rats) {
+        if (!rat.userData.alive || !rat.visible) continue;
+        const d = rat.userData;
+        if (d.stageIdx !== state.currentStageIdx) continue;
+
+        const ratRadius = 0.68 * d.scale;
+        const minDist = PLAYER_SOLID_RADIUS + ratRadius;
+        const verticalClearance = state.playerPos.y - (rat.position.y + 0.72 * d.scale);
+
+        // If player is high up (flying/super-jumping well above rat), do not get snagged underneath
+        if (verticalClearance > 0.45) continue;
+
+        const dx = state.playerPos.x - rat.position.x;
+        const dz = state.playerPos.z - rat.position.z;
+        const distSq = dx * dx + dz * dz;
+
+        if (distSq < minDist * minDist) {
+          const dist = Math.sqrt(distSq) || 0.001;
+          const nx = dx / dist;
+          const nz = dz / dist;
+          const overlap = minDist - dist;
+
+          // Push player and rat apart solidly so neither passes through the other
+          const playerPush = new THREE.Vector3(
+            state.playerPos.x + nx * overlap * 0.65,
+            state.playerPos.y,
+            state.playerPos.z + nz * overlap * 0.65
+          );
+          if (!checkCollision(playerPush)) {
+            state.playerPos.x = playerPush.x;
+            state.playerPos.z = playerPush.z;
+          } else {
+            // If wall is behind player, push rat back away from player instead
+            const ratPush = new THREE.Vector3(
+              rat.position.x - nx * overlap,
+              rat.position.y,
+              rat.position.z - nz * overlap
+            );
+            if (!checkCollision(ratPush)) {
+              rat.position.x = ratPush.x;
+              rat.position.z = ratPush.z;
+            }
+          }
+
+          clampToArenaBounds(state.playerPos);
+          clampToArenaBounds(rat.position);
+
+          // Bounce rat slightly away after contact
+          d.dir.set(-nx, 0, -nz).normalize();
+
+          // Bite damage & stagger when colliding at ground/low height
+          d.biteCooldown = Math.max(0, d.biteCooldown - delta);
+          if (state.playerPos.y < 1.35 && d.biteCooldown <= 0 && !state.isSleeping) {
+            d.biteCooldown = 0.75;
+            state.lastAttackedTime = performance.now();
+            state.health -= d.isBig ? 14 : 8;
+            updateHealthUI();
+            playHit();
+
+            const dmgOverlay = document.getElementById('damage-overlay');
+            dmgOverlay.style.opacity = '1';
+            setTimeout(() => { dmgOverlay.style.opacity = '0'; }, 180);
+
+            if (state.health <= 0) {
+              triggerGameOver();
+              return;
+            }
+          }
+        }
+      }
     }
 
     function getGroundOrFloorHeight(pos) {
@@ -2827,11 +2949,13 @@
           }
         }
 
-        if (horizDist > 1.05 * d.scale) {
+        const solidStopDist = PLAYER_SOLID_RADIUS + 0.68 * d.scale;
+        if (horizDist > solidStopDist) {
           const nextPos = rat.position.clone().addScaledVector(d.dir, d.speed * delta);
           if (!checkCollision(nextPos)) {
-            rat.position.x = Math.max(-18.0, Math.min(18.0, nextPos.x));
-            rat.position.z = Math.max(-35.0, Math.min(22.0, nextPos.z));
+            rat.position.x = nextPos.x;
+            rat.position.z = nextPos.z;
+            clampToArenaBounds(rat.position);
           } else {
             d.dir.x *= -1;
             d.dir.z *= -1;
@@ -2840,23 +2964,7 @@
 
         rat.rotation.y = Math.atan2(d.dir.x, d.dir.z);
         rat.position.y = Math.abs(Math.sin(performance.now() * 0.015 + rat.id)) * 0.06;
-
         d.biteCooldown = Math.max(0, d.biteCooldown - delta);
-        if (horizDist < 1.38 * d.scale && state.playerPos.y < 1.35 && d.biteCooldown <= 0 && !state.isSleeping && !state.gameOver) {
-          d.biteCooldown = 0.72;
-          state.lastAttackedTime = performance.now();
-          state.health -= d.isBig ? 14 : 8;
-          updateHealthUI();
-          playHit();
-
-          const dmgOverlay = document.getElementById('damage-overlay');
-          dmgOverlay.style.opacity = '1';
-          setTimeout(() => { dmgOverlay.style.opacity = '0'; }, 180);
-
-          if (state.health <= 0) {
-            triggerGameOver();
-          }
-        }
       });
     }
 
@@ -2936,6 +3044,11 @@
       }
 
       if (state.started && !state.gameOver && !state.won && !state.isSleeping) {
+        const turnSpeed = 2.35 * state.aimSensitivity;
+        if (state.turnLeftHeld) state.yaw += turnSpeed * delta;
+        if (state.turnRightHeld) state.yaw -= turnSpeed * delta;
+        state.yaw = normalizeAngle(state.yaw);
+
         const baseSpeed = state.isFlying ? (state.isRunning ? 11.2 : 7.8) : (state.isRunning ? 8.6 : 5.4);
         const speed = baseSpeed * state.thrustPower;
 
@@ -2959,19 +3072,27 @@
           tryZ.z += moveVec.z;
           if (!checkCollision(tryZ)) state.playerPos.z = tryZ.z;
 
-          state.playerPos.x = Math.max(-18.0, Math.min(18.0, state.playerPos.x));
-          state.playerPos.z = Math.max(-35.0, Math.min(22.0, state.playerPos.z));
+          clampToArenaBounds(state.playerPos);
 
           if (!state.isFlying && state.canJump) {
-            state.walkCycle += delta * (state.isRunning ? 15 : 10);
+            const stepRate = state.isRunning ? 15 : 10;
+            state.walkCycle += delta * stepRate;
             leftLeg.rotation.x = Math.sin(state.walkCycle) * 0.65;
             rightLeg.rotation.x = -Math.sin(state.walkCycle) * 0.65;
+
+            state.stepSoundAccum += delta * stepRate;
+            if (state.stepSoundAccum >= Math.PI) {
+              state.stepSoundAccum -= Math.PI;
+              playLandingThud(false);
+            }
           }
         } else {
           leftLeg.rotation.x *= 0.8;
           rightLeg.rotation.x *= 0.8;
         }
 
+        const wasAirborne = !state.canJump || state.playerPos.y > getGroundOrFloorHeight(state.playerPos) + 0.05;
+        const prevVy = state.velocity.y;
         const groundY = getGroundOrFloorHeight(state.playerPos);
         const maxCeilingY = isInsideHouse(state.playerPos) ? (HOUSE_CEILING_Y - 1.85) : 14.0;
 
@@ -2991,7 +3112,8 @@
             state.velocity.y = 0;
           }
 
-          if (state.playerPos.y <= groundY) {
+          // Touching down onto the floor while descending or landing automatically grounds the character
+          if (state.playerPos.y <= groundY && state.velocity.y <= 0.05) {
             state.playerPos.y = groundY;
             state.velocity.y = 0;
             state.canJump = true;
@@ -2999,13 +3121,16 @@
             thrusterFlameMat.opacity = 0;
             jetLight.intensity = 0;
             syncFlightBadge();
+            playLandingThud(true);
           } else {
             leftLeg.rotation.x = 0.25;
             rightLeg.rotation.x = 0.45;
+            thrusterFlameMat.opacity = state.ascendHeld ? 0.95 : 0.65;
+            jetLight.intensity = state.ascendHeld ? 3.0 : 1.8;
             if (Math.random() < 0.55) spawnJetParticle();
           }
         } else {
-          state.velocity.y -= 21 * delta;
+          state.velocity.y -= 23 * delta;
           state.playerPos.y += state.velocity.y * delta;
 
           if (state.playerPos.y > maxCeilingY) {
@@ -3015,10 +3140,16 @@
 
           if (state.playerPos.y <= groundY) {
             state.playerPos.y = groundY;
+            if (wasAirborne && prevVy < -2.2) {
+              playLandingThud(prevVy < -7.5);
+            }
             state.velocity.y = 0;
             state.canJump = true;
           }
         }
+
+        // Solid physical separation between player and alive rats
+        resolveSolidRatCollisions(delta);
 
         document.getElementById('alt-val').textContent = `${state.playerPos.y.toFixed(1)}m`;
 
