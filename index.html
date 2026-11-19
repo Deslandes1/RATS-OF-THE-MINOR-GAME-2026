@@ -1,0 +1,1463 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Rats of the Manor · 3D Shooter</title>
+  <style>
+    body {
+      margin: 0;
+      overflow: hidden;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+    #info {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      color: white;
+      background: rgba(0,0,0,0.7);
+      padding: 12px 20px;
+      border-radius: 8px;
+      pointer-events: none;
+      z-index: 10;
+      font-size: 14px;
+      border-left: 4px solid #ffaa00;
+    }
+    #score {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      color: white;
+      background: rgba(0,0,0,0.7);
+      padding: 12px 25px;
+      border-radius: 8px;
+      font-size: 24px;
+      font-weight: bold;
+      z-index: 10;
+      border-left: 4px solid #00cc00;
+      font-family: monospace;
+    }
+    #health {
+      position: absolute;
+      bottom: 30px;
+      left: 30px;
+      color: white;
+      background: rgba(0,0,0,0.7);
+      padding: 12px 25px;
+      border-radius: 8px;
+      font-size: 20px;
+      z-index: 10;
+      border-left: 4px solid #ff4444;
+    }
+    #message {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      color: white;
+      background: rgba(0,0,0,0.85);
+      padding: 25px 50px;
+      border-radius: 12px;
+      font-size: 28px;
+      text-align: center;
+      z-index: 100;
+      display: none;
+      pointer-events: none;
+      border: 2px solid #ffaa00;
+    }
+    #controls {
+      position: absolute;
+      bottom: 30px;
+      right: 30px;
+      color: rgba(255,255,255,0.6);
+      background: rgba(0,0,0,0.5);
+      padding: 15px;
+      border-radius: 8px;
+      font-size: 13px;
+      z-index: 10;
+      line-height: 1.6;
+    }
+    #crosshair {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 20px;
+      height: 20px;
+      transform: translate(-50%, -50%);
+      border: 2px solid rgba(255,255,255,0.7);
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 5;
+    }
+    #crosshair::before, #crosshair::after {
+      content: '';
+      position: absolute;
+      background: rgba(255,255,255,0.7);
+    }
+    #crosshair::before {
+      top: 50%;
+      left: 0;
+      width: 100%;
+      height: 2px;
+      transform: translateY(-50%);
+    }
+    #crosshair::after {
+      top: 0;
+      left: 50%;
+      width: 2px;
+      height: 100%;
+      transform: translateX(-50%);
+    }
+    #weapon-name {
+      position: absolute;
+      bottom: 120px;
+      right: 50%;
+      transform: translateX(50%);
+      color: white;
+      background: rgba(0,0,0,0.6);
+      padding: 8px 20px;
+      border-radius: 20px;
+      font-size: 16px;
+      z-index: 10;
+    }
+    .hidden {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <div id="info">🏚️ RATS OF THE MANOR 🐀</div>
+  <div id="score">Rats left: <span id="ratsLeft">8</span></div>
+  <div id="health">❤️ HP: <span id="healthVal">100</span></div>
+  <div id="crosshair"></div>
+  <div id="weapon-name">🔫 Pistol</div>
+  <div id="message"></div>
+  <div id="controls">
+    <strong>WASD</strong> move &nbsp;|&nbsp; <strong>Mouse</strong> look<br>
+    <strong>Shift</strong> run &nbsp;|&nbsp; <strong>Space</strong> jump<br>
+    <strong>Left Click</strong> shoot &nbsp;|&nbsp; <strong>E</strong> switch gun<br>
+    <strong>F</strong> sleep (heal) &nbsp;|&nbsp; <strong>R</strong> restart
+  </div>
+
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://unpkg.com/three@0.128.0/build/three.module.js",
+        "three/addons/": "https://unpkg.com/three@0.128.0/examples/jsm/"
+      }
+    }
+  </script>
+
+  <script type="module">
+    import * as THREE from 'three';
+    import { PointerLockControls } from 'three/addons/controls/PointerLockControls.js';
+
+    // ---------- GAME STATE ----------
+    const state = {
+      health: 100,
+      ratsLeft: 8,
+      totalRats: 8,
+      gameOver: false,
+      won: false,
+      weapon: 'pistol', // 'pistol' or 'rifle'
+      canJump: false,
+      velocity: new THREE.Vector3(),
+      direction: new THREE.Vector3(),
+      moveForward: false,
+      moveBackward: false,
+      moveLeft: false,
+      moveRight: false,
+      isRunning: false,
+      isSleeping: false,
+      sleepTimer: 0,
+      lastShot: 0,
+      shotCooldown: 250,
+      rifleCooldown: 120,
+      ammo: { pistol: Infinity, rifle: 30 },
+      mouseDown: false
+    };
+
+    // ---------- SCENE ----------
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x1a1a2e);
+    scene.fog = new THREE.Fog(0x1a1a2e, 15, 50);
+
+    const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+    camera.position.set(0, 1.7, 20);
+
+    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    document.body.appendChild(renderer.domElement);
+
+    // ---------- LIGHTS ----------
+    const ambientLight = new THREE.AmbientLight(0x404060, 0.6);
+    scene.add(ambientLight);
+
+    const moonLight = new THREE.DirectionalLight(0x8899cc, 0.8);
+    moonLight.position.set(10, 30, -20);
+    moonLight.castShadow = true;
+    moonLight.shadow.mapSize.width = 2048;
+    moonLight.shadow.mapSize.height = 2048;
+    moonLight.shadow.camera.near = 0.5;
+    moonLight.shadow.camera.far = 100;
+    moonLight.shadow.camera.left = -40;
+    moonLight.shadow.camera.right = 40;
+    moonLight.shadow.camera.top = 40;
+    moonLight.shadow.camera.bottom = -40;
+    scene.add(moonLight);
+
+    // Warm interior lights
+    const roomLights = [];
+    function addRoomLight(x, y, z, color = 0xffaa66) {
+      const light = new THREE.PointLight(color, 0.8, 12);
+      light.position.set(x, y, z);
+      light.castShadow = true;
+      light.shadow.mapSize.width = 512;
+      light.shadow.mapSize.height = 512;
+      scene.add(light);
+      roomLights.push(light);
+      // Add a visible glow sphere
+      const sphere = new THREE.Mesh(
+        new THREE.SphereGeometry(0.15, 8, 8),
+        new THREE.MeshBasicMaterial({ color: color })
+      );
+      sphere.position.set(x, y, z);
+      scene.add(sphere);
+      return light;
+    }
+
+    // ---------- MATERIALS ----------
+    const floorMat = new THREE.MeshStandardMaterial({ color: 0x4a3a2a, roughness: 0.9, metalness: 0.1 });
+    const wallMat = new THREE.MeshStandardMaterial({ color: 0x8a7a6a, roughness: 0.85 });
+    const ceilingMat = new THREE.MeshStandardMaterial({ color: 0x6a5a4a, roughness: 0.9 });
+    const woodMat = new THREE.MeshStandardMaterial({ color: 0x6b4a2a, roughness: 0.8 });
+    const darkWoodMat = new THREE.MeshStandardMaterial({ color: 0x4a2a1a, roughness: 0.8 });
+    const bedMat = new THREE.MeshStandardMaterial({ color: 0x884466, roughness: 0.7 });
+    const pillowMat = new THREE.MeshStandardMaterial({ color: 0xeeeeff, roughness: 0.9 });
+    const blanketMat = new THREE.MeshStandardMaterial({ color: 0x445588, roughness: 0.8 });
+    const ratMat = new THREE.MeshStandardMaterial({ color: 0x555555, roughness: 0.7 });
+    const ratEyeMat = new THREE.MeshStandardMaterial({ color: 0xff0000, emissive: 0xff0000, emissiveIntensity: 2 });
+    const ratNoseMat = new THREE.MeshStandardMaterial({ color: 0xffaaaa });
+    const gunMat = new THREE.MeshStandardMaterial({ color: 0x333333, metalness: 0.8, roughness: 0.3 });
+    const barrelMat = new THREE.MeshStandardMaterial({ color: 0x222222, metalness: 0.9, roughness: 0.2 });
+    const stockMat = new THREE.MeshStandardMaterial({ color: 0x5a3a1a, roughness: 0.8 });
+    const stairMat = new THREE.MeshStandardMaterial({ color: 0x7a6a5a, roughness: 0.9 });
+    const tableMat = new THREE.MeshStandardMaterial({ color: 0x5a3a2a, roughness: 0.8 });
+    const boxMat = new THREE.MeshStandardMaterial({ color: 0x8a6a4a, roughness: 0.9 });
+    const rugMat = new THREE.MeshStandardMaterial({ color: 0x663344, roughness: 1.0 });
+    const doorMat = new THREE.MeshStandardMaterial({ color: 0x5a3a1a, roughness: 0.7 });
+    const windowMat = new THREE.MeshStandardMaterial({ color: 0x88aaff, emissive: 0x224466, emissiveIntensity: 0.5 });
+    const pictureMat = new THREE.MeshStandardMaterial({ color: 0xffcc88, roughness: 0.5 });
+    const rug2Mat = new THREE.MeshStandardMaterial({ color: 0x224466, roughness: 1.0 });
+    const bookshelfMat = new THREE.MeshStandardMaterial({ color: 0x3a2a1a, roughness: 0.9 });
+    const bookMat = new THREE.MeshStandardMaterial({ color: 0xaa3333, roughness: 0.7 });
+    const lampMat = new THREE.MeshStandardMaterial({ color: 0xffdd88, emissive: 0xffaa22, emissiveIntensity: 0.8 });
+
+    // ---------- HOUSE DIMENSIONS ----------
+    // House spans x: -12 to 12, z: -18 to 12
+    const HOUSE = { minX: -12, maxX: 12, minZ: -18, maxZ: 12, height: 5 };
+
+    // ---------- FLOOR ----------
+    function createFloor(x, z, w, d, mat = floorMat) {
+      const geo = new THREE.BoxGeometry(w, 0.2, d);
+      const mesh = new THREE.Mesh(geo, mat);
+      mesh.position.set(x, -0.1, z);
+      mesh.receiveShadow = true;
+      mesh.castShadow = false;
+      scene.add(mesh);
+      return mesh;
+    }
+
+    // Main floor
+    createFloor(0, -3, 24, 30);
+
+    // Courtyard (outside area, lower)
+    const courtyardMat = new THREE.MeshStandardMaterial({ color: 0x3a5a3a, roughness: 1.0 });
+    createFloor(0, -28, 40, 20, courtyardMat);
+    // Path from house to courtyard
+    createFloor(0, -18, 6, 10, new THREE.MeshStandardMaterial({ color: 0x6a6a5a, roughness: 1.0 }));
+
+    // ---------- WALLS ----------
+    function createWall(x, y, z, w, h, d, mat = wallMat) {
+      const geo = new THREE.BoxGeometry(w, h, d);
+      const mesh = new THREE.Mesh(geo, mat);
+      mesh.position.set(x, y, z);
+      mesh.castShadow = true;
+      mesh.receiveShadow = true;
+      scene.add(mesh);
+      return mesh;
+    }
+
+    // Exterior walls (house)
+    // Front wall (z = maxZ = 12) with door opening
+    createWall(-9, 2.5, 12, 6, 5, 0.3); // left of door
+    createWall(9, 2.5, 12, 6, 5, 0.3);  // right of door
+    createWall(0, 4.5, 12, 6, 1, 0.3);  // above door
+    // Door
+    createWall(0, 1.5, 12, 5, 3, 0.35, doorMat);
+
+    // Back wall (z = minZ = -18)
+    createWall(0, 2.5, -18, 24, 5, 0.3);
+
+    // Left wall (x = minX = -12)
+    createWall(-12, 2.5, -3, 0.3, 5, 30);
+
+    // Right wall (x = maxX = 12)
+    createWall(12, 2.5, -3, 0.3, 5, 30);
+
+    // Interior walls
+    // Wall dividing living room and kitchen (x = -4, z: -18 to -8)
+    createWall(-4, 2.5, -13, 0.3, 5, 10);
+    // Wall dividing kitchen and hall (z = -8, x: -12 to -4)
+    createWall(-8, 2.5, -8, 8, 5, 0.3);
+
+    // Bedroom walls (right side)
+    // Wall (x = 4, z: -18 to -8)
+    createWall(4, 2.5, -13, 0.3, 5, 10);
+    // Wall (z = -8, x: 4 to 12)
+    createWall(8, 2.5, -8, 8, 5, 0.3);
+    // Doorway in bedroom wall
+    // (already have wall x=4 from -18 to -8, need opening at z=-8 to -6)
+    // Replace by splitting: actually we'll just leave a gap by not building part
+
+    // Actually let's redo interior walls with door gaps
+    // Remove the ones we just made and create better layout
+
+    // Clear previous interior walls (we'll just add new ones that work)
+    // For simplicity, I'll create interior walls with openings as separate segments
+
+    // Living room / Kitchen divider at x = -4 (z: -18 to -8) with gap at z = -12 to -10
+    createWall(-4, 2.5, -16, 0.3, 5, 4); // -18 to -14
+    createWall(-4, 2.5, -9, 0.3, 5, 2);  // -10 to -8
+    // Gap at -14 to -10 (doorway)
+
+    // Kitchen / Hall divider at z = -8 (x: -12 to -4) with gap at x = -8 to -6
+    createWall(-10, 2.5, -8, 4, 5, 0.3); // -12 to -8
+    createWall(-5, 2.5, -8, 2, 5, 0.3);  // -6 to -4
+    // Gap -8 to -6
+
+    // Bedroom divider at x = 4 (z: -18 to -8) with gap at z = -14 to -12
+    createWall(4, 2.5, -16, 0.3, 5, 4); // -18 to -14
+    createWall(4, 2.5, -9, 0.3, 5, 2);  // -10 to -8
+    // Gap -14 to -10
+
+    // Bedroom / Hall divider at z = -8 (x: 4 to 12) with gap at x = 7 to 9
+    createWall(5.5, 2.5, -8, 3, 5, 0.3); // 4 to 7
+    createWall(10.5, 2.5, -8, 3, 5, 0.3); // 9 to 12
+    // Gap 7 to 9
+
+    // Ceiling
+    const ceilingGeo = new THREE.BoxGeometry(24, 0.2, 30);
+    const ceilingMesh = new THREE.Mesh(ceilingGeo, ceilingMat);
+    ceilingMesh.position.set(0, 5.1, -3);
+    ceilingMesh.receiveShadow = true;
+    scene.add(ceilingMesh);
+
+    // ---------- STAIRS ----------
+    // Stairs going up to a small landing (decorative, can walk up)
+    // Located in the hall area (right side, z = 0)
+    const stairStepMat = stairMat;
+    for (let i = 0; i < 6; i++) {
+      const step = new THREE.Mesh(
+        new THREE.BoxGeometry(2, 0.3, 0.8),
+        stairStepMat
+      );
+      step.position.set(8, i * 0.3 + 0.15, 2 + i * 0.8);
+      step.castShadow = true;
+      step.receiveShadow = true;
+      scene.add(step);
+    }
+    // Landing
+    const landing = new THREE.Mesh(
+      new THREE.BoxGeometry(2, 0.3, 2),
+      stairStepMat
+    );
+    landing.position.set(8, 1.8, 6.2);
+    landing.castShadow = true;
+    landing.receiveShadow = true;
+    scene.add(landing);
+    // Railing
+    const railing = new THREE.Mesh(
+      new THREE.BoxGeometry(2, 0.8, 0.1),
+      darkWoodMat
+    );
+    railing.position.set(8, 2.2, 7.2);
+    railing.castShadow = true;
+    scene.add(railing);
+
+    // ---------- FURNITURE ----------
+
+    // === BED (in bedroom, right side) ===
+    const bedGroup = new THREE.Group();
+    // Frame
+    const bedFrame = new THREE.Mesh(new THREE.BoxGeometry(3, 0.4, 5), woodMat);
+    bedFrame.position.y = 0.4;
+    bedFrame.castShadow = true;
+    bedFrame.receiveShadow = true;
+    bedGroup.add(bedFrame);
+    // Mattress
+    const mattress = new THREE.Mesh(new THREE.BoxGeometry(2.8, 0.3, 4.8), bedMat);
+    mattress.position.y = 0.75;
+    mattress.castShadow = true;
+    bedGroup.add(mattress);
+    // Blanket
+    const blanket = new THREE.Mesh(new THREE.BoxGeometry(2.9, 0.15, 3.5), blanketMat);
+    blanket.position.set(0, 0.95, 0.5);
+    bedGroup.add(blanket);
+    // Pillow
+    const pillow = new THREE.Mesh(new THREE.BoxGeometry(1.5, 0.2, 0.8), pillowMat);
+    pillow.position.set(0, 0.95, -1.8);
+    bedGroup.add(pillow);
+    // Headboard
+    const headboard = new THREE.Mesh(new THREE.BoxGeometry(3.2, 1.2, 0.2), darkWoodMat);
+    headboard.position.set(0, 1.0, -2.6);
+    headboard.castShadow = true;
+    bedGroup.add(headboard);
+
+    bedGroup.position.set(8, 0, -14);
+    scene.add(bedGroup);
+
+    // Store bed position for sleeping
+    const BED_POS = new THREE.Vector3(8, 1.5, -14);
+
+    // === TABLES ===
+    function createTable(x, z, w = 2, d = 1, h = 0.9, mat = tableMat) {
+      const group = new THREE.Group();
+      // Tabletop
+      const top = new THREE.Mesh(new THREE.BoxGeometry(w, 0.1, d), mat);
+      top.position.y = h;
+      top.castShadow = true;
+      top.receiveShadow = true;
+      group.add(top);
+      // Legs
+      const legGeo = new THREE.BoxGeometry(0.1, h, 0.1);
+      const positions = [
+        [-w/2 + 0.1, h/2, -d/2 + 0.1],
+        [w/2 - 0.1, h/2, -d/2 + 0.1],
+        [-w/2 + 0.1, h/2, d/2 - 0.1],
+        [w/2 - 0.1, h/2, d/2 - 0.1]
+      ];
+      positions.forEach(p => {
+        const leg = new THREE.Mesh(legGeo, mat);
+        leg.position.set(p[0], p[1], p[2]);
+        leg.castShadow = true;
+        group.add(leg);
+      });
+      group.position.set(x, 0, z);
+      scene.add(group);
+      return group;
+    }
+
+    createTable(-8, 2, 3, 1.5, 0.9); // Living room table
+    createTable(-8, -12, 2.5, 1.5, 0.9); // Kitchen table
+    createTable(2, -2, 2, 1, 0.8); // Hall table
+
+    // === CHAIRS ===
+    function createChair(x, z, rotY = 0) {
+      const group = new THREE.Group();
+      const seat = new THREE.Mesh(new THREE.BoxGeometry(0.8, 0.1, 0.8), woodMat);
+      seat.position.y = 0.5;
+      seat.castShadow = true;
+      group.add(seat);
+      const back = new THREE.Mesh(new THREE.BoxGeometry(0.8, 0.8, 0.1), woodMat);
+      back.position.set(0, 0.9, -0.35);
+      back.castShadow = true;
+      group.add(back);
+      const legGeo = new THREE.BoxGeometry(0.08, 0.5, 0.08);
+      [[-0.3, 0.25, -0.3], [0.3, 0.25, -0.3], [-0.3, 0.25, 0.3], [0.3, 0.25, 0.3]].forEach(p => {
+        const leg = new THREE.Mesh(legGeo, woodMat);
+        leg.position.set(p[0], p[1], p[2]);
+        leg.castShadow = true;
+        group.add(leg);
+      });
+      group.position.set(x, 0, z);
+      group.rotation.y = rotY;
+      scene.add(group);
+    }
+
+    createChair(-8, 3.5, 0);
+    createChair(-8, 0.5, Math.PI);
+    createChair(-8, -13.5, 0);
+    createChair(-8, -10.5, Math.PI);
+
+    // === SOFA ===
+    const sofaGroup = new THREE.Group();
+    const sofaBase = new THREE.Mesh(new THREE.BoxGeometry(3.5, 0.5, 1.2), blanketMat);
+    sofaBase.position.y = 0.5;
+    sofaBase.castShadow = true;
+    sofaGroup.add(sofaBase);
+    const sofaBack = new THREE.Mesh(new THREE.BoxGeometry(3.5, 0.8, 0.3), blanketMat);
+    sofaBack.position.set(0, 1.0, -0.5);
+    sofaBack.castShadow = true;
+    sofaGroup.add(sofaBack);
+    // Arms
+    const armL = new THREE.Mesh(new THREE.BoxGeometry(0.3, 0.6, 1.2), blanketMat);
+    armL.position.set(-1.7, 0.7, 0);
+    armL.castShadow = true;
+    sofaGroup.add(armL);
+    const armR = new THREE.Mesh(new THREE.BoxGeometry(0.3, 0.6, 1.2), blanketMat);
+    armR.position.set(1.7, 0.7, 0);
+    armR.castShadow = true;
+    sofaGroup.add(armR);
+    sofaGroup.position.set(-8, 0, 6);
+    scene.add(sofaGroup);
+
+    // === BOOKSHELF ===
+    const shelfGroup = new THREE.Group();
+    const shelfFrame = new THREE.Mesh(new THREE.BoxGeometry(1.5, 2.5, 0.4), bookshelfMat);
+    shelfFrame.position.y = 1.25;
+    shelfFrame.castShadow = true;
+    shelfGroup.add(shelfFrame);
+    // Shelves
+    for (let i = 0; i < 4; i++) {
+      const shelf = new THREE.Mesh(new THREE.BoxGeometry(1.3, 0.05, 0.3), woodMat);
+      shelf.position.set(0, 0.4 + i * 0.6, 0);
+      shelfGroup.add(shelf);
+      // Books
+      for (let j = 0; j < 4; j++) {
+        const book = new THREE.Mesh(
+          new THREE.BoxGeometry(0.15, 0.35, 0.2),
+          new THREE.MeshStandardMaterial({ color: 0xaa3333 + j * 0x111111, roughness: 0.7 })
+        );
+        book.position.set(-0.5 + j * 0.3, 0.58 + i * 0.6, 0);
+        book.rotation.z = (Math.random() - 0.5) * 0.2;
+        shelfGroup.add(book);
+      }
+    }
+    shelfGroup.position.set(-11, 0, -2);
+    shelfGroup.rotation.y = Math.PI / 2;
+    scene.add(shelfGroup);
+
+    // === RUGS ===
+    function createRug(x, z, w, d, mat) {
+      const rug = new THREE.Mesh(new THREE.BoxGeometry(w, 0.02, d), mat);
+      rug.position.set(x, 0.01, z);
+      rug.receiveShadow = true;
+      scene.add(rug);
+    }
+    createRug(-8, 2, 5, 3, rugMat);
+    createRug(8, -2, 4, 3, rug2Mat);
+
+    // === PICTURES ON WALLS ===
+    function createPicture(x, y, z, w, h, rotY = 0) {
+      const frame = new THREE.Mesh(
+        new THREE.BoxGeometry(w + 0.1, h + 0.1, 0.05),
+        woodMat
+      );
+      frame.position.set(x, y, z);
+      frame.rotation.y = rotY;
+      scene.add(frame);
+      const canvas = new THREE.Mesh(
+        new THREE.BoxGeometry(w, h, 0.02),
+        pictureMat
+      );
+      canvas.position.set(x, y, z + (rotY === 0 ? 0.03 : -0.03));
+      canvas.rotation.y = rotY;
+      scene.add(canvas);
+    }
+
+    // Pictures
+    createPicture(-11.8, 2.5, -4, 1.5, 1, Math.PI / 2);
+    createPicture(11.8, 2.5, -2, 1.5, 1, -Math.PI / 2);
+    createPicture(-8, 2.5, 11.8, 2, 1.2, 0);
+    createPicture(8, 2.5, 11.8, 2, 1.2, 0);
+    createPicture(-3.8, 2.5, -14, 1.5, 1, Math.PI / 2);
+
+    // === WINDOWS ===
+    function createWindow(x, y, z, w, h, rotY = 0) {
+      const frame = new THREE.Mesh(
+        new THREE.BoxGeometry(w + 0.2, h + 0.2, 0.1),
+        darkWoodMat
+      );
+      frame.position.set(x, y, z);
+      frame.rotation.y = rotY;
+      scene.add(frame);
+      const glass = new THREE.Mesh(
+        new THREE.BoxGeometry(w, h, 0.05),
+        windowMat
+      );
+      glass.position.set(x, y, z + (rotY === 0 ? 0.06 : -0.06));
+      glass.rotation.y = rotY;
+      scene.add(glass);
+    }
+
+    createWindow(-11.8, 2.5, -15, 2, 1.5, Math.PI / 2);
+    createWindow(11.8, 2.5, -15, 2, 1.5, -Math.PI / 2);
+    createWindow(11.8, 2.5, 5, 2, 1.5, -Math.PI / 2);
+    createWindow(-11.8, 2.5, 5, 2, 1.5, Math.PI / 2);
+
+    // === BOXES & CLUTTER ===
+    function createBox(x, z, s = 1) {
+      const box = new THREE.Mesh(
+        new THREE.BoxGeometry(s, s, s),
+        boxMat
+      );
+      box.position.set(x, s/2, z);
+      box.rotation.y = Math.random() * Math.PI;
+      box.castShadow = true;
+      box.receiveShadow = true;
+      scene.add(box);
+    }
+
+    createBox(-10, -6, 1.2);
+    createBox(-9, -5, 0.8);
+    createBox(10, -16, 1.0);
+    createBox(9.5, -15, 0.7);
+    createBox(-2, -17, 1.1);
+    createBox(3, 8, 0.9);
+    createBox(-6, 9, 1.0);
+
+    // === LAMPS ===
+    function createLamp(x, z) {
+      const pole = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.05, 0.08, 1.8, 8),
+        gunMat
+      );
+      pole.position.set(x, 0.9, z);
+      pole.castShadow = true;
+      scene.add(pole);
+      const shade = new THREE.Mesh(
+        new THREE.ConeGeometry(0.4, 0.5, 8),
+        lampMat
+      );
+      shade.position.set(x, 1.9, z);
+      shade.castShadow = true;
+      scene.add(shade);
+      const light = new THREE.PointLight(0xffaa44, 0.6, 8);
+      light.position.set(x, 1.7, z);
+      scene.add(light);
+    }
+
+    createLamp(-10, 6);
+    createLamp(10, 6);
+    createLamp(-10, -16);
+    createLamp(2, -8);
+
+    // === ROOM LIGHTS ===
+    addRoomLight(0, 4, 0, 0xffaa66);
+    addRoomLight(-8, 4, -12, 0xffcc88);
+    addRoomLight(8, 4, -14, 0xffaa66);
+    addRoomLight(8, 4, 2, 0xffcc88);
+    addRoomLight(-4, 4, -4, 0xffaa66);
+
+    // === COURTYARD DECORATIONS ===
+    // Fence around courtyard
+    const fenceMat = new THREE.MeshStandardMaterial({ color: 0x8a7a5a, roughness: 0.9 });
+    function createFencePost(x, z) {
+      const post = new THREE.Mesh(new THREE.BoxGeometry(0.2, 1.2, 0.2), fenceMat);
+      post.position.set(x, 0.6, z);
+      post.castShadow = true;
+      scene.add(post);
+    }
+    function createFenceRail(x1, z1, x2, z2) {
+      const dx = x2 - x1;
+      const dz = z2 - z1;
+      const len = Math.sqrt(dx*dx + dz*dz);
+      const rail = new THREE.Mesh(new THREE.BoxGeometry(len, 0.1, 0.1), fenceMat);
+      rail.position.set((x1+x2)/2, 0.9, (z1+z2)/2);
+      rail.rotation.y = Math.atan2(-dz, dx);
+      rail.castShadow = true;
+      scene.add(rail);
+    }
+
+    // Courtyard fence (around z = -30 to -20, x = -18 to 18)
+    const fenceCorners = [
+      [-18, -20], [-18, -34], [18, -34], [18, -20]
+    ];
+    for (let i = 0; i < 4; i++) {
+      createFencePost(fenceCorners[i][0], fenceCorners[i][1]);
+      createFencePost(fenceCorners[(i+1)%4][0], fenceCorners[(i+1)%4][1]);
+    }
+    // Rails
+    for (let i = 0; i < 4; i++) {
+      createFenceRail(
+        fenceCorners[i][0], fenceCorners[i][1],
+        fenceCorners[(i+1)%4][0], fenceCorners[(i+1)%4][1]
+      );
+    }
+
+    // Trees in courtyard
+    function createTree(x, z) {
+      const trunk = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.3, 0.4, 2, 8),
+        new THREE.MeshStandardMaterial({ color: 0x4a2a1a, roughness: 1.0 })
+      );
+      trunk.position.set(x, 1, z);
+      trunk.castShadow = true;
+      scene.add(trunk);
+      const foliage = new THREE.Mesh(
+        new THREE.SphereGeometry(1.2, 8, 8),
+        new THREE.MeshStandardMaterial({ color: 0x2a5a2a, roughness: 1.0 })
+      );
+      foliage.position.set(x, 2.5, z);
+      foliage.castShadow = true;
+      scene.add(foliage);
+    }
+    createTree(-12, -28);
+    createTree(12, -28);
+    createTree(-8, -32);
+    createTree(8, -32);
+
+    // ---------- RATS ----------
+    const rats = [];
+
+    function createRat(x, z, scale = 1.5) {
+      const group = new THREE.Group();
+      
+      // Body
+      const body = new THREE.Mesh(
+        new THREE.SphereGeometry(0.6 * scale, 8, 8),
+        ratMat
+      );
+      body.scale.set(1, 0.7, 1.5);
+      body.position.y = 0.4 * scale;
+      body.castShadow = true;
+      group.add(body);
+
+      // Head
+      const head = new THREE.Mesh(
+        new THREE.SphereGeometry(0.35 * scale, 8, 8),
+        ratMat
+      );
+      head.position.set(0, 0.5 * scale, 0.8 * scale);
+      head.castShadow = true;
+      group.add(head);
+
+      // Ears
+      const earGeo = new THREE.SphereGeometry(0.2 * scale, 6, 6);
+      const earL = new THREE.Mesh(earGeo, ratMat);
+      earL.position.set(-0.3 * scale, 0.75 * scale, 0.7 * scale);
+      earL.castShadow = true;
+      group.add(earL);
+      const earR = new THREE.Mesh(earGeo, ratMat);
+      earR.position.set(0.3 * scale, 0.75 * scale, 0.7 * scale);
+      earR.castShadow = true;
+      group.add(earR);
+
+      // Eyes (scary red)
+      const eyeGeo = new THREE.SphereGeometry(0.1 * scale, 6, 6);
+      const eyeL = new THREE.Mesh(eyeGeo, ratEyeMat);
+      eyeL.position.set(-0.15 * scale, 0.6 * scale, 1.0 * scale);
+      group.add(eyeL);
+      const eyeR = new THREE.Mesh(eyeGeo, ratEyeMat);
+      eyeR.position.set(0.15 * scale, 0.6 * scale, 1.0 * scale);
+      group.add(eyeR);
+
+      // Nose
+      const nose = new THREE.Mesh(
+        new THREE.SphereGeometry(0.08 * scale, 6, 6),
+        ratNoseMat
+      );
+      nose.position.set(0, 0.45 * scale, 1.15 * scale);
+      group.add(nose);
+
+      // Tail
+      const tail = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.05 * scale, 0.02 * scale, 1.2 * scale, 6),
+        ratMat
+      );
+      tail.position.set(0, 0.2 * scale, -0.8 * scale);
+      tail.rotation.x = Math.PI / 2.5;
+      tail.castShadow = true;
+      group.add(tail);
+
+      // Legs
+      const legGeo = new THREE.CylinderGeometry(0.08 * scale, 0.08 * scale, 0.4 * scale, 6);
+      const legPositions = [
+        [-0.3 * scale, 0.2 * scale, 0.3 * scale],
+        [0.3 * scale, 0.2 * scale, 0.3 * scale],
+        [-0.3 * scale, 0.2 * scale, -0.3 * scale],
+        [0.3 * scale, 0.2 * scale, -0.3 * scale]
+      ];
+      legPositions.forEach(p => {
+        const leg = new THREE.Mesh(legGeo, ratMat);
+        leg.position.set(p[0], p[1], p[2]);
+        leg.castShadow = true;
+        group.add(leg);
+      });
+
+      group.position.set(x, 0, z);
+      group.userData = {
+        alive: true,
+        speed: 0.02 + Math.random() * 0.03,
+        direction: new THREE.Vector3(Math.random() - 0.5, 0, Math.random() - 0.5).normalize(),
+        changeDirTimer: 0,
+        health: 2, // Takes 2 hits
+        scale: scale,
+        headingToCourtyard: false,
+        originalPos: new THREE.Vector3(x, 0, z)
+      };
+      
+      scene.add(group);
+      rats.push(group);
+      return group;
+    }
+
+    // Spawn rats throughout the house
+    const ratSpawns = [
+      [-8, -14], [-10, -5], [10, -16], [8, -12],
+      [2, 6], [-6, 2], [10, 0], [-2, -18]
+    ];
+    ratSpawns.forEach(pos => createRat(pos[0], pos[1]));
+
+    // ---------- GUNS ----------
+    // Pistol viewmodel
+    const pistolGroup = new THREE.Group();
+    const pistolBody = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.2, 0.4), gunMat);
+    pistolBody.position.set(0, 0, -0.2);
+    pistolGroup.add(pistolBody);
+    const pistolBarrel = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.08, 0.3), barrelMat);
+    pistolBarrel.position.set(0, 0.05, -0.5);
+    pistolGroup.add(pistolBarrel);
+    const pistolGrip = new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.25, 0.12), stockMat);
+    pistolGrip.position.set(0, -0.2, 0.05);
+    pistolGrip.rotation.x = -0.3;
+    pistolGroup.add(pistolGrip);
+    pistolGroup.position.set(0.3, -0.3, -0.8);
+    camera.add(pistolGroup);
+
+    // Rifle viewmodel
+    const rifleGroup = new THREE.Group();
+    const rifleBody = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.15, 0.8), gunMat);
+    rifleBody.position.set(0, 0, -0.4);
+    rifleGroup.add(rifleBody);
+    const rifleBarrel = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.05, 0.6, 8), barrelMat);
+    rifleBarrel.position.set(0, 0.04, -0.9);
+    rifleBarrel.rotation.x = Math.PI / 2;
+    rifleGroup.add(rifleBarrel);
+    const rifleStock = new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.18, 0.3), stockMat);
+    rifleStock.position.set(0, -0.05, 0.15);
+    rifleGroup.add(rifleStock);
+    const rifleScope = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.03, 0.2, 8), barrelMat);
+    rifleScope.position.set(0, 0.12, -0.3);
+    rifleScope.rotation.x = Math.PI / 2;
+    rifleGroup.add(rifleScope);
+    rifleGroup.position.set(0.3, -0.25, -0.9);
+    rifleGroup.visible = false;
+    camera.add(rifleGroup);
+
+    scene.add(camera);
+
+    // Muzzle flash
+    const muzzleFlash = new THREE.PointLight(0xffaa00, 0, 8);
+    muzzleFlash.position.set(0.3, -0.2, -1.2);
+    camera.add(muzzleFlash);
+    
+    // Muzzle flash mesh
+    const flashMesh = new THREE.Mesh(
+      new THREE.SphereGeometry(0.1, 6, 6),
+      new THREE.MeshBasicMaterial({ color: 0xffaa00, transparent: true, opacity: 0 })
+    );
+    flashMesh.position.set(0.3, -0.2, -1.2);
+    camera.add(flashMesh);
+
+    // ---------- CONTROLS ----------
+    const controls = new PointerLockControls(camera, renderer.domElement);
+    scene.add(controls.getObject());
+
+    // Click to start
+    renderer.domElement.addEventListener('click', () => {
+      controls.lock();
+    });
+
+    controls.addEventListener('lock', () => {
+      // locked
+    });
+
+    controls.addEventListener('unlock', () => {
+      // unlocked - could pause
+    });
+
+    // Keyboard
+    const onKeyDown = (event) => {
+      switch (event.code) {
+        case 'KeyW': state.moveForward = true; break;
+        case 'KeyS': state.moveBackward = true; break;
+        case 'KeyA': state.moveLeft = true; break;
+        case 'KeyD': state.moveRight = true; break;
+        case 'Space':
+          if (state.canJump) {
+            state.velocity.y = 8;
+            state.canJump = false;
+          }
+          break;
+        case 'ShiftLeft':
+        case 'ShiftRight': state.isRunning = true; break;
+        case 'KeyE': switchWeapon(); break;
+        case 'KeyF': trySleep(); break;
+        case 'KeyR':
+          if (state.gameOver || state.won) restartGame();
+          break;
+      }
+    };
+
+    const onKeyUp = (event) => {
+      switch (event.code) {
+        case 'KeyW': state.moveForward = false; break;
+        case 'KeyS': state.moveBackward = false; break;
+        case 'KeyA': state.moveLeft = false; break;
+        case 'KeyD': state.moveRight = false; break;
+        case 'ShiftLeft':
+        case 'ShiftRight': state.isRunning = false; break;
+      }
+    };
+
+    document.addEventListener('keydown', onKeyDown);
+    document.addEventListener('keyup', onKeyUp);
+
+    // Mouse
+    document.addEventListener('mousedown', (e) => {
+      if (e.button === 0) {
+        state.mouseDown = true;
+        shoot();
+      }
+    });
+    document.addEventListener('mouseup', (e) => {
+      if (e.button === 0) state.mouseDown = false;
+    });
+
+    // Continuous fire for rifle
+    setInterval(() => {
+      if (state.mouseDown && state.weapon === 'rifle' && controls.isLocked && !state.gameOver && !state.won) {
+        shoot();
+      }
+    }, 120);
+
+    // ---------- WEAPON SWITCHING ----------
+    function switchWeapon() {
+      if (state.weapon === 'pistol') {
+        state.weapon = 'rifle';
+        pistolGroup.visible = false;
+        rifleGroup.visible = true;
+        document.getElementById('weapon-name').textContent = '🔫 Rifle (30 ammo)';
+      } else {
+        state.weapon = 'pistol';
+        rifleGroup.visible = false;
+        pistolGroup.visible = true;
+        document.getElementById('weapon-name').textContent = '🔫 Pistol';
+      }
+    }
+
+    // ---------- SHOOTING ----------
+    const raycaster = new THREE.Raycaster();
+    const screenCenter = new THREE.Vector2(0, 0);
+
+    function shoot() {
+      if (state.gameOver || state.won) return;
+      if (!controls.isLocked) return;
+      
+      const now = performance.now();
+      const cooldown = state.weapon === 'rifle' ? state.rifleCooldown : state.shotCooldown;
+      if (now - state.lastShot < cooldown) return;
+      
+      if (state.weapon === 'rifle' && state.ammo.rifle <= 0) {
+        // Out of ammo, switch to pistol
+        switchWeapon();
+        return;
+      }
+      
+      state.lastShot = now;
+      
+      if (state.weapon === 'rifle') {
+        state.ammo.rifle--;
+        document.getElementById('weapon-name').textContent = `🔫 Rifle (${state.ammo.rifle} ammo)`;
+        if (state.ammo.rifle <= 0) {
+          setTimeout(() => switchWeapon(), 200);
+        }
+      }
+
+      // Muzzle flash
+      muzzleFlash.intensity = 2;
+      flashMesh.material.opacity = 0.9;
+      setTimeout(() => {
+        muzzleFlash.intensity = 0;
+        flashMesh.material.opacity = 0;
+      }, 50);
+
+      // Recoil animation
+      const gunGroup = state.weapon === 'rifle' ? rifleGroup : pistolGroup;
+      gunGroup.position.z += 0.15;
+      setTimeout(() => {
+        gunGroup.position.z -= 0.15;
+      }, 50);
+
+      // Raycast from camera center
+      raycaster.setFromCamera(screenCenter, camera);
+      
+      // Check rats
+      let hitRat = null;
+      let closestDist = Infinity;
+      
+      rats.forEach(rat => {
+        if (!rat.userData.alive) return;
+        
+        const ratPos = rat.position.clone();
+        ratPos.y += 0.5 * rat.userData.scale;
+        
+        // Check distance from ray to rat center
+        const ray = raycaster.ray;
+        const toRat = ratPos.clone().sub(ray.origin);
+        const projLength = toRat.dot(ray.direction);
+        
+        if (projLength < 0) return; // Behind
+        
+        const closestPoint = ray.origin.clone().add(ray.direction.clone().multiplyScalar(projLength));
+        const distToRay = closestPoint.distanceTo(ratPos);
+        const hitRadius = 0.8 * rat.userData.scale;
+        
+        if (distToRay < hitRadius && projLength < closestDist) {
+          closestDist = projLength;
+          hitRat = rat;
+        }
+      });
+
+      if (hitRat) {
+        // Damage rat
+        hitRat.userData.health--;
+        
+        // Knockback
+        const knockback = hitRat.position.clone().sub(camera.position).normalize().multiplyScalar(0.3);
+        hitRat.position.x += knockback.x;
+        hitRat.position.z += knockback.z;
+        
+        // Flash red
+        hitRat.traverse(child => {
+          if (child.isMesh && child.material) {
+            child.material.emissive = new THREE.Color(0xff0000);
+            child.material.emissiveIntensity = 1;
+            setTimeout(() => {
+              if (child.material) {
+                child.material.emissive = new THREE.Color(0x000000);
+                child.material.emissiveIntensity = 0;
+              }
+            }, 100);
+          }
+        });
+
+        if (hitRat.userData.health <= 0) {
+          killRat(hitRat);
+        }
+      }
+    }
+
+    function killRat(rat) {
+      rat.userData.alive = false;
+      state.ratsLeft--;
+      document.getElementById('ratsLeft').textContent = state.ratsLeft;
+      
+      // Death animation
+      const startTime = performance.now();
+      const startPos = rat.position.clone();
+      const startRot = rat.rotation.clone();
+      
+      function deathAnim() {
+        const elapsed = performance.now() - startTime;
+        const t = Math.min(elapsed / 500, 1);
+        
+        rat.position.y = startPos.y + t * 0.5;
+        rat.position.x = startPos.x + Math.sin(t * 10) * 0.1 * (1 - t);
+        rat.rotation.z = startRot.z + t * Math.PI;
+        
+        if (t < 1) {
+          requestAnimationFrame(deathAnim);
+        } else {
+          rat.position.y = startPos.y + 0.5;
+          rat.rotation.z = startRot.z + Math.PI;
+        }
+      }
+      deathAnim();
+      
+      // Scale down after delay
+      setTimeout(() => {
+        rat.visible = false;
+      }, 3000);
+
+      if (state.ratsLeft <= 0) {
+        winGame();
+      }
+    }
+
+    // ---------- SLEEPING ----------
+    function trySleep() {
+      if (state.gameOver || state.won) return;
+      
+      // Check if near bed
+      const dist = camera.position.distanceTo(BED_POS);
+      if (dist < 3) {
+        state.isSleeping = true;
+        state.sleepTimer = 3000;
+        showMessage('💤 Sleeping... Healing...', 2000);
+        
+        // Heal over time
+        const healInterval = setInterval(() => {
+          if (!state.isSleeping || state.health >= 100) {
+            clearInterval(healInterval);
+            state.isSleeping = false;
+            return;
+          }
+          state.health = Math.min(100, state.health + 2);
+          document.getElementById('healthVal').textContent = Math.floor(state.health);
+        }, 100);
+        
+        // Wake up after 3 seconds
+        setTimeout(() => {
+          state.isSleeping = false;
+          clearInterval(healInterval);
+          showMessage('☀️ Rested and healed!', 1500);
+        }, 3000);
+      } else {
+        showMessage('🛏️ You need to be near the bed to sleep!', 1500);
+      }
+    }
+
+    // ---------- MESSAGES ----------
+    function showMessage(text, duration = 2000) {
+      const el = document.getElementById('message');
+      el.textContent = text;
+      el.style.display = 'block';
+      clearTimeout(el._timeout);
+      el._timeout = setTimeout(() => {
+        el.style.display = 'none';
+      }, duration);
+    }
+
+    // ---------- GAME OVER ----------
+    function gameOver(reason) {
+      state.gameOver = true;
+      state.health = 0;
+      document.getElementById('healthVal').textContent = '0';
+      const el = document.getElementById('message');
+      el.innerHTML = `💀 GAME OVER 💀<br><span style="font-size:20px">${reason}</span><br><span style="font-size:16px">Press R to restart</span>`;
+      el.style.display = 'block';
+      el.style.borderColor = '#ff0000';
+      controls.unlock();
+    }
+
+    // ---------- WIN ----------
+    function winGame() {
+      state.won = true;
+      const el = document.getElementById('message');
+      el.innerHTML = `🏆 VICTORY! 🏆<br><span style="font-size:20px">You cleared the manor of all rats!</span><br><span style="font-size:16px">Press R to play again</span>`;
+      el.style.display = 'block';
+      el.style.borderColor = '#00cc00';
+      controls.unlock();
+    }
+
+    // ---------- RESTART ----------
+    function restartGame() {
+      // Reset state
+      state.health = 100;
+      state.ratsLeft = state.totalRats;
+      state.gameOver = false;
+      state.won = false;
+      state.weapon = 'pistol';
+      state.ammo = { pistol: Infinity, rifle: 30 };
+      state.velocity.set(0, 0, 0);
+      state.canJump = false;
+      state.isSleeping = false;
+      
+      document.getElementById('healthVal').textContent = '100';
+      document.getElementById('ratsLeft').textContent = state.totalRats;
+      document.getElementById('weapon-name').textContent = '🔫 Pistol';
+      document.getElementById('message').style.display = 'none';
+      document.getElementById('message').style.borderColor = '#ffaa00';
+      
+      pistolGroup.visible = true;
+      rifleGroup.visible = false;
+      
+      // Reset camera
+      camera.position.set(0, 1.7, 20);
+      camera.rotation.set(0, 0, 0);
+      
+      // Reset rats
+      rats.forEach(rat => {
+        rat.visible = true;
+        rat.userData.alive = true;
+        rat.userData.health = 2;
+        rat.position.copy(rat.userData.originalPos);
+        rat.rotation.set(0, 0, 0);
+        rat.position.y = 0;
+      });
+      
+      // Re-lock controls
+      controls.lock();
+    }
+
+    // ---------- COLLISION DETECTION ----------
+    const collidableObjects = [];
+    
+    // Add walls as colliders (simple box colliders)
+    const wallColliders = [
+      // Exterior walls
+      { minX: -12.15, maxX: -11.85, minZ: -18, maxZ: 12 }, // left
+      { minX: 11.85, maxX: 12.15, minZ: -18, maxZ: 12 },   // right
+      { minX: -12, maxX: -6, minZ: 11.85, maxZ: 12.15 },   // front left
+      { minX: 6, maxX: 12, minZ: 11.85, maxZ: 12.15 },     // front right
+      { minX: -12, maxX: 12, minZ: -18.15, maxZ: -17.85 }, // back
+      // Interior walls
+      { minX: -4.15, maxX: -3.85, minZ: -18, maxZ: -14 },  // wall x=-4 upper
+      { minX: -4.15, maxX: -3.85, minZ: -10, maxZ: -8 },   // wall x=-4 lower
+      { minX: -12, maxX: -8, minZ: -8.15, maxZ: -7.85 },   // wall z=-8 left
+      { minX: -6, maxX: -4, minZ: -8.15, maxZ: -7.85 },    // wall z=-8 right
+      { minX: 3.85, maxX: 4.15, minZ: -18, maxZ: -14 },    // wall x=4 upper
+      { minX: 3.85, maxX: 4.15, minZ: -10, maxZ: -8 },     // wall x=4 lower
+      { minX: 4, maxX: 7, minZ: -8.15, maxZ: -7.85 },      // wall z=-8 bedroom left
+      { minX: 9, maxX: 12, minZ: -8.15, maxZ: -7.85 },     // wall z=-8 bedroom right
+      // Bed
+      { minX: 6.5, maxX: 9.5, minZ: -16.5, maxZ: -11.5 },
+      // Tables
+      { minX: -9.5, maxX: -6.5, minZ: 1.25, maxZ: 2.75 },
+      { minX: -9.25, maxX: -6.75, minZ: -12.75, maxZ: -11.25 },
+      { minX: 1, maxX: 3, minZ: -2.5, maxZ: -1.5 },
+      // Sofa
+      { minX: -9.75, maxX: -6.25, minZ: 5.4, maxZ: 6.6 },
+      // Bookshelf
+      { minX: -11.3, maxX: -10.7, minZ: -3, maxZ: -1 },
+    ];
+
+    // Boxes
+    wallColliders.push({ minX: -10.6, maxX: -9.4, minZ: -6.6, maxZ: -5.4 });
+    wallColliders.push({ minX: -9.4, maxX: -8.6, minZ: -5.4, maxZ: -4.6 });
+    wallColliders.push({ minX: 9.5, maxX: 10.5, minZ: -16.5, maxZ: -15.5 });
+    wallColliders.push({ minX: 9.1, maxX: 9.9, minZ: -15.4, maxZ: -14.6 });
+    wallColliders.push({ minX: -2.55, maxX: -1.45, minZ: -17.55, maxZ: -16.45 });
+    wallColliders.push({ minX: 2.5, maxX: 3.5, minZ: 7.5, maxZ: 8.5 });
+    wallColliders.push({ minX: -6.5, maxX: -5.5, minZ: 8.5, maxZ: 9.5 });
+
+    // Stairs colliders (simplified - just block the sides)
+    // Actually let's allow walking up stairs, so we need to handle stairs differently
+    // We'll add the stair steps as walkable surfaces by setting the floor height based on position
+
+    function getFloorHeight(pos) {
+      // Check if on stairs
+      if (pos.x > 6.8 && pos.x < 9.2 && pos.z > 1.5 && pos.z < 7.5) {
+        const stepIndex = Math.floor((pos.z - 1.5) / 0.8);
+        if (stepIndex >= 0 && stepIndex < 6) {
+          return stepIndex * 0.3 + 0.3;
+        } else if (stepIndex >= 6) {
+          return 1.8;
+        }
+      }
+      // On landing
+      if (pos.x > 6.8 && pos.x < 9.2 && pos.z >= 7.5 && pos.z < 8.5) {
+        return 1.8;
+      }
+      return 0; // ground floor
+    }
+
+    function checkCollision(newPos) {
+      const playerRadius = 0.4;
+      for (const collider of wallColliders) {
+        // Check if newPos is inside expanded collider
+        if (newPos.x > collider.minX - playerRadius &&
+            newPos.x < collider.maxX + playerRadius &&
+            newPos.z > collider.minZ - playerRadius &&
+            newPos.z < collider.maxZ + playerRadius) {
+          return true;
+        }
+      }
+      return false;
+    }
+
+    // ---------- RAT AI ----------
+    const courtyardCenter = new THREE.Vector3(0, 0, -28);
+    const courtyardBounds = { minX: -17, maxX: 17, minZ: -33, maxZ: -20 };
+
+    function updateRats(delta) {
+      rats.forEach(rat => {
+        if (!rat.userData.alive) return;
+        
+        const data = rat.userData;
+        const pos = rat.position;
+        
+        // If all other rats are dead, head to courtyard
+        if (state.ratsLeft <= 2) {
+          data.headingToCourtyard = true;
+        }
+
+        // Direction change timer
+        data.changeDirTimer -= delta;
+        if (data.changeDirTimer <= 0) {
+          data.changeDirTimer = 1 + Math.random() * 3;
+          
+          if (data.headingToCourtyard) {
+            // Head toward courtyard (positive z direction)
+            data.direction.set(
+              (Math.random() - 0.5) * 0.3,
+              0,
+              1
+            ).normalize();
+          } else {
+            // Random direction, but stay within house
+            data.direction.set(
+              Math.random() - 0.5,
+              0,
+              Math.random() - 0.5
+            ).normalize();
+            
+            // Bias toward player if player is close
+            const distToPlayer = pos.distanceTo(camera.position);
+            if (distToPlayer < 8 && !state.isSleeping) {
+              const toPlayer = camera.position.clone().sub(pos).normalize();
+              data.direction.lerp(toPlayer, 0.3).normalize();
+            }
+          }
+        }
+
+        // Move rat
+        const speed = data.speed * (data.headingToCourtyard ? 2.5 : 1);
+        const newX = pos.x + data.direction.x * speed;
+        const newZ = pos.z + data.direction.z * speed;
+        
+        // House bounds (rats can go to courtyard through door)
+        let minX = -11.5, maxX = 11.5;
+        let minZ = -17.5, maxZ = 11.5;
+        
+        if (data.headingToCourtyard) {
+          minZ = -33;
+          maxZ = 11.5;
+          minX = -17;
+          maxX = 17;
+        }
+
+        // Bounce off walls
+        if (newX < minX || newX > maxX) {
+          data.direction.x *= -1;
+        } else {
+          pos.x = newX;
+        }
+        if (newZ < minZ || newZ > maxZ) {
+          data.direction.z *= -1;
+        } else {
+          pos.z = newZ;
+        }
+
+        // Make rat face movement direction
+        const targetAngle = Math.atan2(data.direction.x, data.direction.z);
+        rat.rotation.y = targetAngle;
+
+        // Rat attack: if close to player
+        const distToPlayer = pos.distanceTo(camera.position);
+        if (distToPlayer < 1.5 && !state.isSleeping && !state.gameOver) {
+          // Rat bites!
+          if (Math.random() < 0.05) { // 5% chance per frame when close
+            state.health -= 3;
+            document.getElementById('healthVal').textContent = Math.max(0, Math.floor(state.health));
+            
+            // Screen flash red
+            document.body.style.background = 'rgba(255,0,0,0.3)';
+            setTimeout(() => {
+              document.body.style.background = '';
+            }, 150);
+            
+            if (state.health <= 0) {
+              gameOver('The rats devoured you.');
+            }
+          }
+        }
+      });
+    }
+
+    // ---------- MOVEMENT & UPDATE ----------
+    const clock = new THREE.Clock();
+
+    function animate() {
+      requestAnimationFrame(animate);
+      
+      const delta = Math.min(clock.getDelta(), 0.1);
+      
+      if (!state.gameOver && !state.won && controls.isLocked && !state.isSleeping) {
+        // Movement
+        const speed = state.isRunning ? 12 : 6;
+        state.velocity.x -= state.velocity.x * 10 * delta;
+        state.velocity.z -= state.velocity.z * 10 * delta;
+        state.velocity.y -= 25 * delta;
+
+        state.direction.z = Number(state.moveForward) - Number(state.moveBackward);
+        state.direction.x = Number(state.moveRight) - Number(state.moveLeft);
+        state.direction.normalize();
+
+        if (state.moveForward || state.moveBackward) {
+          state.velocity.z -= state.direction.z * speed * delta * 5;
+        }
+        if (state.moveLeft || state.moveRight) {
+          state.velocity.x -= state.direction.x * speed * delta * 5;
+        }
+
+        const oldPos = camera.position.clone();
+        
+        controls.moveRight(-state.velocity.x * delta);
+        controls.moveForward(-state.velocity.z * delta);
+        
+        // Apply vertical velocity
+        camera.position.y += state.velocity.y * delta;
+        
+        // Check floor height (stairs)
+        const floorH = getFloorHeight(camera.position) + 1.7;
+        
+        if (camera.position.y < floorH) {
+          state.velocity.y = 0;
+          camera.position.y = floorH;
+          state.canJump = true;
+        } else if (camera.position.y > floorH + 0.1) {
+          state.canJump = false;
+        }
+        
+        // Collision check (simple)
+        if (checkCollision(camera.position)) {
+          camera.position.x = oldPos.x;
+          camera.position.z = oldPos.z;
+        }
+        
+        // Keep player in bounds (allow courtyard)
+        camera.position.x = Math.max(-17, Math.min(17, camera.position.x));
+        camera.position.z = Math.max(-33, Math.min(12, camera.position.z));
+        
+        // Check if player walked into courtyard - if all rats dead, win
+        if (camera.position.z < -20 && state.ratsLeft <= 0 && !state.won) {
+          winGame();
+        }
+      }
+
+      // Update rats
+      if (!state.gameOver && !state.won) {
+        updateRats(delta);
+      }
+
+      // Bobbing effect when walking
+      if (controls.isLocked && (state.moveForward || state.moveBackward || state.moveLeft || state.moveRight) && !state.isSleeping) {
+        const bobAmount = state.isRunning ? 0.05 : 0.025;
+        pistolGroup.position.y = -0.3 + Math.sin(performance.now() * 0.01) * bobAmount;
+        rifleGroup.position.y = -0.25 + Math.sin(performance.now() * 0.01) * bobAmount;
+      }
+
+      // Weapon sway
+      if (controls.isLocked) {
+        const swayX = Math.sin(performance.now() * 0.002) * 0.005;
+        const swayY = Math.cos(performance.now() * 0.0015) * 0.005;
+        pistolGroup.position.x = 0.3 + swayX;
+        rifleGroup.position.x = 0.3 + swayX;
+      }
+
+      renderer.render(scene, camera);
+    }
+
+    animate();
+
+    // ---------- RESIZE ----------
+    window.addEventListener('resize', () => {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+    });
+
+    // ---------- INITIAL MESSAGE ----------
+    setTimeout(() => {
+      showMessage('Click to lock mouse and start playing!\nWASD to move, Click to shoot, E to switch weapon', 4000);
+    }, 500);
+
+  </script>
+</body>
+</html>
