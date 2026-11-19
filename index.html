@@ -1787,26 +1787,31 @@
       {
         stage: 1,
         name: 'STAGE 1: FRONT DOOR & FOYER (F1)',
-        objective: 'Clear the Foyer rats and advance to the Grand Living Room.',
+        objective: 'Clear the Foyer rats (10-sec front invasion waves incoming!) — run, walk away, or fly & shoot!',
         unlockHint: 'Foyer cleared! Move left into the Grand Living Room.',
         beaconPos: new THREE.Vector3(-8.0, FLOOR_1_Y + 0.15, 2.5),
         spawns: [
-          { x: 0.0, y: FLOOR_1_Y, z: 9.8, big: false },
-          { x: -2.5, y: FLOOR_1_Y, z: 6.5, big: false },
-          { x: 3.5, y: FLOOR_1_Y, z: 5.5, big: true }
+          { x: 0.0, y: FLOOR_1_Y, z: 9.2, big: false },
+          { x: -1.8, y: FLOOR_1_Y, z: 7.4, big: false },
+          { x: 1.8, y: FLOOR_1_Y, z: 7.4, big: false },
+          { x: -3.2, y: FLOOR_1_Y, z: 5.2, big: true },
+          { x: 3.2, y: FLOOR_1_Y, z: 5.2, big: true },
+          { x: 0.0, y: FLOOR_1_Y, z: 3.6, big: false }
         ]
       },
       {
         stage: 2,
         name: 'STAGE 2: LIVING ROOM & KITCHEN (F1)',
-        objective: 'Eliminate Floor 1 Living Room & Kitchen rats, then climb Stairwell 1-2 (x=9.0) up to Floor 2!',
+        objective: 'Eliminate Floor 1 Living Room & Kitchen rats & fend off 10s front waves, then climb to Floor 2!',
         unlockHint: 'Floor 1 rooms cleared! Climb the east stairs (x=9.0) or fly up to Floor 2 (6.0m)!',
         beaconPos: new THREE.Vector3(9.0, FLOOR_1_Y + 1.8, 7.8),
         spawns: [
           { x: -8.5, y: FLOOR_1_Y, z: 4.0, big: false },
+          { x: -6.5, y: FLOOR_1_Y, z: 2.0, big: false },
           { x: -8.5, y: FLOOR_1_Y, z: -14.5, big: true },
           { x: -6.0, y: FLOOR_1_Y, z: -11.0, big: true },
-          { x: -10.2, y: FLOOR_1_Y, z: 1.5, big: false }
+          { x: -10.2, y: FLOOR_1_Y, z: 1.5, big: false },
+          { x: -7.5, y: FLOOR_1_Y, z: -6.0, big: true }
         ]
       },
       {
@@ -1817,9 +1822,11 @@
         beaconPos: new THREE.Vector3(-9.0, FLOOR_2_Y + 1.8, 7.8),
         spawns: [
           { x: -8.0, y: FLOOR_2_Y, z: 2.5, big: true },
+          { x: -5.5, y: FLOOR_2_Y, z: 0.5, big: false },
           { x: -8.0, y: FLOOR_2_Y, z: -13.0, big: true },
           { x: 8.2, y: FLOOR_2_Y, z: -13.5, big: true },
-          { x: 1.5, y: FLOOR_2_Y, z: -3.0, big: false }
+          { x: 1.5, y: FLOOR_2_Y, z: -3.0, big: false },
+          { x: -1.5, y: FLOOR_2_Y, z: -5.5, big: true }
         ]
       },
       {
@@ -1830,9 +1837,11 @@
         beaconPos: new THREE.Vector3(0.0, FLOOR_3_Y + 0.15, -10.5),
         spawns: [
           { x: -7.5, y: FLOOR_3_Y, z: 2.0, big: true },
+          { x: -2.5, y: FLOOR_3_Y, z: -6.5, big: false },
           { x: 0.0, y: FLOOR_3_Y, z: -10.5, big: true },
+          { x: 2.5, y: FLOOR_3_Y, z: -6.5, big: false },
           { x: 7.5, y: FLOOR_3_Y, z: 2.0, big: true },
-          { x: 6.5, y: FLOOR_3_Y, z: -12.0, big: false }
+          { x: 6.5, y: FLOOR_3_Y, z: -12.0, big: true }
         ]
       },
       {
@@ -1843,7 +1852,9 @@
         beaconPos: new THREE.Vector3(-42.0, 0.15, -14.0),
         spawns: [
           { x: -6.0, y: 0, z: -24.0, big: true },
+          { x: -2.0, y: 0, z: -26.0, big: false },
           { x: 0.0, y: 0, z: -27.5, big: true },
+          { x: 2.0, y: 0, z: -26.0, big: false },
           { x: 6.0, y: 0, z: -24.5, big: true },
           { x: -9.0, y: 0, z: -30.5, big: true }
         ]
@@ -1856,9 +1867,11 @@
         beaconPos: new THREE.Vector3(44.0, 0.15, -12.0),
         spawns: [
           { x: -34.0, y: 0, z: -10.0, big: true },
+          { x: -38.0, y: 0, z: -14.0, big: false },
           { x: -50.0, y: 0, z: -26.0, big: true },
           { x: -30.0, y: 0, z: 8.0, big: false },
-          { x: -62.0, y: 0, z: 14.0, big: true }
+          { x: -62.0, y: 0, z: 14.0, big: true },
+          { x: -45.0, y: 0, z: -4.0, big: true }
         ]
       },
       {
@@ -1869,9 +1882,11 @@
         beaconPos: new THREE.Vector3(0.0, 0.15, -68.0),
         spawns: [
           { x: 36.0, y: 0, z: -12.0, big: true },
+          { x: 40.0, y: 0, z: -15.0, big: false },
           { x: 54.0, y: 0, z: -28.0, big: true },
           { x: 18.0, y: 0, z: 46.0, big: true },
-          { x: -20.0, y: 0, z: 56.0, big: false }
+          { x: -20.0, y: 0, z: 56.0, big: false },
+          { x: 0.0, y: 0, z: 42.0, big: true }
         ]
       },
       {
@@ -1882,7 +1897,9 @@
         beaconPos: new THREE.Vector3(0.0, 0.15, -76.0),
         spawns: [
           { x: -24.0, y: 0, z: -60.0, big: true },
+          { x: -10.0, y: 0, z: -64.0, big: false },
           { x: 0.0, y: 0, z: -76.0, big: true },
+          { x: 10.0, y: 0, z: -64.0, big: false },
           { x: 24.0, y: 0, z: -60.0, big: true },
           { x: -36.0, y: 0, z: -80.0, big: true },
           { x: 36.0, y: 0, z: -80.0, big: true }
@@ -1906,6 +1923,9 @@
       aimSensitivity: 1.0,
       lastAttackedTime: 0,
       lastSpaceTap: 0,
+      invasionTimer: 10.0,
+      invasionWaveCount: 0,
+      maxActiveStageRats: 18,
       yaw: 0,
       prevYaw: 0,
       turnAccum: 0,
@@ -2481,14 +2501,72 @@
         baseY: yPos,
         scale,
         hp: isBig ? 3 : 1,
-        speed: isBig ? 2.85 : 3.65,
+        speed: isBig ? 3.55 : 4.55,
         dir: new THREE.Vector3(Math.random() - 0.5, 0, Math.random() - 0.5).normalize(),
-        wanderTimer: Math.random() * 2,
+        wanderTimer: Math.random() * 1.4,
         biteCooldown: 0
       };
       scene.add(group);
       rats.push(group);
       return group;
+    }
+
+    function spawnFrontInvasionWave() {
+      if (!state.started || state.gameOver || state.won) return;
+      const aliveStageRats = rats.filter(r => r.userData.alive && r.userData.stageIdx === state.currentStageIdx);
+      const roomForMore = Math.max(0, state.maxActiveStageRats - aliveStageRats.length);
+      if (roomForMore <= 0) {
+        // Even at cap, boost pursuit speed so existing rats aggressively invade toward the player
+        aliveStageRats.forEach(r => {
+          r.userData.speed = Math.min(6.4, r.userData.speed + 0.25);
+        });
+        return;
+      }
+
+      state.invasionWaveCount++;
+      const waveSize = Math.min(roomForMore, 4 + Math.min(3, Math.floor(state.invasionWaveCount / 2)));
+      const forward = new THREE.Vector3(-Math.sin(state.yaw), 0, -Math.cos(state.yaw)).normalize();
+      const right = new THREE.Vector3(Math.cos(state.yaw), 0, -Math.sin(state.yaw)).normalize();
+      const baseFloorY = getGroundOrFloorHeight(state.playerPos);
+
+      let spawnedCount = 0;
+      const distances = [8.5, 11.5, 14.5, 17.5, 10.0, 13.0, 16.0];
+      const lateralOffsets = [-3.2, -1.6, 0, 1.6, 3.2, -2.4, 2.4];
+
+      for (let i = 0; i < waveSize; i++) {
+        const dist = distances[(i + state.invasionWaveCount) % distances.length];
+        const lat = lateralOffsets[(i * 2 + state.invasionWaveCount) % lateralOffsets.length];
+        let candidateX = state.playerPos.x + forward.x * dist + right.x * lat;
+        let candidateZ = state.playerPos.z + forward.z * dist + right.z * lat;
+        const testPos = new THREE.Vector3(candidateX, baseFloorY, candidateZ);
+        clampToArenaBounds(testPos);
+
+        if (checkCollision(testPos)) {
+          // Fallback directly in front of player or near current floor
+          testPos.x = state.playerPos.x + forward.x * 5.2 + (Math.random() - 0.5) * 2.0;
+          testPos.z = state.playerPos.z + forward.z * 5.2 + (Math.random() - 0.5) * 2.0;
+          clampToArenaBounds(testPos);
+        }
+
+        const isBig = (i === waveSize - 1) || (state.invasionWaveCount % 2 === 0 && i % 2 === 1);
+        const rat = spawnRat(testPos.x, testPos.z, isBig, state.currentStageIdx, baseFloorY);
+        rat.visible = true;
+        const toPlayer = state.playerPos.clone().sub(rat.position);
+        toPlayer.y = 0;
+        if (toPlayer.lengthSq() > 0.01) {
+          rat.userData.dir.copy(toPlayer).normalize();
+        }
+        spawnedCount++;
+      }
+
+      if (spawnedCount > 0) {
+        updateMissionHUD();
+        showToast(
+          `🐀 FRONT INVASION WAVE #${state.invasionWaveCount} (+${spawnedCount} RATS)`,
+          'Rats advancing from the front! Run/walk away or Superman-fly to escape & shoot from ground or air.',
+          1900
+        );
+      }
     }
 
     function initAllRats() {
@@ -3064,15 +3142,16 @@
     function updateMissionHUD() {
       const m = MISSIONS[state.currentStageIdx];
       const totalAlive = rats.filter(r => r.userData.alive).length;
-      const total = rats.length;
-      const cleared = total - totalAlive;
+      const total = Math.max(1, rats.length);
+      const cleared = Math.max(0, total - totalAlive);
+      const waveSec = Math.max(0, Math.ceil(state.invasionTimer));
       document.getElementById('stage-num').textContent = m.stage;
-      document.getElementById('current-zone-title').textContent = m.name;
+      document.getElementById('current-zone-title').textContent = `${m.name} · WAVE ${waveSec}s`;
       document.getElementById('mission-objective').textContent = m.objective;
       document.getElementById('liveLocLabel').textContent = `${getFloorCode(state.playerPos.y)} · ${getAreaNameAt(state.playerPos).replace(/^F[123]\s+/, '')}`;
       document.getElementById('ratsLeft').textContent = totalAlive;
       document.getElementById('killCount').textContent = state.kills;
-      document.getElementById('mission-progress-fill').style.width = `${(cleared / total) * 100}%`;
+      document.getElementById('mission-progress-fill').style.width = `${Math.min(100, (cleared / total) * 100)}%`;
       missionBeacon.position.copy(m.beaconPos);
     }
 
@@ -3512,6 +3591,8 @@
       state.kills = 0;
       state.currentStageIdx = 0;
       state.lastEliminatedArea = 'F1 Front Door & Foyer';
+      state.invasionTimer = 10.0;
+      state.invasionWaveCount = 0;
       state.isFlying = false;
       state.isLungingMove = false;
       state.lungeTimer = 0;
@@ -3772,9 +3853,11 @@
         toPlayer.y = 0;
         const horizDist = toPlayer.length();
         const vertDiff = Math.abs(state.playerPos.y - rat.position.y);
-        if (horizDist < 30 && vertDiff < 3.5 && !state.isSleeping) {
+        if (!state.isSleeping) {
+          // Rats actively invade toward the player across the stage, with extra urgency when close or on same story
           toPlayer.normalize();
-          d.dir.lerp(toPlayer, delta * 3.6).normalize();
+          const pursuitTurnRate = vertDiff < 3.5 ? 5.2 : 2.6;
+          d.dir.lerp(toPlayer, Math.min(1, delta * pursuitTurnRate)).normalize();
         } else {
           d.wanderTimer -= delta;
           if (d.wanderTimer <= 0) {
@@ -3783,15 +3866,26 @@
           }
         }
         const solidStopDist = PLAYER_SOLID_RADIUS + 0.68 * d.scale;
+        const invasionSpeedMult = (!state.isSleeping && horizDist < 28) ? 1.18 : 1.0;
         if (horizDist > solidStopDist) {
-          const nextPos = rat.position.clone().addScaledVector(d.dir, d.speed * delta);
+          const nextPos = rat.position.clone().addScaledVector(d.dir, d.speed * invasionSpeedMult * delta);
           if (!checkCollision(nextPos)) {
             rat.position.x = nextPos.x;
             rat.position.z = nextPos.z;
             clampToArenaBounds(rat.position);
           } else {
-            d.dir.x *= -1;
-            d.dir.z *= -1;
+            // Slide along obstacle toward the player so rats keep invading instead of getting stuck
+            const slideRight = new THREE.Vector3(-d.dir.z, 0, d.dir.x).normalize();
+            const trySlide = rat.position.clone().addScaledVector(slideRight, d.speed * delta);
+            if (!checkCollision(trySlide)) {
+              rat.position.x = trySlide.x;
+              rat.position.z = trySlide.z;
+              clampToArenaBounds(rat.position);
+              d.dir.lerp(slideRight, 0.5).normalize();
+            } else {
+              d.dir.x *= -1;
+              d.dir.z *= -1;
+            }
           }
         }
         rat.rotation.y = Math.atan2(d.dir.x, d.dir.z);
@@ -4017,6 +4111,11 @@
 
       let hasMoveInput = false;
       if (state.started && !state.gameOver && !state.won && !state.isSleeping) {
+        state.invasionTimer -= delta;
+        if (state.invasionTimer <= 0) {
+          state.invasionTimer = 10.0;
+          spawnFrontInvasionWave();
+        }
         state.lungeCooldown = Math.max(0, state.lungeCooldown - delta);
         const turnSpeed = 2.35 * state.aimSensitivity;
         if (state.turnLeftHeld) state.yaw += turnSpeed * delta;
@@ -4147,6 +4246,7 @@
         resolveSolidRatCollisions(delta);
         if (state.started && !state.won) {
           updateRats(delta);
+          updateMissionHUD();
           updateReticleLock();
           updateWholeBodyTargetOrientation(delta);
         }
