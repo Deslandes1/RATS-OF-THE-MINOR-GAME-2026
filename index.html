@@ -1,142 +1,689 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Rats of the Manor · 3D Shooter</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Rats of the Manor · NVIDIA RTX Tactical 3D Shooter</title>
   <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&family=JetBrains+Mono:wght@400;600;700&display=swap');
+
+    :root {
+      --nv-green: #76b900;
+      --nv-green-glow: rgba(118, 185, 0, 0.45);
+      --nv-dark: rgba(11, 13, 14, 0.86);
+      --nv-panel: rgba(17, 20, 22, 0.92);
+      --nv-border: rgba(118, 185, 0, 0.4);
+      --nv-danger: #ff3b30;
+      --nv-boom: #ff9500;
+      --nv-cyan: #00e5ff;
+    }
+
+    * {
+      box-sizing: border-box;
+      user-select: none;
+    }
+
     body {
       margin: 0;
       overflow: hidden;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #080a0c;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      color: #f0f4f8;
     }
-    #info {
-      position: absolute;
-      top: 20px;
-      left: 20px;
-      color: white;
-      background: rgba(0,0,0,0.7);
-      padding: 12px 20px;
-      border-radius: 8px;
-      pointer-events: none;
-      z-index: 10;
-      font-size: 14px;
-      border-left: 4px solid #ffaa00;
+
+    /* NVIDIA HUD PANELS */
+    .nv-panel {
+      background: var(--nv-dark);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border: 1px solid var(--nv-border);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.65), inset 0 0 12px rgba(118, 185, 0, 0.08);
+      border-radius: 10px;
     }
-    #score {
-      position: absolute;
-      top: 20px;
-      right: 20px;
-      color: white;
-      background: rgba(0,0,0,0.7);
-      padding: 12px 25px;
-      border-radius: 8px;
-      font-size: 24px;
-      font-weight: bold;
-      z-index: 10;
-      border-left: 4px solid #00cc00;
-      font-family: monospace;
+
+    .nv-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(118, 185, 0, 0.16);
+      border: 1px solid var(--nv-green);
+      color: var(--nv-green);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 4px;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
     }
-    #health {
-      position: absolute;
-      bottom: 30px;
-      left: 30px;
-      color: white;
-      background: rgba(0,0,0,0.7);
-      padding: 12px 25px;
-      border-radius: 8px;
-      font-size: 20px;
-      z-index: 10;
-      border-left: 4px solid #ff4444;
+
+    .nv-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--nv-green);
+      box-shadow: 0 0 8px var(--nv-green);
+      animation: pulse 1.5s infinite;
     }
-    #message {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      color: white;
-      background: rgba(0,0,0,0.85);
-      padding: 25px 50px;
-      border-radius: 12px;
-      font-size: 28px;
-      text-align: center;
-      z-index: 100;
-      display: none;
-      pointer-events: none;
-      border: 2px solid #ffaa00;
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.45; transform: scale(0.85); }
     }
-    #controls {
+
+    /* TOP LEFT: MISSION & ZONE TRACKER */
+    #mission-hud {
       position: absolute;
-      bottom: 30px;
-      right: 30px;
-      color: rgba(255,255,255,0.6);
-      background: rgba(0,0,0,0.5);
-      padding: 15px;
-      border-radius: 8px;
+      top: 16px;
+      left: 16px;
+      width: 340px;
+      max-width: calc(100vw - 32px);
+      padding: 14px 16px;
+      z-index: 20;
+      border-left: 4px solid var(--nv-green);
+    }
+
+    .mission-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 6px;
+    }
+
+    .mission-title {
       font-size: 13px;
-      z-index: 10;
-      line-height: 1.6;
+      font-weight: 800;
+      letter-spacing: 0.05em;
+      color: #ffffff;
+      text-transform: uppercase;
     }
+
+    #current-room-name {
+      font-size: 17px;
+      font-weight: 900;
+      color: var(--nv-green);
+      margin: 2px 0 4px 0;
+      text-shadow: 0 0 12px var(--nv-green-glow);
+    }
+
+    #mission-objective {
+      font-size: 12.5px;
+      color: #cbd5e1;
+      line-height: 1.4;
+      margin-bottom: 10px;
+    }
+
+    .progress-track {
+      width: 100%;
+      height: 7px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 99px;
+      overflow: hidden;
+      margin-bottom: 8px;
+    }
+
+    #mission-progress-fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, #5a8f00, #76b900, #a3e635);
+      box-shadow: 0 0 10px var(--nv-green);
+      transition: width 0.35s ease;
+    }
+
+    .mission-stats-row {
+      display: flex;
+      justify-content: space-between;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11.5px;
+      color: #94a3b8;
+    }
+
+    .mission-stats-row span strong {
+      color: #fff;
+    }
+
+    /* TOP RIGHT: NVIDIA TELEMETRY & RTX SETTINGS OVERLAY (ALT+Z) */
+    #nvidia-hud {
+      position: absolute;
+      top: 16px;
+      right: 16px;
+      width: 310px;
+      max-width: calc(100vw - 32px);
+      padding: 12px 14px;
+      z-index: 25;
+      border-right: 4px solid var(--nv-green);
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .nv-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      padding-bottom: 8px;
+      margin-bottom: 8px;
+    }
+
+    .nv-brand {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 800;
+      font-size: 12px;
+      color: #fff;
+      letter-spacing: 0.04em;
+    }
+
+    .nv-eye {
+      width: 18px;
+      height: 18px;
+      background: var(--nv-green);
+      border-radius: 4px;
+      display: grid;
+      place-items: center;
+      color: #000;
+      font-weight: 900;
+      font-size: 11px;
+    }
+
+    .telemetry-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 6px;
+      margin-bottom: 8px;
+    }
+
+    .tele-box {
+      background: rgba(0, 0, 0, 0.45);
+      border: 1px solid rgba(118, 185, 0, 0.22);
+      border-radius: 6px;
+      padding: 6px 8px;
+      text-align: center;
+    }
+
+    .tele-label {
+      font-size: 9.5px;
+      color: #94a3b8;
+      text-transform: uppercase;
+    }
+
+    .tele-val {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--nv-green);
+      margin-top: 2px;
+    }
+
+    #gpu-name {
+      font-size: 10px;
+      color: #94a3b8;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      margin-bottom: 8px;
+      padding: 4px 6px;
+      background: rgba(255,255,255,0.04);
+      border-radius: 4px;
+    }
+
+    .nv-controls-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6px;
+    }
+
+    .nv-btn {
+      background: rgba(118, 185, 0, 0.12);
+      border: 1px solid rgba(118, 185, 0, 0.35);
+      color: #e2e8f0;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10.5px;
+      padding: 6px 8px;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      text-align: left;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .nv-btn:hover {
+      background: rgba(118, 185, 0, 0.25);
+      border-color: var(--nv-green);
+    }
+
+    .nv-btn.active {
+      background: rgba(118, 185, 0, 0.24);
+      border-color: var(--nv-green);
+      color: #fff;
+    }
+
+    .nv-btn span.state-tag {
+      color: var(--nv-green);
+      font-weight: 700;
+    }
+
+    /* BOTTOM LEFT: HEALTH & VITALS */
+    #vitals-hud {
+      position: absolute;
+      bottom: 18px;
+      left: 18px;
+      width: 270px;
+      padding: 12px 16px;
+      z-index: 20;
+      border-left: 4px solid var(--nv-green);
+    }
+
+    .vitals-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin-bottom: 6px;
+    }
+
+    .vitals-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      color: #94a3b8;
+    }
+
+    #healthVal {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 24px;
+      font-weight: 800;
+      color: #fff;
+    }
+
+    .hp-bar-bg {
+      width: 100%;
+      height: 10px;
+      background: rgba(255, 255, 255, 0.12);
+      border-radius: 6px;
+      overflow: hidden;
+    }
+
+    #hp-bar-fill {
+      height: 100%;
+      width: 100%;
+      background: linear-gradient(90deg, #16a34a, #76b900);
+      transition: width 0.2s ease, background 0.2s ease;
+    }
+
+    /* BOTTOM CENTER: WEAPON & INFINITE AMMO MODULE */
+    #weapon-hud {
+      position: absolute;
+      bottom: 18px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 10px;
+      padding: 10px 16px;
+      z-index: 20;
+      border-bottom: 3px solid var(--nv-green);
+      align-items: center;
+    }
+
+    .weapon-slot {
+      padding: 6px 12px;
+      border-radius: 7px;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      transition: all 0.2s ease;
+      min-width: 135px;
+    }
+
+    .weapon-slot.selected {
+      background: rgba(118, 185, 0, 0.18);
+      border-color: var(--nv-green);
+      box-shadow: 0 0 14px rgba(118, 185, 0, 0.25);
+    }
+
+    .weapon-slot.boom-selected {
+      background: rgba(255, 149, 0, 0.2);
+      border-color: var(--nv-boom);
+      box-shadow: 0 0 16px rgba(255, 149, 0, 0.35);
+    }
+
+    .slot-key {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      color: var(--nv-green);
+      font-weight: 700;
+    }
+
+    .slot-name {
+      font-size: 13px;
+      font-weight: 800;
+      color: #fff;
+      margin: 2px 0;
+    }
+
+    .slot-meta {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      color: #a3e635;
+    }
+
+    /* BOTTOM RIGHT: COMPACT CONTROLS */
+    #controls-hud {
+      position: absolute;
+      bottom: 18px;
+      right: 18px;
+      padding: 10px 14px;
+      z-index: 20;
+      font-size: 11.5px;
+      line-height: 1.65;
+      color: #cbd5e1;
+      max-width: 290px;
+    }
+
+    #controls-hud kbd {
+      background: rgba(118, 185, 0, 0.18);
+      border: 1px solid rgba(118, 185, 0, 0.45);
+      color: #d9f99d;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10.5px;
+      padding: 1px 5px;
+      border-radius: 4px;
+      font-weight: 700;
+    }
+
+    /* DYNAMIC RETICLE / CROSSHAIR */
     #crosshair {
       position: absolute;
+      top: 46%;
+      left: 50%;
+      width: 26px;
+      height: 26px;
+      transform: translate(-50%, -50%);
+      pointer-events: none;
+      z-index: 15;
+      transition: transform 0.08s ease;
+    }
+
+    .ch-ring {
+      position: absolute;
+      inset: 0;
+      border: 2px solid rgba(118, 185, 0, 0.9);
+      border-radius: 50%;
+      box-shadow: 0 0 8px rgba(118, 185, 0, 0.5);
+    }
+
+    #crosshair.boom-mode .ch-ring {
+      border-color: #ff9500;
+      box-shadow: 0 0 12px rgba(255, 149, 0, 0.8);
+      transform: scale(1.35);
+    }
+
+    .ch-dot {
+      position: absolute;
       top: 50%;
       left: 50%;
-      width: 20px;
-      height: 20px;
-      transform: translate(-50%, -50%);
-      border: 2px solid rgba(255,255,255,0.7);
+      width: 4px;
+      height: 4px;
+      background: #fff;
       border-radius: 50%;
-      pointer-events: none;
-      z-index: 5;
+      transform: translate(-50%, -50%);
     }
-    #crosshair::before, #crosshair::after {
+
+    /* HITMARKER */
+    #hitmarker {
+      position: absolute;
+      top: 46%;
+      left: 50%;
+      width: 24px;
+      height: 24px;
+      transform: translate(-50%, -50%) rotate(45deg);
+      pointer-events: none;
+      z-index: 16;
+      opacity: 0;
+      transition: opacity 0.1s ease;
+    }
+
+    #hitmarker::before, #hitmarker::after {
       content: '';
       position: absolute;
-      background: rgba(255,255,255,0.7);
+      background: #ff3b30;
+      box-shadow: 0 0 6px #ff3b30;
     }
-    #crosshair::before {
-      top: 50%;
-      left: 0;
-      width: 100%;
-      height: 2px;
-      transform: translateY(-50%);
-    }
-    #crosshair::after {
-      top: 0;
-      left: 50%;
-      width: 2px;
-      height: 100%;
-      transform: translateX(-50%);
-    }
-    #weapon-name {
+
+    #hitmarker::before { top: 11px; left: 0; width: 24px; height: 2px; }
+    #hitmarker::after { left: 11px; top: 0; width: 2px; height: 24px; }
+
+    /* CENTER BANNER / MISSION TOAST */
+    #banner-toast {
       position: absolute;
-      bottom: 120px;
-      right: 50%;
-      transform: translateX(50%);
-      color: white;
-      background: rgba(0,0,0,0.6);
-      padding: 8px 20px;
-      border-radius: 20px;
-      font-size: 16px;
-      z-index: 10;
+      top: 135px;
+      left: 50%;
+      transform: translateX(-50%);
+      padding: 12px 26px;
+      z-index: 30;
+      text-align: center;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.3s ease, transform 0.3s ease;
+      border-top: 3px solid var(--nv-green);
     }
-    .hidden {
-      display: none;
+
+    #banner-toast.visible {
+      opacity: 1;
+      transform: translateX(-50%) translateY(4px);
+    }
+
+    #banner-title {
+      font-size: 16px;
+      font-weight: 900;
+      color: var(--nv-green);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    #banner-sub {
+      font-size: 13px;
+      color: #e2e8f0;
+      margin-top: 3px;
+    }
+
+    /* DAMAGE VIGNETTE */
+    #damage-overlay {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 12;
+      background: radial-gradient(circle, transparent 55%, rgba(220, 20, 20, 0.65) 100%);
+      opacity: 0;
+      transition: opacity 0.15s ease;
+    }
+
+    /* START / END OVERLAY MODAL */
+    #modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(5, 7, 9, 0.82);
+      backdrop-filter: blur(8px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+      padding: 20px;
+    }
+
+    #modal-card {
+      max-width: 540px;
+      width: 100%;
+      padding: 32px;
+      text-align: center;
+      border: 1px solid var(--nv-green);
+      box-shadow: 0 0 50px rgba(118, 185, 0, 0.25);
+    }
+
+    #modal-card h1 {
+      margin: 12px 0 8px 0;
+      font-size: 28px;
+      font-weight: 900;
+      letter-spacing: 0.03em;
+      color: #fff;
+    }
+
+    #modal-card p {
+      color: #cbd5e1;
+      font-size: 14.5px;
+      line-height: 1.6;
+      margin-bottom: 22px;
+    }
+
+    .cta-btn {
+      background: linear-gradient(135deg, #76b900, #5a8f00);
+      color: #050800;
+      font-family: 'Inter', sans-serif;
+      font-weight: 900;
+      font-size: 15px;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      border: none;
+      padding: 14px 32px;
+      border-radius: 8px;
+      cursor: pointer;
+      box-shadow: 0 0 24px rgba(118, 185, 0, 0.5);
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    .cta-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 0 32px rgba(118, 185, 0, 0.8);
+    }
+
+    @media (max-width: 900px) {
+      #controls-hud { display: none; }
+      #nvidia-hud { width: 240px; }
+      #mission-hud { width: 260px; }
     }
   </style>
 </head>
 <body>
-  <div id="info">🏚️ RATS OF THE MANOR 🐀</div>
-  <div id="score">Rats left: <span id="ratsLeft">8</span></div>
-  <div id="health">❤️ HP: <span id="healthVal">100</span></div>
-  <div id="crosshair"></div>
-  <div id="weapon-name">🔫 Pistol</div>
-  <div id="message"></div>
-  <div id="controls">
-    <strong>WASD</strong> move &nbsp;|&nbsp; <strong>Mouse</strong> look<br>
-    <strong>Shift</strong> run &nbsp;|&nbsp; <strong>Space</strong> jump<br>
-    <strong>Left Click</strong> shoot &nbsp;|&nbsp; <strong>E</strong> switch gun<br>
-    <strong>F</strong> sleep (heal) &nbsp;|&nbsp; <strong>R</strong> restart
+  <div id="damage-overlay"></div>
+
+  <!-- TOP LEFT: MISSION TRACKER -->
+  <div id="mission-hud" class="nv-panel">
+    <div class="mission-header">
+      <span class="mission-title">HOUSE EXTERMINATION OPS</span>
+      <span class="nv-badge"><span class="nv-dot"></span> STAGE <span id="stage-num">1</span>/5</span>
+    </div>
+    <div id="current-room-name">ZONE 1: FRONT FOYER</div>
+    <div id="mission-objective">Clear the front entry rats to unlock the Living Room.</div>
+    <div class="progress-track">
+      <div id="mission-progress-fill"></div>
+    </div>
+    <div class="mission-stats-row">
+      <span>ZONE RATS: <strong id="zoneRatsLeft">0</strong></span>
+      <span>TOTAL LEFT: <strong id="ratsLeft">0</strong></span>
+      <span>KILLS: <strong id="killCount">0</strong></span>
+    </div>
+  </div>
+
+  <!-- TOP RIGHT: NVIDIA TELEMETRY & RTX INTERFACE -->
+  <div id="nvidia-hud" class="nv-panel">
+    <div class="nv-header">
+      <div class="nv-brand">
+        <div class="nv-eye">NV</div>
+        <span>GEFORCE RTX TELEMETRY</span>
+      </div>
+      <span class="nv-badge">REFLEX ON</span>
+    </div>
+    <div class="telemetry-grid">
+      <div class="tele-box">
+        <div class="tele-label">FPS</div>
+        <div class="tele-val" id="fps-val">60</div>
+      </div>
+      <div class="tele-box">
+        <div class="tele-label">LATENCY</div>
+        <div class="tele-val" id="ms-val">8.2ms</div>
+      </div>
+      <div class="tele-box">
+        <div class="tele-label">DLSS 3.5</div>
+        <div class="tele-val" id="dlss-val">QUALITY</div>
+      </div>
+    </div>
+    <div id="gpu-name">GPU: Detecting WebGL Renderer...</div>
+    <div class="nv-controls-grid">
+      <button class="nv-btn active" id="btn-dlss" type="button">
+        <span>DLSS MODE</span>
+        <span class="state-tag" id="tag-dlss">QUAL</span>
+      </button>
+      <button class="nv-btn active" id="btn-rtx" type="button">
+        <span>RTX SHADOWS</span>
+        <span class="state-tag" id="tag-rtx">ON</span>
+      </button>
+      <button class="nv-btn active" id="btn-audio" type="button">
+        <span>3D AUDIO</span>
+        <span class="state-tag" id="tag-audio">ON</span>
+      </button>
+      <button class="nv-btn active" id="btn-cam" type="button">
+        <span>CAMERA [V]</span>
+        <span class="state-tag" id="tag-cam">OTS</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- CENTER TOAST -->
+  <div id="banner-toast" class="nv-panel">
+    <div id="banner-title">MISSION UPDATE</div>
+    <div id="banner-sub">Proceed to the next room.</div>
+  </div>
+
+  <!-- CROSSHAIR & HITMARKER -->
+  <div id="crosshair">
+    <div class="ch-ring"></div>
+    <div class="ch-dot"></div>
+  </div>
+  <div id="hitmarker"></div>
+
+  <!-- BOTTOM LEFT: HEALTH -->
+  <div id="vitals-hud" class="nv-panel">
+    <div class="vitals-row">
+      <span class="vitals-label">EXTERMINATOR ARMOR / HP</span>
+      <span><span id="healthVal">100</span><span style="color:#64748b;font-size:14px;">/100</span></span>
+    </div>
+    <div class="hp-bar-bg">
+      <div id="hp-bar-fill"></div>
+    </div>
+  </div>
+
+  <!-- BOTTOM CENTER: WEAPONS & AMMO TYPES -->
+  <div id="weapon-hud" class="nv-panel">
+    <div class="weapon-slot selected" id="slot-gun">
+      <div class="slot-key">[E] WEAPON · INFINITE ∞</div>
+      <div class="slot-name" id="gun-label">SHORT GUN (SMG)</div>
+      <div class="slot-meta" id="gun-desc">Rapid Tactical Sidearm</div>
+    </div>
+    <div class="weapon-slot" id="slot-ammo">
+      <div class="slot-key">[Q / R-CLICK] AMMO TYPE</div>
+      <div class="slot-name" id="ammo-label">RIFLE AP ROUNDS</div>
+      <div class="slot-meta" id="ammo-desc">High-Velocity Piercing</div>
+    </div>
+  </div>
+
+  <!-- BOTTOM RIGHT: CONTROLS -->
+  <div id="controls-hud" class="nv-panel">
+    <kbd>WASD</kbd> Move &nbsp; <kbd>SHIFT</kbd> Sprint &nbsp; <kbd>SPACE</kbd> Jump<br>
+    <kbd>L-CLICK</kbd> Fire &nbsp; <kbd>Q</kbd>/<kbd>R-CLICK</kbd> Big Boom Shot (3x Rats)<br>
+    <kbd>E</kbd> Short/Long Gun &nbsp; <kbd>V</kbd> Camera View &nbsp; <kbd>F</kbd> Bed Heal
+  </div>
+
+  <!-- START / VICTORY / GAME OVER MODAL -->
+  <div id="modal-overlay">
+    <div id="modal-card" class="nv-panel">
+      <span class="nv-badge"><span class="nv-dot"></span> NVIDIA RTX 3D EXTERMINATION</span>
+      <h1 id="modal-title">RATS OF THE MANOR</h1>
+      <p id="modal-desc">
+        Take control of the third-person Exterminator inside the infested 3D Manor.
+        Clear all <strong>5 House & Backyard Missions</strong> using your <strong>Short Gun</strong> or <strong>Long Rifle</strong> with <strong>Infinite Ammo</strong>.
+        Switch to <strong>BIG BOOM SHOTS (Q / Right-Click)</strong> to obliterate up to <strong>3 giant rats at once</strong>—don't let them swarm and eat you!
+      </p>
+      <button class="cta-btn" id="start-btn" type="button">DEPLOY INTO MANOR</button>
+    </div>
   </div>
 
   <script type="importmap">
@@ -150,1314 +697,1533 @@
 
   <script type="module">
     import * as THREE from 'three';
-    import { PointerLockControls } from 'three/addons/controls/PointerLockControls.js';
 
-    // ---------- GAME STATE ----------
+    // =========================================================================
+    // 1. PROCEDURAL WEB AUDIO ENGINE (Gunshots, Big Boom, Squeaks, Eating, Win)
+    // =========================================================================
+    class SoundEngine {
+      constructor() {
+        this.ctx = null;
+        this.muted = false;
+        this.lastStepTime = 0;
+      }
+
+      init() {
+        if (!this.ctx) {
+          const AudioCtx = window.AudioContext || window.webkitAudioContext;
+          this.ctx = new AudioCtx();
+        }
+        if (this.ctx.state === 'suspended') {
+          this.ctx.resume();
+        }
+      }
+
+      toggleMute() {
+        this.muted = !this.muted;
+        return !this.muted;
+      }
+
+      playGunshot(weaponType, bulletType) {
+        if (this.muted) return;
+        this.init();
+        const now = this.ctx.currentTime;
+
+        if (bulletType === 'boom') {
+          // BIG BOOM SHOT: Heavy plasma launch + deep sub-bass explosion
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          osc.type = 'sawtooth';
+          osc.frequency.setValueAtTime(190, now);
+          osc.frequency.exponentialRampToValueAtTime(28, now + 0.55);
+          gain.gain.setValueAtTime(0.65, now);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.6);
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+          osc.start(now);
+          osc.stop(now + 0.6);
+
+          // Explosion noise burst
+          this._playNoise(0.55, 450, 0.7);
+          return;
+        }
+
+        // Standard Rifle or Short Gun crack
+        const isLong = weaponType === 'long';
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = isLong ? 'sawtooth' : 'triangle';
+        osc.frequency.setValueAtTime(isLong ? 320 : 480, now);
+        osc.frequency.exponentialRampToValueAtTime(45, now + (isLong ? 0.16 : 0.11));
+        gain.gain.setValueAtTime(isLong ? 0.42 : 0.34, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + (isLong ? 0.18 : 0.12));
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start(now);
+        osc.stop(now + 0.18);
+
+        this._playNoise(isLong ? 0.16 : 0.1, isLong ? 1400 : 2100, isLong ? 0.45 : 0.32);
+      }
+
+      _playNoise(duration, filterFreq, volume) {
+        if (!this.ctx || this.muted) return;
+        const now = this.ctx.currentTime;
+        const bufferSize = Math.floor(this.ctx.sampleRate * duration);
+        const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+        const data = buffer.getChannelData(0);
+        for (let i = 0; i < bufferSize; i++) {
+          data[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / bufferSize, 1.5);
+        }
+        const noise = this.ctx.createBufferSource();
+        noise.buffer = buffer;
+
+        const filter = this.ctx.createBiquadFilter();
+        filter.type = 'lowpass';
+        filter.frequency.setValueAtTime(filterFreq, now);
+
+        const gain = this.ctx.createGain();
+        gain.gain.setValueAtTime(volume, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + duration);
+
+        noise.connect(filter);
+        filter.connect(gain);
+        gain.connect(this.ctx.destination);
+        noise.start(now);
+      }
+
+      playRatSqueak(isKill = false) {
+        if (this.muted) return;
+        this.init();
+        const now = this.ctx.currentTime;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'sine';
+        if (isKill) {
+          osc.frequency.setValueAtTime(1400, now);
+          osc.frequency.exponentialRampToValueAtTime(320, now + 0.28);
+          gain.gain.setValueAtTime(0.28, now);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+          osc.start(now);
+          osc.stop(now + 0.3);
+        } else {
+          osc.frequency.setValueAtTime(1800, now);
+          osc.frequency.linearRampToValueAtTime(2400, now + 0.06);
+          osc.frequency.exponentialRampToValueAtTime(1100, now + 0.14);
+          gain.gain.setValueAtTime(0.2, now);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.15);
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+          osc.start(now);
+          osc.stop(now + 0.15);
+        }
+      }
+
+      playRatBite() {
+        if (this.muted) return;
+        this.init();
+        const now = this.ctx.currentTime;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(140, now);
+        osc.frequency.linearRampToValueAtTime(75, now + 0.18);
+        gain.gain.setValueAtTime(0.35, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.2);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start(now);
+        osc.stop(now + 0.2);
+      }
+
+      playSwitch() {
+        if (this.muted) return;
+        this.init();
+        const now = this.ctx.currentTime;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'square';
+        osc.frequency.setValueAtTime(620, now);
+        osc.frequency.setValueAtTime(920, now + 0.045);
+        gain.gain.setValueAtTime(0.16, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.09);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start(now);
+        osc.stop(now + 0.09);
+      }
+
+      playFootstep(running) {
+        if (this.muted || !this.ctx) return;
+        const nowMs = performance.now();
+        const interval = running ? 270 : 410;
+        if (nowMs - this.lastStepTime < interval) return;
+        this.lastStepTime = nowMs;
+        this._playNoise(0.06, 320, running ? 0.14 : 0.09);
+      }
+
+      playMissionClear() {
+        if (this.muted) return;
+        this.init();
+        const notes = [523.25, 659.25, 783.99, 1046.5];
+        notes.forEach((freq, idx) => {
+          const now = this.ctx.currentTime + idx * 0.09;
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(freq, now);
+          gain.gain.setValueAtTime(0.22, now);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.35);
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+          osc.start(now);
+          osc.stop(now + 0.36);
+        });
+      }
+
+      playVictory() {
+        if (this.muted) return;
+        this.init();
+        const chord = [523.25, 659.25, 783.99, 1046.5, 1318.5];
+        chord.forEach((freq, i) => {
+          const now = this.ctx.currentTime + i * 0.11;
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          osc.type = 'sawtooth';
+          osc.frequency.setValueAtTime(freq, now);
+          gain.gain.setValueAtTime(0.2, now);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.85);
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+          osc.start(now);
+          osc.stop(now + 0.85);
+        });
+      }
+
+      playGameOver() {
+        if (this.muted) return;
+        this.init();
+        const notes = [220, 185, 146.8, 110];
+        notes.forEach((freq, i) => {
+          const now = this.ctx.currentTime + i * 0.22;
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          osc.type = 'sawtooth';
+          osc.frequency.setValueAtTime(freq, now);
+          gain.gain.setValueAtTime(0.28, now);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.5);
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+          osc.start(now);
+          osc.stop(now + 0.5);
+        });
+      }
+    }
+
+    const sfx = new SoundEngine();
+
+    // =========================================================================
+    // 2. GAME STATE & 5-STAGE ROOM MISSION DEFINITIONS
+    // =========================================================================
+    const MISSIONS = [
+      {
+        stage: 1,
+        name: 'STAGE 1: FRONT FOYER & HALL',
+        objective: 'Eliminate the entry scout rats near the Front Door & Staircase.',
+        unlockHint: 'Front Foyer secured! Enter the Living Room on the left.',
+        beaconPos: new THREE.Vector3(-4, 0.2, 2),
+        spawns: [
+          { x: -2.5, z: 6.5, big: false },
+          { x: 3.5, z: 5.0, big: false },
+          { x: 1.0, z: -1.5, big: true }
+        ]
+      },
+      {
+        stage: 2,
+        name: 'STAGE 2: GRAND LIVING ROOM',
+        objective: 'Clear the infested Sofa, Bookshelf & Lounge Table!',
+        unlockHint: 'Living Room cleared! Push north through the doorway into the Kitchen.',
+        beaconPos: new THREE.Vector3(-7, 0.2, -8),
+        spawns: [
+          { x: -8.5, z: 4.5, big: false },
+          { x: -9.5, z: -1.0, big: true },
+          { x: -6.5, z: -4.5, big: true },
+          { x: -10.0, z: 1.5, big: false }
+        ]
+      },
+      {
+        stage: 3,
+        name: 'STAGE 3: MANOR KITCHEN & PANTRY',
+        objective: 'Exterminate the giant pantry rats! Try BIG BOOM SHOTS [Q / R-Click].',
+        unlockHint: 'Kitchen secured! Cross the central hall into the Master Bedroom.',
+        beaconPos: new THREE.Vector3(4, 0.2, -12),
+        spawns: [
+          { x: -8.5, z: -14.5, big: true },
+          { x: -6.0, z: -11.0, big: true },
+          { x: -10.5, z: -12.5, big: true },
+          { x: -5.5, z: -15.5, big: false }
+        ]
+      },
+      {
+        stage: 4,
+        name: 'STAGE 4: MASTER BEDROOM',
+        objective: 'Clear the Bedroom Brood! (Press F near the bed anytime to heal).',
+        unlockHint: 'Bedroom cleared! Breach the BACK DOOR (North) into the Backyard Courtyard!',
+        beaconPos: new THREE.Vector3(0, 0.2, -18),
+        spawns: [
+          { x: 7.5, z: -11.0, big: true },
+          { x: 10.0, z: -14.5, big: true },
+          { x: 6.0, z: -15.5, big: true },
+          { x: 9.0, z: -9.5, big: false }
+        ]
+      },
+      {
+        stage: 5,
+        name: 'STAGE 5: BACKYARD COURTYARD FINALE',
+        objective: 'Eliminate the Alpha Backyard Swarm to claim total victory!',
+        unlockHint: 'ALL RATS EXTERMINATED! MANOR SECURED!',
+        beaconPos: new THREE.Vector3(0, 0.2, -28),
+        spawns: [
+          { x: -6.0, z: -24.0, big: true },
+          { x: 0.0, z: -27.5, big: true },
+          { x: 6.0, z: -24.5, big: true },
+          { x: -9.0, z: -30.0, big: true },
+          { x: 8.5, z: -30.5, big: true },
+          { x: 0.0, z: -22.0, big: false }
+        ]
+      }
+    ];
+
     const state = {
+      started: false,
       health: 100,
-      ratsLeft: 8,
-      totalRats: 8,
+      maxHealth: 100,
+      kills: 0,
+      currentStageIdx: 0,
       gameOver: false,
       won: false,
-      weapon: 'pistol', // 'pistol' or 'rifle'
-      canJump: false,
+      weapon: 'short',     // 'short' (SMG/Pistol) or 'long' (Assault Rifle)
+      bulletType: 'rifle', // 'rifle' (AP Single) or 'boom' (Big Boom AoE - hits 3 big rats!)
+      cameraMode: 'ots',   // 'ots' (Over-the-Shoulder) or 'far' (Wide 3rd Person)
+      dlssMode: 'QUAL',
+      rtxShadows: true,
+      yaw: 0,              // Player facing yaw (0 = facing -Z into house)
+      pitch: 0.12,         // Camera vertical pitch
+      playerPos: new THREE.Vector3(0, 0, 9.5),
       velocity: new THREE.Vector3(),
-      direction: new THREE.Vector3(),
+      canJump: true,
       moveForward: false,
       moveBackward: false,
       moveLeft: false,
       moveRight: false,
       isRunning: false,
       isSleeping: false,
-      sleepTimer: 0,
       lastShot: 0,
-      shotCooldown: 250,
-      rifleCooldown: 120,
-      ammo: { pistol: Infinity, rifle: 30 },
-      mouseDown: false
+      mouseDown: false,
+      recoilKick: 0,
+      walkCycle: 0
     };
 
-    // ---------- SCENE ----------
+    // =========================================================================
+    // 3. THREE.JS RENDERER, SCENE & NVIDIA GPU TELEMETRY SETUP
+    // =========================================================================
     const scene = new THREE.Scene();
-    scene.background = new THREE.Color(0x1a1a2e);
-    scene.fog = new THREE.Fog(0x1a1a2e, 15, 50);
+    scene.background = new THREE.Color(0x0d1117);
+    scene.fog = new THREE.FogExp2(0x0d1117, 0.022);
 
-    const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-    camera.position.set(0, 1.7, 20);
+    const camera = new THREE.PerspectiveCamera(65, window.innerWidth / window.innerHeight, 0.1, 150);
 
-    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
     renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     renderer.shadowMap.enabled = true;
     renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 1.15;
     document.body.appendChild(renderer.domElement);
 
-    // ---------- LIGHTS ----------
-    const ambientLight = new THREE.AmbientLight(0x404060, 0.6);
+    // Detect GPU for NVIDIA Telemetry Panel
+    try {
+      const gl = renderer.getContext();
+      const debugInfo = gl.getExtension('WEBGL_debug_renderer_info');
+      const gpuStr = debugInfo ? gl.getParameter(debugInfo.UNMASKED_RENDERER_WEBGL) : 'NVIDIA RTX WebGL 2.0 Pipeline';
+      document.getElementById('gpu-name').textContent = `GPU: ${gpuStr}`;
+    } catch (e) {
+      document.getElementById('gpu-name').textContent = 'GPU: GeForce RTX Hardware Accelerated';
+    }
+
+    // =========================================================================
+    // 4. LIGHTING & ATMOSPHERE
+    // =========================================================================
+    const ambientLight = new THREE.AmbientLight(0x475569, 0.75);
     scene.add(ambientLight);
 
-    const moonLight = new THREE.DirectionalLight(0x8899cc, 0.8);
-    moonLight.position.set(10, 30, -20);
+    const moonLight = new THREE.DirectionalLight(0x93c5fd, 1.1);
+    moonLight.position.set(14, 28, -26);
     moonLight.castShadow = true;
     moonLight.shadow.mapSize.width = 2048;
     moonLight.shadow.mapSize.height = 2048;
-    moonLight.shadow.camera.near = 0.5;
-    moonLight.shadow.camera.far = 100;
-    moonLight.shadow.camera.left = -40;
-    moonLight.shadow.camera.right = 40;
-    moonLight.shadow.camera.top = 40;
-    moonLight.shadow.camera.bottom = -40;
+    moonLight.shadow.camera.near = 1;
+    moonLight.shadow.camera.far = 90;
+    moonLight.shadow.camera.left = -35;
+    moonLight.shadow.camera.right = 35;
+    moonLight.shadow.camera.top = 35;
+    moonLight.shadow.camera.bottom = -35;
     scene.add(moonLight);
 
-    // Warm interior lights
     const roomLights = [];
-    function addRoomLight(x, y, z, color = 0xffaa66) {
-      const light = new THREE.PointLight(color, 0.8, 12);
+    function addRoomLight(x, y, z, color = 0xffb36b, intensity = 1.15) {
+      const light = new THREE.PointLight(color, intensity, 16);
       light.position.set(x, y, z);
-      light.castShadow = true;
-      light.shadow.mapSize.width = 512;
-      light.shadow.mapSize.height = 512;
+      light.castShadow = false;
       scene.add(light);
       roomLights.push(light);
-      // Add a visible glow sphere
-      const sphere = new THREE.Mesh(
-        new THREE.SphereGeometry(0.15, 8, 8),
-        new THREE.MeshBasicMaterial({ color: color })
+
+      const bulb = new THREE.Mesh(
+        new THREE.SphereGeometry(0.14, 8, 8),
+        new THREE.MeshBasicMaterial({ color })
       );
-      sphere.position.set(x, y, z);
-      scene.add(sphere);
+      bulb.position.set(x, y, z);
+      scene.add(bulb);
       return light;
     }
 
-    // ---------- MATERIALS ----------
-    const floorMat = new THREE.MeshStandardMaterial({ color: 0x4a3a2a, roughness: 0.9, metalness: 0.1 });
-    const wallMat = new THREE.MeshStandardMaterial({ color: 0x8a7a6a, roughness: 0.85 });
-    const ceilingMat = new THREE.MeshStandardMaterial({ color: 0x6a5a4a, roughness: 0.9 });
-    const woodMat = new THREE.MeshStandardMaterial({ color: 0x6b4a2a, roughness: 0.8 });
-    const darkWoodMat = new THREE.MeshStandardMaterial({ color: 0x4a2a1a, roughness: 0.8 });
-    const bedMat = new THREE.MeshStandardMaterial({ color: 0x884466, roughness: 0.7 });
-    const pillowMat = new THREE.MeshStandardMaterial({ color: 0xeeeeff, roughness: 0.9 });
-    const blanketMat = new THREE.MeshStandardMaterial({ color: 0x445588, roughness: 0.8 });
-    const ratMat = new THREE.MeshStandardMaterial({ color: 0x555555, roughness: 0.7 });
-    const ratEyeMat = new THREE.MeshStandardMaterial({ color: 0xff0000, emissive: 0xff0000, emissiveIntensity: 2 });
-    const ratNoseMat = new THREE.MeshStandardMaterial({ color: 0xffaaaa });
-    const gunMat = new THREE.MeshStandardMaterial({ color: 0x333333, metalness: 0.8, roughness: 0.3 });
-    const barrelMat = new THREE.MeshStandardMaterial({ color: 0x222222, metalness: 0.9, roughness: 0.2 });
-    const stockMat = new THREE.MeshStandardMaterial({ color: 0x5a3a1a, roughness: 0.8 });
-    const stairMat = new THREE.MeshStandardMaterial({ color: 0x7a6a5a, roughness: 0.9 });
-    const tableMat = new THREE.MeshStandardMaterial({ color: 0x5a3a2a, roughness: 0.8 });
-    const boxMat = new THREE.MeshStandardMaterial({ color: 0x8a6a4a, roughness: 0.9 });
-    const rugMat = new THREE.MeshStandardMaterial({ color: 0x663344, roughness: 1.0 });
-    const doorMat = new THREE.MeshStandardMaterial({ color: 0x5a3a1a, roughness: 0.7 });
-    const windowMat = new THREE.MeshStandardMaterial({ color: 0x88aaff, emissive: 0x224466, emissiveIntensity: 0.5 });
-    const pictureMat = new THREE.MeshStandardMaterial({ color: 0xffcc88, roughness: 0.5 });
-    const rug2Mat = new THREE.MeshStandardMaterial({ color: 0x224466, roughness: 1.0 });
-    const bookshelfMat = new THREE.MeshStandardMaterial({ color: 0x3a2a1a, roughness: 0.9 });
-    const bookMat = new THREE.MeshStandardMaterial({ color: 0xaa3333, roughness: 0.7 });
-    const lampMat = new THREE.MeshStandardMaterial({ color: 0xffdd88, emissive: 0xffaa22, emissiveIntensity: 0.8 });
+    // =========================================================================
+    // 5. MATERIALS & 3D MANOR + BACKYARD ARCHITECTURE (OPEN DOORWAYS!)
+    // =========================================================================
+    const floorMat = new THREE.MeshStandardMaterial({ color: 0x4b382a, roughness: 0.85, metalness: 0.1 });
+    const wallMat = new THREE.MeshStandardMaterial({ color: 0x7c6f64, roughness: 0.85 });
+    const ceilingMat = new THREE.MeshStandardMaterial({ color: 0x52463c, roughness: 0.9 });
+    const woodMat = new THREE.MeshStandardMaterial({ color: 0x6b4423, roughness: 0.75 });
+    const darkWoodMat = new THREE.MeshStandardMaterial({ color: 0x3e2412, roughness: 0.8 });
+    const doorFrameMat = new THREE.MeshStandardMaterial({ color: 0x76b900, emissive: 0x263d00, roughness: 0.5 });
 
-    // ---------- HOUSE DIMENSIONS ----------
-    // House spans x: -12 to 12, z: -18 to 12
-    const HOUSE = { minX: -12, maxX: 12, minZ: -18, maxZ: 12, height: 5 };
+    const wallColliders = [];
+    function addCollider(minX, maxX, minZ, maxZ) {
+      wallColliders.push({ minX, maxX, minZ, maxZ });
+    }
 
-    // ---------- FLOOR ----------
     function createFloor(x, z, w, d, mat = floorMat) {
-      const geo = new THREE.BoxGeometry(w, 0.2, d);
-      const mesh = new THREE.Mesh(geo, mat);
+      const mesh = new THREE.Mesh(new THREE.BoxGeometry(w, 0.2, d), mat);
       mesh.position.set(x, -0.1, z);
       mesh.receiveShadow = true;
-      mesh.castShadow = false;
       scene.add(mesh);
       return mesh;
     }
 
-    // Main floor
-    createFloor(0, -3, 24, 30);
-
-    // Courtyard (outside area, lower)
-    const courtyardMat = new THREE.MeshStandardMaterial({ color: 0x3a5a3a, roughness: 1.0 });
-    createFloor(0, -28, 40, 20, courtyardMat);
-    // Path from house to courtyard
-    createFloor(0, -18, 6, 10, new THREE.MeshStandardMaterial({ color: 0x6a6a5a, roughness: 1.0 }));
-
-    // ---------- WALLS ----------
-    function createWall(x, y, z, w, h, d, mat = wallMat) {
-      const geo = new THREE.BoxGeometry(w, h, d);
-      const mesh = new THREE.Mesh(geo, mat);
+    function createWall(x, y, z, w, h, d, mat = wallMat, solid = true) {
+      const mesh = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), mat);
       mesh.position.set(x, y, z);
       mesh.castShadow = true;
       mesh.receiveShadow = true;
       scene.add(mesh);
+      if (solid) {
+        addCollider(x - w / 2, x + w / 2, z - d / 2, z + d / 2);
+      }
       return mesh;
     }
 
-    // Exterior walls (house)
-    // Front wall (z = maxZ = 12) with door opening
-    createWall(-9, 2.5, 12, 6, 5, 0.3); // left of door
-    createWall(9, 2.5, 12, 6, 5, 0.3);  // right of door
-    createWall(0, 4.5, 12, 6, 1, 0.3);  // above door
-    // Door
-    createWall(0, 1.5, 12, 5, 3, 0.35, doorMat);
+    // Main House Floor (x: -12 to 12, z: -18 to 12)
+    createFloor(0, -3, 24, 30, floorMat);
+    // Backyard Courtyard Grass & Stone Patio (z: -36 to -18)
+    const courtyardMat = new THREE.MeshStandardMaterial({ color: 0x243b24, roughness: 0.95 });
+    createFloor(0, -27, 38, 18, courtyardMat);
+    createFloor(0, -23, 6, 10, new THREE.MeshStandardMaterial({ color: 0x57534e, roughness: 0.9 }));
 
-    // Back wall (z = minZ = -18)
-    createWall(0, 2.5, -18, 24, 5, 0.3);
-
-    // Left wall (x = minX = -12)
-    createWall(-12, 2.5, -3, 0.3, 5, 30);
-
-    // Right wall (x = maxX = 12)
-    createWall(12, 2.5, -3, 0.3, 5, 30);
-
-    // Interior walls
-    // Wall dividing living room and kitchen (x = -4, z: -18 to -8)
-    createWall(-4, 2.5, -13, 0.3, 5, 10);
-    // Wall dividing kitchen and hall (z = -8, x: -12 to -4)
-    createWall(-8, 2.5, -8, 8, 5, 0.3);
-
-    // Bedroom walls (right side)
-    // Wall (x = 4, z: -18 to -8)
-    createWall(4, 2.5, -13, 0.3, 5, 10);
-    // Wall (z = -8, x: 4 to 12)
-    createWall(8, 2.5, -8, 8, 5, 0.3);
-    // Doorway in bedroom wall
-    // (already have wall x=4 from -18 to -8, need opening at z=-8 to -6)
-    // Replace by splitting: actually we'll just leave a gap by not building part
-
-    // Actually let's redo interior walls with door gaps
-    // Remove the ones we just made and create better layout
-
-    // Clear previous interior walls (we'll just add new ones that work)
-    // For simplicity, I'll create interior walls with openings as separate segments
-
-    // Living room / Kitchen divider at x = -4 (z: -18 to -8) with gap at z = -12 to -10
-    createWall(-4, 2.5, -16, 0.3, 5, 4); // -18 to -14
-    createWall(-4, 2.5, -9, 0.3, 5, 2);  // -10 to -8
-    // Gap at -14 to -10 (doorway)
-
-    // Kitchen / Hall divider at z = -8 (x: -12 to -4) with gap at x = -8 to -6
-    createWall(-10, 2.5, -8, 4, 5, 0.3); // -12 to -8
-    createWall(-5, 2.5, -8, 2, 5, 0.3);  // -6 to -4
-    // Gap -8 to -6
-
-    // Bedroom divider at x = 4 (z: -18 to -8) with gap at z = -14 to -12
-    createWall(4, 2.5, -16, 0.3, 5, 4); // -18 to -14
-    createWall(4, 2.5, -9, 0.3, 5, 2);  // -10 to -8
-    // Gap -14 to -10
-
-    // Bedroom / Hall divider at z = -8 (x: 4 to 12) with gap at x = 7 to 9
-    createWall(5.5, 2.5, -8, 3, 5, 0.3); // 4 to 7
-    createWall(10.5, 2.5, -8, 3, 5, 0.3); // 9 to 12
-    // Gap 7 to 9
-
-    // Ceiling
-    const ceilingGeo = new THREE.BoxGeometry(24, 0.2, 30);
-    const ceilingMesh = new THREE.Mesh(ceilingGeo, ceilingMat);
-    ceilingMesh.position.set(0, 5.1, -3);
-    ceilingMesh.receiveShadow = true;
+    // Ceiling (semi-high so camera never clips)
+    const ceilingMesh = new THREE.Mesh(new THREE.BoxGeometry(24, 0.2, 30), ceilingMat);
+    ceilingMesh.position.set(0, 5.4, -3);
     scene.add(ceilingMesh);
 
-    // ---------- STAIRS ----------
-    // Stairs going up to a small landing (decorative, can walk up)
-    // Located in the hall area (right side, z = 0)
-    const stairStepMat = stairMat;
+    // --- EXTERIOR WALLS ---
+    // Front Wall (z = 12) with open Front Doorway (x: -2.2 to 2.2)
+    createWall(-7.1, 2.7, 12, 9.8, 5.4, 0.35);
+    createWall(7.1, 2.7, 12, 9.8, 5.4, 0.35);
+    createWall(0, 4.6, 12, 4.4, 1.6, 0.35, wallMat, false);
+
+    // Back Wall (z = -18) with OPEN BACKYARD BREACH DOORWAY (x: -2.5 to 2.5)
+    createWall(-7.25, 2.7, -18, 9.5, 5.4, 0.35);
+    createWall(7.25, 2.7, -18, 9.5, 5.4, 0.35);
+    createWall(0, 4.6, -18, 5.0, 1.6, 0.35, wallMat, false);
+    // Glowing tactical doorframe to the Backyard
+    createWall(-2.55, 2.0, -18, 0.18, 4.0, 0.45, doorFrameMat, false);
+    createWall(2.55, 2.0, -18, 0.18, 4.0, 0.45, doorFrameMat, false);
+
+    // Left & Right Exterior Walls
+    createWall(-12, 2.7, -3, 0.35, 5.4, 30);
+    createWall(12, 2.7, -3, 0.35, 5.4, 30);
+
+    // --- INTERIOR ROOM WALLS (WITH WIDE, CLEAN DOORWAYS) ---
+    // 1. Living Room / Kitchen Divider at z = -8 (x: -12 to -4), doorway at x: -8.5 to -5.5
+    createWall(-10.25, 2.7, -8, 3.5, 5.4, 0.3);
+    createWall(-4.75, 2.7, -8, 1.5, 5.4, 0.3);
+    createWall(-7.0, 4.6, -8, 3.0, 1.6, 0.3, wallMat, false);
+
+    // 2. Kitchen / Center Hall Divider at x = -4 (z: -18 to -8), doorway at z: -14.5 to -11.5
+    createWall(-4, 2.7, -16.25, 0.3, 5.4, 3.5);
+    createWall(-4, 2.7, -9.75, 0.3, 5.4, 3.5);
+    createWall(-4, 4.6, -13.0, 0.3, 1.6, 3.0, wallMat, false);
+
+    // 3. Bedroom / Center Hall Divider at x = 4 (z: -18 to -8), doorway at z: -14.5 to -11.5
+    createWall(4, 2.7, -16.25, 0.3, 5.4, 3.5);
+    createWall(4, 2.7, -9.75, 0.3, 5.4, 3.5);
+    createWall(4, 4.6, -13.0, 0.3, 1.6, 3.0, wallMat, false);
+
+    // 4. Bedroom South Wall at z = -8 (x: 4 to 12), doorway at x: 6.5 to 9.5
+    createWall(5.25, 2.7, -8, 2.5, 5.4, 0.3);
+    createWall(10.75, 2.7, -8, 2.5, 5.4, 0.3);
+    createWall(8.0, 4.6, -8, 3.0, 1.6, 0.3, wallMat, false);
+
+    // --- FURNITURE & PROPS ---
+    // Stairs in Front Right Hall
     for (let i = 0; i < 6; i++) {
-      const step = new THREE.Mesh(
-        new THREE.BoxGeometry(2, 0.3, 0.8),
-        stairStepMat
-      );
-      step.position.set(8, i * 0.3 + 0.15, 2 + i * 0.8);
+      const step = new THREE.Mesh(new THREE.BoxGeometry(2.2, 0.3, 0.8), woodMat);
+      step.position.set(8.5, i * 0.3 + 0.15, 2 + i * 0.8);
       step.castShadow = true;
       step.receiveShadow = true;
       scene.add(step);
     }
-    // Landing
-    const landing = new THREE.Mesh(
-      new THREE.BoxGeometry(2, 0.3, 2),
-      stairStepMat
-    );
-    landing.position.set(8, 1.8, 6.2);
-    landing.castShadow = true;
+    const landing = new THREE.Mesh(new THREE.BoxGeometry(2.2, 0.3, 2.0), woodMat);
+    landing.position.set(8.5, 1.8, 6.2);
     landing.receiveShadow = true;
     scene.add(landing);
-    // Railing
-    const railing = new THREE.Mesh(
-      new THREE.BoxGeometry(2, 0.8, 0.1),
-      darkWoodMat
-    );
-    railing.position.set(8, 2.2, 7.2);
-    railing.castShadow = true;
-    scene.add(railing);
 
-    // ---------- FURNITURE ----------
-
-    // === BED (in bedroom, right side) ===
+    // Master Bedroom Bed (Heals player with F)
     const bedGroup = new THREE.Group();
-    // Frame
-    const bedFrame = new THREE.Mesh(new THREE.BoxGeometry(3, 0.4, 5), woodMat);
-    bedFrame.position.y = 0.4;
+    const bedFrame = new THREE.Mesh(new THREE.BoxGeometry(3.0, 0.4, 4.6), woodMat);
+    bedFrame.position.y = 0.35;
     bedFrame.castShadow = true;
-    bedFrame.receiveShadow = true;
     bedGroup.add(bedFrame);
-    // Mattress
-    const mattress = new THREE.Mesh(new THREE.BoxGeometry(2.8, 0.3, 4.8), bedMat);
-    mattress.position.y = 0.75;
-    mattress.castShadow = true;
+
+    const mattress = new THREE.Mesh(
+      new THREE.BoxGeometry(2.8, 0.3, 4.4),
+      new THREE.MeshStandardMaterial({ color: 0x991b1b, roughness: 0.7 })
+    );
+    mattress.position.y = 0.7;
     bedGroup.add(mattress);
-    // Blanket
-    const blanket = new THREE.Mesh(new THREE.BoxGeometry(2.9, 0.15, 3.5), blanketMat);
-    blanket.position.set(0, 0.95, 0.5);
-    bedGroup.add(blanket);
-    // Pillow
-    const pillow = new THREE.Mesh(new THREE.BoxGeometry(1.5, 0.2, 0.8), pillowMat);
-    pillow.position.set(0, 0.95, -1.8);
+
+    const pillow = new THREE.Mesh(
+      new THREE.BoxGeometry(1.6, 0.22, 0.8),
+      new THREE.MeshStandardMaterial({ color: 0xf1f5f9, roughness: 0.9 })
+    );
+    pillow.position.set(0, 0.9, -1.6);
     bedGroup.add(pillow);
-    // Headboard
-    const headboard = new THREE.Mesh(new THREE.BoxGeometry(3.2, 1.2, 0.2), darkWoodMat);
-    headboard.position.set(0, 1.0, -2.6);
-    headboard.castShadow = true;
-    bedGroup.add(headboard);
 
-    bedGroup.position.set(8, 0, -14);
+    bedGroup.position.set(8.5, 0, -14.5);
     scene.add(bedGroup);
+    addCollider(7.0, 10.0, -16.8, -12.2);
+    const BED_POS = new THREE.Vector3(8.5, 0, -14.5);
 
-    // Store bed position for sleeping
-    const BED_POS = new THREE.Vector3(8, 1.5, -14);
+    // Living Room Sofa & Table
+    const sofa = new THREE.Mesh(
+      new THREE.BoxGeometry(3.6, 0.75, 1.2),
+      new THREE.MeshStandardMaterial({ color: 0x1e3a5f, roughness: 0.8 })
+    );
+    sofa.position.set(-8.5, 0.38, 6.2);
+    sofa.castShadow = true;
+    scene.add(sofa);
+    addCollider(-10.3, -6.7, 5.6, 6.8);
 
-    // === TABLES ===
-    function createTable(x, z, w = 2, d = 1, h = 0.9, mat = tableMat) {
-      const group = new THREE.Group();
-      // Tabletop
-      const top = new THREE.Mesh(new THREE.BoxGeometry(w, 0.1, d), mat);
-      top.position.y = h;
+    function createTable(x, z, w = 2.4, d = 1.3) {
+      const top = new THREE.Mesh(new THREE.BoxGeometry(w, 0.12, d), woodMat);
+      top.position.set(x, 0.85, z);
       top.castShadow = true;
       top.receiveShadow = true;
-      group.add(top);
-      // Legs
-      const legGeo = new THREE.BoxGeometry(0.1, h, 0.1);
-      const positions = [
-        [-w/2 + 0.1, h/2, -d/2 + 0.1],
-        [w/2 - 0.1, h/2, -d/2 + 0.1],
-        [-w/2 + 0.1, h/2, d/2 - 0.1],
-        [w/2 - 0.1, h/2, d/2 - 0.1]
-      ];
-      positions.forEach(p => {
-        const leg = new THREE.Mesh(legGeo, mat);
-        leg.position.set(p[0], p[1], p[2]);
-        leg.castShadow = true;
-        group.add(leg);
-      });
-      group.position.set(x, 0, z);
-      scene.add(group);
-      return group;
+      scene.add(top);
+      addCollider(x - w / 2, x + w / 2, z - d / 2, z + d / 2);
     }
+    createTable(-8.5, 1.5, 2.6, 1.4);   // Living room table
+    createTable(-8.2, -13.0, 2.4, 1.4); // Kitchen table
 
-    createTable(-8, 2, 3, 1.5, 0.9); // Living room table
-    createTable(-8, -12, 2.5, 1.5, 0.9); // Kitchen table
-    createTable(2, -2, 2, 1, 0.8); // Hall table
+    // Backyard Fence & Moonlit Trees
+    const fenceMat = new THREE.MeshStandardMaterial({ color: 0x5c4938, roughness: 0.9 });
+    createWall(-18, 1.0, -27, 0.3, 2.0, 18, fenceMat, true);
+    createWall(18, 1.0, -27, 0.3, 2.0, 18, fenceMat, true);
+    createWall(0, 1.0, -35.8, 36, 2.0, 0.3, fenceMat, true);
 
-    // === CHAIRS ===
-    function createChair(x, z, rotY = 0) {
-      const group = new THREE.Group();
-      const seat = new THREE.Mesh(new THREE.BoxGeometry(0.8, 0.1, 0.8), woodMat);
-      seat.position.y = 0.5;
-      seat.castShadow = true;
-      group.add(seat);
-      const back = new THREE.Mesh(new THREE.BoxGeometry(0.8, 0.8, 0.1), woodMat);
-      back.position.set(0, 0.9, -0.35);
-      back.castShadow = true;
-      group.add(back);
-      const legGeo = new THREE.BoxGeometry(0.08, 0.5, 0.08);
-      [[-0.3, 0.25, -0.3], [0.3, 0.25, -0.3], [-0.3, 0.25, 0.3], [0.3, 0.25, 0.3]].forEach(p => {
-        const leg = new THREE.Mesh(legGeo, woodMat);
-        leg.position.set(p[0], p[1], p[2]);
-        leg.castShadow = true;
-        group.add(leg);
-      });
-      group.position.set(x, 0, z);
-      group.rotation.y = rotY;
-      scene.add(group);
-    }
-
-    createChair(-8, 3.5, 0);
-    createChair(-8, 0.5, Math.PI);
-    createChair(-8, -13.5, 0);
-    createChair(-8, -10.5, Math.PI);
-
-    // === SOFA ===
-    const sofaGroup = new THREE.Group();
-    const sofaBase = new THREE.Mesh(new THREE.BoxGeometry(3.5, 0.5, 1.2), blanketMat);
-    sofaBase.position.y = 0.5;
-    sofaBase.castShadow = true;
-    sofaGroup.add(sofaBase);
-    const sofaBack = new THREE.Mesh(new THREE.BoxGeometry(3.5, 0.8, 0.3), blanketMat);
-    sofaBack.position.set(0, 1.0, -0.5);
-    sofaBack.castShadow = true;
-    sofaGroup.add(sofaBack);
-    // Arms
-    const armL = new THREE.Mesh(new THREE.BoxGeometry(0.3, 0.6, 1.2), blanketMat);
-    armL.position.set(-1.7, 0.7, 0);
-    armL.castShadow = true;
-    sofaGroup.add(armL);
-    const armR = new THREE.Mesh(new THREE.BoxGeometry(0.3, 0.6, 1.2), blanketMat);
-    armR.position.set(1.7, 0.7, 0);
-    armR.castShadow = true;
-    sofaGroup.add(armR);
-    sofaGroup.position.set(-8, 0, 6);
-    scene.add(sofaGroup);
-
-    // === BOOKSHELF ===
-    const shelfGroup = new THREE.Group();
-    const shelfFrame = new THREE.Mesh(new THREE.BoxGeometry(1.5, 2.5, 0.4), bookshelfMat);
-    shelfFrame.position.y = 1.25;
-    shelfFrame.castShadow = true;
-    shelfGroup.add(shelfFrame);
-    // Shelves
-    for (let i = 0; i < 4; i++) {
-      const shelf = new THREE.Mesh(new THREE.BoxGeometry(1.3, 0.05, 0.3), woodMat);
-      shelf.position.set(0, 0.4 + i * 0.6, 0);
-      shelfGroup.add(shelf);
-      // Books
-      for (let j = 0; j < 4; j++) {
-        const book = new THREE.Mesh(
-          new THREE.BoxGeometry(0.15, 0.35, 0.2),
-          new THREE.MeshStandardMaterial({ color: 0xaa3333 + j * 0x111111, roughness: 0.7 })
-        );
-        book.position.set(-0.5 + j * 0.3, 0.58 + i * 0.6, 0);
-        book.rotation.z = (Math.random() - 0.5) * 0.2;
-        shelfGroup.add(book);
-      }
-    }
-    shelfGroup.position.set(-11, 0, -2);
-    shelfGroup.rotation.y = Math.PI / 2;
-    scene.add(shelfGroup);
-
-    // === RUGS ===
-    function createRug(x, z, w, d, mat) {
-      const rug = new THREE.Mesh(new THREE.BoxGeometry(w, 0.02, d), mat);
-      rug.position.set(x, 0.01, z);
-      rug.receiveShadow = true;
-      scene.add(rug);
-    }
-    createRug(-8, 2, 5, 3, rugMat);
-    createRug(8, -2, 4, 3, rug2Mat);
-
-    // === PICTURES ON WALLS ===
-    function createPicture(x, y, z, w, h, rotY = 0) {
-      const frame = new THREE.Mesh(
-        new THREE.BoxGeometry(w + 0.1, h + 0.1, 0.05),
-        woodMat
-      );
-      frame.position.set(x, y, z);
-      frame.rotation.y = rotY;
-      scene.add(frame);
-      const canvas = new THREE.Mesh(
-        new THREE.BoxGeometry(w, h, 0.02),
-        pictureMat
-      );
-      canvas.position.set(x, y, z + (rotY === 0 ? 0.03 : -0.03));
-      canvas.rotation.y = rotY;
-      scene.add(canvas);
-    }
-
-    // Pictures
-    createPicture(-11.8, 2.5, -4, 1.5, 1, Math.PI / 2);
-    createPicture(11.8, 2.5, -2, 1.5, 1, -Math.PI / 2);
-    createPicture(-8, 2.5, 11.8, 2, 1.2, 0);
-    createPicture(8, 2.5, 11.8, 2, 1.2, 0);
-    createPicture(-3.8, 2.5, -14, 1.5, 1, Math.PI / 2);
-
-    // === WINDOWS ===
-    function createWindow(x, y, z, w, h, rotY = 0) {
-      const frame = new THREE.Mesh(
-        new THREE.BoxGeometry(w + 0.2, h + 0.2, 0.1),
-        darkWoodMat
-      );
-      frame.position.set(x, y, z);
-      frame.rotation.y = rotY;
-      scene.add(frame);
-      const glass = new THREE.Mesh(
-        new THREE.BoxGeometry(w, h, 0.05),
-        windowMat
-      );
-      glass.position.set(x, y, z + (rotY === 0 ? 0.06 : -0.06));
-      glass.rotation.y = rotY;
-      scene.add(glass);
-    }
-
-    createWindow(-11.8, 2.5, -15, 2, 1.5, Math.PI / 2);
-    createWindow(11.8, 2.5, -15, 2, 1.5, -Math.PI / 2);
-    createWindow(11.8, 2.5, 5, 2, 1.5, -Math.PI / 2);
-    createWindow(-11.8, 2.5, 5, 2, 1.5, Math.PI / 2);
-
-    // === BOXES & CLUTTER ===
-    function createBox(x, z, s = 1) {
-      const box = new THREE.Mesh(
-        new THREE.BoxGeometry(s, s, s),
-        boxMat
-      );
-      box.position.set(x, s/2, z);
-      box.rotation.y = Math.random() * Math.PI;
-      box.castShadow = true;
-      box.receiveShadow = true;
-      scene.add(box);
-    }
-
-    createBox(-10, -6, 1.2);
-    createBox(-9, -5, 0.8);
-    createBox(10, -16, 1.0);
-    createBox(9.5, -15, 0.7);
-    createBox(-2, -17, 1.1);
-    createBox(3, 8, 0.9);
-    createBox(-6, 9, 1.0);
-
-    // === LAMPS ===
-    function createLamp(x, z) {
-      const pole = new THREE.Mesh(
-        new THREE.CylinderGeometry(0.05, 0.08, 1.8, 8),
-        gunMat
-      );
-      pole.position.set(x, 0.9, z);
-      pole.castShadow = true;
-      scene.add(pole);
-      const shade = new THREE.Mesh(
-        new THREE.ConeGeometry(0.4, 0.5, 8),
-        lampMat
-      );
-      shade.position.set(x, 1.9, z);
-      shade.castShadow = true;
-      scene.add(shade);
-      const light = new THREE.PointLight(0xffaa44, 0.6, 8);
-      light.position.set(x, 1.7, z);
-      scene.add(light);
-    }
-
-    createLamp(-10, 6);
-    createLamp(10, 6);
-    createLamp(-10, -16);
-    createLamp(2, -8);
-
-    // === ROOM LIGHTS ===
-    addRoomLight(0, 4, 0, 0xffaa66);
-    addRoomLight(-8, 4, -12, 0xffcc88);
-    addRoomLight(8, 4, -14, 0xffaa66);
-    addRoomLight(8, 4, 2, 0xffcc88);
-    addRoomLight(-4, 4, -4, 0xffaa66);
-
-    // === COURTYARD DECORATIONS ===
-    // Fence around courtyard
-    const fenceMat = new THREE.MeshStandardMaterial({ color: 0x8a7a5a, roughness: 0.9 });
-    function createFencePost(x, z) {
-      const post = new THREE.Mesh(new THREE.BoxGeometry(0.2, 1.2, 0.2), fenceMat);
-      post.position.set(x, 0.6, z);
-      post.castShadow = true;
-      scene.add(post);
-    }
-    function createFenceRail(x1, z1, x2, z2) {
-      const dx = x2 - x1;
-      const dz = z2 - z1;
-      const len = Math.sqrt(dx*dx + dz*dz);
-      const rail = new THREE.Mesh(new THREE.BoxGeometry(len, 0.1, 0.1), fenceMat);
-      rail.position.set((x1+x2)/2, 0.9, (z1+z2)/2);
-      rail.rotation.y = Math.atan2(-dz, dx);
-      rail.castShadow = true;
-      scene.add(rail);
-    }
-
-    // Courtyard fence (around z = -30 to -20, x = -18 to 18)
-    const fenceCorners = [
-      [-18, -20], [-18, -34], [18, -34], [18, -20]
-    ];
-    for (let i = 0; i < 4; i++) {
-      createFencePost(fenceCorners[i][0], fenceCorners[i][1]);
-      createFencePost(fenceCorners[(i+1)%4][0], fenceCorners[(i+1)%4][1]);
-    }
-    // Rails
-    for (let i = 0; i < 4; i++) {
-      createFenceRail(
-        fenceCorners[i][0], fenceCorners[i][1],
-        fenceCorners[(i+1)%4][0], fenceCorners[(i+1)%4][1]
-      );
-    }
-
-    // Trees in courtyard
     function createTree(x, z) {
       const trunk = new THREE.Mesh(
-        new THREE.CylinderGeometry(0.3, 0.4, 2, 8),
-        new THREE.MeshStandardMaterial({ color: 0x4a2a1a, roughness: 1.0 })
+        new THREE.CylinderGeometry(0.35, 0.5, 2.6, 8),
+        darkWoodMat
       );
-      trunk.position.set(x, 1, z);
+      trunk.position.set(x, 1.3, z);
       trunk.castShadow = true;
       scene.add(trunk);
-      const foliage = new THREE.Mesh(
-        new THREE.SphereGeometry(1.2, 8, 8),
-        new THREE.MeshStandardMaterial({ color: 0x2a5a2a, roughness: 1.0 })
+
+      const crown = new THREE.Mesh(
+        new THREE.DodecahedronGeometry(1.7, 1),
+        new THREE.MeshStandardMaterial({ color: 0x1a3a1a, roughness: 0.9 })
       );
-      foliage.position.set(x, 2.5, z);
-      foliage.castShadow = true;
-      scene.add(foliage);
+      crown.position.set(x, 3.3, z);
+      crown.castShadow = true;
+      scene.add(crown);
+      addCollider(x - 0.6, x + 0.6, z - 0.6, z + 0.6);
     }
-    createTree(-12, -28);
-    createTree(12, -28);
-    createTree(-8, -32);
-    createTree(8, -32);
+    createTree(-13, -24);
+    createTree(13, -24);
+    createTree(-11, -32);
+    createTree(11, -32);
 
-    // ---------- RATS ----------
+    // Room Lighting
+    addRoomLight(0, 4.6, 4, 0xffb36b, 1.2);
+    addRoomLight(-8, 4.6, 1, 0xffaa55, 1.15);
+    addRoomLight(-8, 4.6, -13, 0xffd180, 1.2);
+    addRoomLight(8, 4.6, -13, 0xffaa66, 1.2);
+    addRoomLight(0, 4.6, -11, 0x93c5fd, 0.9);
+    addRoomLight(0, 5.5, -26, 0x76b900, 1.1);
+
+    // Mission Waypoint Beacon (Guides player to active zone)
+    const missionBeacon = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.65, 0.65, 0.08, 24),
+      new THREE.MeshBasicMaterial({ color: 0x76b900, transparent: true, opacity: 0.65 })
+    );
+    scene.add(missionBeacon);
+
+    // =========================================================================
+    // 6. THIRD-PERSON ARTICULATED EXTERMINATOR CHARACTER + GUNS
+    // =========================================================================
+    const playerGroup = new THREE.Group();
+    scene.add(playerGroup);
+
+    const armorMat = new THREE.MeshStandardMaterial({ color: 0x1e293b, roughness: 0.5, metalness: 0.4 });
+    const vestMat = new THREE.MeshStandardMaterial({ color: 0x2f3e24, roughness: 0.7 });
+    const visorMat = new THREE.MeshStandardMaterial({
+      color: 0x76b900,
+      emissive: 0x76b900,
+      emissiveIntensity: 1.4,
+      roughness: 0.2
+    });
+    const skinMat = new THREE.MeshStandardMaterial({ color: 0xd9a077, roughness: 0.8 });
+    const gunMetalMat = new THREE.MeshStandardMaterial({ color: 0x18181b, metalness: 0.85, roughness: 0.25 });
+    const gunAccentMat = new THREE.MeshStandardMaterial({ color: 0x76b900, emissive: 0x3a5c00, roughness: 0.4 });
+
+    // Torso & Tactical Vest
+    const torso = new THREE.Mesh(new THREE.BoxGeometry(0.56, 0.72, 0.32), vestMat);
+    torso.position.y = 1.18;
+    torso.castShadow = true;
+    playerGroup.add(torso);
+
+    // Backpack Tank (Glows with active ammo color!)
+    const tankMat = new THREE.MeshStandardMaterial({ color: 0x76b900, emissive: 0x365314, roughness: 0.3 });
+    const backpack = new THREE.Mesh(new THREE.BoxGeometry(0.36, 0.48, 0.18), armorMat);
+    backpack.position.set(0, 1.22, 0.22);
+    backpack.castShadow = true;
+    playerGroup.add(backpack);
+
+    const powerCore = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.06, 0.36, 10), tankMat);
+    powerCore.position.set(0, 1.22, 0.32);
+    playerGroup.add(powerCore);
+
+    // Head & Tactical Helmet + NVIDIA Visor
+    const headGroup = new THREE.Group();
+    headGroup.position.set(0, 1.74, 0);
+    const helmet = new THREE.Mesh(new THREE.SphereGeometry(0.22, 14, 14), armorMat);
+    helmet.castShadow = true;
+    headGroup.add(helmet);
+
+    const visor = new THREE.Mesh(new THREE.BoxGeometry(0.28, 0.09, 0.12), visorMat);
+    visor.position.set(0, 0.02, -0.17);
+    headGroup.add(visor);
+    playerGroup.add(headGroup);
+
+    // Articulated Legs
+    const legGeo = new THREE.BoxGeometry(0.2, 0.78, 0.22);
+    const leftLeg = new THREE.Mesh(legGeo, armorMat);
+    leftLeg.position.set(-0.15, 0.42, 0);
+    leftLeg.castShadow = true;
+    playerGroup.add(leftLeg);
+
+    const rightLeg = new THREE.Mesh(legGeo, armorMat);
+    rightLeg.position.set(0.15, 0.42, 0);
+    rightLeg.castShadow = true;
+    playerGroup.add(rightLeg);
+
+    // Right Arm + Weapon Mount
+    const weaponArmGroup = new THREE.Group();
+    weaponArmGroup.position.set(0.34, 1.42, -0.05);
+    playerGroup.add(weaponArmGroup);
+
+    const rightArm = new THREE.Mesh(new THREE.BoxGeometry(0.16, 0.16, 0.52), skinMat);
+    rightArm.position.set(0, -0.05, -0.2);
+    rightArm.castShadow = true;
+    weaponArmGroup.add(rightArm);
+
+    // Left Support Arm
+    const leftArm = new THREE.Mesh(new THREE.BoxGeometry(0.15, 0.15, 0.54), skinMat);
+    leftArm.position.set(-0.26, 1.34, -0.28);
+    leftArm.rotation.y = -0.35;
+    leftArm.castShadow = true;
+    playerGroup.add(leftArm);
+
+    // --- SHORT GUN (Tactical SMG/Pistol) ---
+    const shortGunMesh = new THREE.Group();
+    const sgBody = new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.15, 0.42), gunMetalMat);
+    sgBody.position.set(0, -0.02, -0.52);
+    sgBody.castShadow = true;
+    shortGunMesh.add(sgBody);
+
+    const sgStripe = new THREE.Mesh(new THREE.BoxGeometry(0.11, 0.03, 0.3), gunAccentMat);
+    sgStripe.position.set(0, 0.03, -0.52);
+    shortGunMesh.add(sgStripe);
+    weaponArmGroup.add(shortGunMesh);
+
+    // --- LONG GUN (Heavy Assault Rifle) ---
+    const longGunMesh = new THREE.Group();
+    const lgBody = new THREE.Mesh(new THREE.BoxGeometry(0.11, 0.16, 0.88), gunMetalMat);
+    lgBody.position.set(0, -0.02, -0.68);
+    lgBody.castShadow = true;
+    longGunMesh.add(lgBody);
+
+    const lgBarrel = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.035, 0.48, 8), gunMetalMat);
+    lgBarrel.rotation.x = Math.PI / 2;
+    lgBarrel.position.set(0, 0.02, -1.25);
+    longGunMesh.add(lgBarrel);
+
+    const lgScope = new THREE.Mesh(new THREE.CylinderGeometry(0.035, 0.035, 0.26, 8), gunAccentMat);
+    lgScope.rotation.x = Math.PI / 2;
+    lgScope.position.set(0, 0.11, -0.62);
+    longGunMesh.add(lgScope);
+    longGunMesh.visible = false;
+    weaponArmGroup.add(longGunMesh);
+
+    // Muzzle Flash Light & Sphere on Gun Tip
+    const muzzleLight = new THREE.PointLight(0xffaa00, 0, 10);
+    muzzleLight.position.set(0, 0.02, -1.4);
+    weaponArmGroup.add(muzzleLight);
+
+    const muzzleSphere = new THREE.Mesh(
+      new THREE.SphereGeometry(0.14, 8, 8),
+      new THREE.MeshBasicMaterial({ color: 0xffcc33, transparent: true, opacity: 0 })
+    );
+    muzzleSphere.position.set(0, 0.02, -1.35);
+    weaponArmGroup.add(muzzleSphere);
+
+    // =========================================================================
+    // 7. RATS SYSTEM (STANDARD RATS + GIANT ARMORED RATS)
+    // =========================================================================
     const rats = [];
+    const ratMat = new THREE.MeshStandardMaterial({ color: 0x4b5563, roughness: 0.75 });
+    const bigRatMat = new THREE.MeshStandardMaterial({ color: 0x292524, roughness: 0.65, metalness: 0.2 });
+    const ratEyeMat = new THREE.MeshStandardMaterial({ color: 0xff2200, emissive: 0xff2200, emissiveIntensity: 2.2 });
+    const ratTailMat = new THREE.MeshStandardMaterial({ color: 0xd69e9e, roughness: 0.8 });
 
-    function createRat(x, z, scale = 1.5) {
+    function spawnRat(x, z, isBig = false, stageIdx = 0) {
+      const scale = isBig ? 1.85 : 1.15;
       const group = new THREE.Group();
-      
-      // Body
-      const body = new THREE.Mesh(
-        new THREE.SphereGeometry(0.6 * scale, 8, 8),
-        ratMat
-      );
-      body.scale.set(1, 0.7, 1.5);
-      body.position.y = 0.4 * scale;
+      const bodyMaterial = isBig ? bigRatMat.clone() : ratMat.clone();
+
+      const body = new THREE.Mesh(new THREE.SphereGeometry(0.52 * scale, 10, 10), bodyMaterial);
+      body.scale.set(1, 0.72, 1.55);
+      body.position.y = 0.36 * scale;
       body.castShadow = true;
       group.add(body);
 
-      // Head
-      const head = new THREE.Mesh(
-        new THREE.SphereGeometry(0.35 * scale, 8, 8),
-        ratMat
-      );
-      head.position.set(0, 0.5 * scale, 0.8 * scale);
+      const head = new THREE.Mesh(new THREE.SphereGeometry(0.32 * scale, 10, 10), bodyMaterial);
+      head.position.set(0, 0.45 * scale, 0.72 * scale);
       head.castShadow = true;
       group.add(head);
 
-      // Ears
-      const earGeo = new THREE.SphereGeometry(0.2 * scale, 6, 6);
-      const earL = new THREE.Mesh(earGeo, ratMat);
-      earL.position.set(-0.3 * scale, 0.75 * scale, 0.7 * scale);
-      earL.castShadow = true;
+      const earGeo = new THREE.SphereGeometry(0.17 * scale, 8, 8);
+      const earL = new THREE.Mesh(earGeo, ratTailMat);
+      earL.position.set(-0.24 * scale, 0.68 * scale, 0.62 * scale);
       group.add(earL);
-      const earR = new THREE.Mesh(earGeo, ratMat);
-      earR.position.set(0.3 * scale, 0.75 * scale, 0.7 * scale);
-      earR.castShadow = true;
+
+      const earR = new THREE.Mesh(earGeo, ratTailMat);
+      earR.position.set(0.24 * scale, 0.68 * scale, 0.62 * scale);
       group.add(earR);
 
-      // Eyes (scary red)
-      const eyeGeo = new THREE.SphereGeometry(0.1 * scale, 6, 6);
+      const eyeGeo = new THREE.SphereGeometry(0.085 * scale, 8, 8);
       const eyeL = new THREE.Mesh(eyeGeo, ratEyeMat);
-      eyeL.position.set(-0.15 * scale, 0.6 * scale, 1.0 * scale);
+      eyeL.position.set(-0.14 * scale, 0.52 * scale, 0.94 * scale);
       group.add(eyeL);
+
       const eyeR = new THREE.Mesh(eyeGeo, ratEyeMat);
-      eyeR.position.set(0.15 * scale, 0.6 * scale, 1.0 * scale);
+      eyeR.position.set(0.14 * scale, 0.52 * scale, 0.94 * scale);
       group.add(eyeR);
 
-      // Nose
-      const nose = new THREE.Mesh(
-        new THREE.SphereGeometry(0.08 * scale, 6, 6),
-        ratNoseMat
-      );
-      nose.position.set(0, 0.45 * scale, 1.15 * scale);
-      group.add(nose);
-
-      // Tail
       const tail = new THREE.Mesh(
-        new THREE.CylinderGeometry(0.05 * scale, 0.02 * scale, 1.2 * scale, 6),
-        ratMat
+        new THREE.CylinderGeometry(0.04 * scale, 0.015 * scale, 1.15 * scale, 6),
+        ratTailMat
       );
-      tail.position.set(0, 0.2 * scale, -0.8 * scale);
-      tail.rotation.x = Math.PI / 2.5;
-      tail.castShadow = true;
+      tail.position.set(0, 0.22 * scale, -0.78 * scale);
+      tail.rotation.x = Math.PI / 2.4;
       group.add(tail);
-
-      // Legs
-      const legGeo = new THREE.CylinderGeometry(0.08 * scale, 0.08 * scale, 0.4 * scale, 6);
-      const legPositions = [
-        [-0.3 * scale, 0.2 * scale, 0.3 * scale],
-        [0.3 * scale, 0.2 * scale, 0.3 * scale],
-        [-0.3 * scale, 0.2 * scale, -0.3 * scale],
-        [0.3 * scale, 0.2 * scale, -0.3 * scale]
-      ];
-      legPositions.forEach(p => {
-        const leg = new THREE.Mesh(legGeo, ratMat);
-        leg.position.set(p[0], p[1], p[2]);
-        leg.castShadow = true;
-        group.add(leg);
-      });
 
       group.position.set(x, 0, z);
       group.userData = {
         alive: true,
-        speed: 0.02 + Math.random() * 0.03,
-        direction: new THREE.Vector3(Math.random() - 0.5, 0, Math.random() - 0.5).normalize(),
-        changeDirTimer: 0,
-        health: 2, // Takes 2 hits
-        scale: scale,
-        headingToCourtyard: false,
-        originalPos: new THREE.Vector3(x, 0, z)
+        isBig,
+        stageIdx,
+        scale,
+        hp: isBig ? 3 : 1,
+        maxHp: isBig ? 3 : 1,
+        speed: isBig ? 2.8 : 3.6,
+        dir: new THREE.Vector3(Math.random() - 0.5, 0, Math.random() - 0.5).normalize(),
+        wanderTimer: Math.random() * 2,
+        biteCooldown: 0
       };
-      
+
       scene.add(group);
       rats.push(group);
       return group;
     }
 
-    // Spawn rats throughout the house
-    const ratSpawns = [
-      [-8, -14], [-10, -5], [10, -16], [8, -12],
-      [2, 6], [-6, 2], [10, 0], [-2, -18]
-    ];
-    ratSpawns.forEach(pos => createRat(pos[0], pos[1]));
+    function initAllRats() {
+      rats.forEach(r => scene.remove(r));
+      rats.length = 0;
 
-    // ---------- GUNS ----------
-    // Pistol viewmodel
-    const pistolGroup = new THREE.Group();
-    const pistolBody = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.2, 0.4), gunMat);
-    pistolBody.position.set(0, 0, -0.2);
-    pistolGroup.add(pistolBody);
-    const pistolBarrel = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.08, 0.3), barrelMat);
-    pistolBarrel.position.set(0, 0.05, -0.5);
-    pistolGroup.add(pistolBarrel);
-    const pistolGrip = new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.25, 0.12), stockMat);
-    pistolGrip.position.set(0, -0.2, 0.05);
-    pistolGrip.rotation.x = -0.3;
-    pistolGroup.add(pistolGrip);
-    pistolGroup.position.set(0.3, -0.3, -0.8);
-    camera.add(pistolGroup);
+      MISSIONS.forEach((m, idx) => {
+        m.spawns.forEach(sp => {
+          const rat = spawnRat(sp.x, sp.z, sp.big, idx);
+          rat.visible = idx === 0; // Only reveal active stage rats so each room is a fresh mission!
+        });
+      });
+    }
 
-    // Rifle viewmodel
-    const rifleGroup = new THREE.Group();
-    const rifleBody = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.15, 0.8), gunMat);
-    rifleBody.position.set(0, 0, -0.4);
-    rifleGroup.add(rifleBody);
-    const rifleBarrel = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.05, 0.6, 8), barrelMat);
-    rifleBarrel.position.set(0, 0.04, -0.9);
-    rifleBarrel.rotation.x = Math.PI / 2;
-    rifleGroup.add(rifleBarrel);
-    const rifleStock = new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.18, 0.3), stockMat);
-    rifleStock.position.set(0, -0.05, 0.15);
-    rifleGroup.add(rifleStock);
-    const rifleScope = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.03, 0.2, 8), barrelMat);
-    rifleScope.position.set(0, 0.12, -0.3);
-    rifleScope.rotation.x = Math.PI / 2;
-    rifleGroup.add(rifleScope);
-    rifleGroup.position.set(0.3, -0.25, -0.9);
-    rifleGroup.visible = false;
-    camera.add(rifleGroup);
+    // =========================================================================
+    // 8. VISUAL EFFECTS: BULLET TRACERS & BIG BOOM SHOCKWAVES
+    // =========================================================================
+    const activeEffects = [];
 
-    scene.add(camera);
+    function spawnTracer(startPos, endPos, isBoom) {
+      const dist = startPos.distanceTo(endPos);
+      const geo = new THREE.CylinderGeometry(isBoom ? 0.09 : 0.025, isBoom ? 0.09 : 0.025, dist, 6);
+      geo.rotateX(Math.PI / 2);
+      const mat = new THREE.MeshBasicMaterial({
+        color: isBoom ? 0xff9500 : 0xa3e635,
+        transparent: true,
+        opacity: 0.92
+      });
+      const beam = new THREE.Mesh(geo, mat);
+      beam.position.copy(startPos).lerp(endPos, 0.5);
+      beam.lookAt(endPos);
+      scene.add(beam);
 
-    // Muzzle flash
-    const muzzleFlash = new THREE.PointLight(0xffaa00, 0, 8);
-    muzzleFlash.position.set(0.3, -0.2, -1.2);
-    camera.add(muzzleFlash);
-    
-    // Muzzle flash mesh
-    const flashMesh = new THREE.Mesh(
-      new THREE.SphereGeometry(0.1, 6, 6),
-      new THREE.MeshBasicMaterial({ color: 0xffaa00, transparent: true, opacity: 0 })
-    );
-    flashMesh.position.set(0.3, -0.2, -1.2);
-    camera.add(flashMesh);
+      activeEffects.push({
+        mesh: beam,
+        life: 0.16,
+        maxLife: 0.16,
+        type: 'tracer'
+      });
 
-    // ---------- CONTROLS ----------
-    const controls = new PointerLockControls(camera, renderer.domElement);
-    scene.add(controls.getObject());
+      if (isBoom) {
+        // Expanding Shockwave Ring + Fireball
+        const ringGeo = new THREE.RingGeometry(0.3, 4.4, 32);
+        ringGeo.rotateX(-Math.PI / 2);
+        const ringMat = new THREE.MeshBasicMaterial({
+          color: 0xff6b00,
+          side: THREE.DoubleSide,
+          transparent: true,
+          opacity: 0.85
+        });
+        const ring = new THREE.Mesh(ringGeo, ringMat);
+        ring.position.set(endPos.x, 0.15, endPos.z);
+        ring.scale.set(0.1, 0.1, 0.1);
+        scene.add(ring);
 
-    // Click to start
-    renderer.domElement.addEventListener('click', () => {
-      controls.lock();
-    });
+        const boomLight = new THREE.PointLight(0xff7700, 4, 14);
+        boomLight.position.copy(endPos).add(new THREE.Vector3(0, 1, 0));
+        scene.add(boomLight);
 
-    controls.addEventListener('lock', () => {
-      // locked
-    });
+        activeEffects.push({
+          mesh: ring,
+          light: boomLight,
+          life: 0.42,
+          maxLife: 0.42,
+          type: 'boom'
+        });
+      }
+    }
 
-    controls.addEventListener('unlock', () => {
-      // unlocked - could pause
-    });
+    function updateEffects(delta) {
+      for (let i = activeEffects.length - 1; i >= 0; i--) {
+        const fx = activeEffects[i];
+        fx.life -= delta;
+        const progress = 1 - Math.max(0, fx.life / fx.maxLife);
 
-    // Keyboard
-    const onKeyDown = (event) => {
-      switch (event.code) {
-        case 'KeyW': state.moveForward = true; break;
-        case 'KeyS': state.moveBackward = true; break;
-        case 'KeyA': state.moveLeft = true; break;
-        case 'KeyD': state.moveRight = true; break;
-        case 'Space':
-          if (state.canJump) {
-            state.velocity.y = 8;
-            state.canJump = false;
+        if (fx.type === 'tracer') {
+          fx.mesh.material.opacity = 1 - progress;
+        } else if (fx.type === 'boom') {
+          const s = 0.2 + progress * 1.15;
+          fx.mesh.scale.set(s, s, s);
+          fx.mesh.material.opacity = (1 - progress) * 0.85;
+          if (fx.light) fx.light.intensity = (1 - progress) * 4;
+        }
+
+        if (fx.life <= 0) {
+          scene.remove(fx.mesh);
+          if (fx.light) scene.remove(fx.light);
+          activeEffects.splice(i, 1);
+        }
+      }
+    }
+
+    // =========================================================================
+    // 9. SHOOTING LOGIC (INFINITE AMMO + BIG BOOM 3-RAT MULTI-KILL)
+    // =========================================================================
+    const raycaster = new THREE.Raycaster();
+    const screenAim = new THREE.Vector2(0, 0.08); // Matches crosshair at top: 46%
+
+    function showHitmarker() {
+      const hm = document.getElementById('hitmarker');
+      hm.style.opacity = '1';
+      clearTimeout(hm._t);
+      hm._t = setTimeout(() => { hm.style.opacity = '0'; }, 120);
+    }
+
+    function damageRat(rat, amount, impulseDir) {
+      if (!rat.userData.alive) return;
+      rat.userData.hp -= amount;
+
+      // Knockback
+      rat.position.x += impulseDir.x * 0.65;
+      rat.position.z += impulseDir.z * 0.65;
+
+      // Flash red
+      rat.children[0].material.emissive.setHex(0xff0000);
+      rat.children[0].material.emissiveIntensity = 1.2;
+      setTimeout(() => {
+        if (rat.children[0]) {
+          rat.children[0].material.emissive.setHex(0x000000);
+          rat.children[0].material.emissiveIntensity = 0;
+        }
+      }, 110);
+
+      showHitmarker();
+
+      if (rat.userData.hp <= 0) {
+        rat.userData.alive = false;
+        state.kills++;
+        sfx.playRatSqueak(true);
+
+        // Flip upside down death pose
+        rat.rotation.z = Math.PI;
+        rat.position.y = 0.35 * rat.userData.scale;
+        setTimeout(() => { rat.visible = false; }, 1600);
+
+        checkMissionProgress();
+      } else {
+        sfx.playRatSqueak(false);
+      }
+    }
+
+    function shoot() {
+      if (!state.started || state.gameOver || state.won || state.isSleeping) return;
+
+      const now = performance.now();
+      const cooldown = state.bulletType === 'boom'
+        ? 480
+        : (state.weapon === 'long' ? 135 : 220);
+
+      if (now - state.lastShot < cooldown) return;
+      state.lastShot = now;
+
+      // Play procedural sound
+      sfx.playGunshot(state.weapon, state.bulletType);
+
+      // Muzzle flash & character recoil
+      state.recoilKick = state.bulletType === 'boom' ? 0.35 : 0.16;
+      muzzleLight.color.setHex(state.bulletType === 'boom' ? 0xff8800 : 0x99ff00);
+      muzzleLight.intensity = 3.5;
+      muzzleSphere.material.color.setHex(state.bulletType === 'boom' ? 0xff8800 : 0xccff33);
+      muzzleSphere.material.opacity = 0.95;
+
+      setTimeout(() => {
+        muzzleLight.intensity = 0;
+        muzzleSphere.material.opacity = 0;
+      }, 65);
+
+      // Determine aim point in 3D world from camera crosshair
+      raycaster.setFromCamera(screenAim, camera);
+      const aimDir = raycaster.ray.direction.clone().normalize();
+
+      // Rotate character toward shooting direction
+      const targetYaw = Math.atan2(-aimDir.x, -aimDir.z);
+      state.yaw = targetYaw;
+
+      // Get gun barrel world position
+      const barrelWorldPos = new THREE.Vector3();
+      muzzleSphere.getWorldPosition(barrelWorldPos);
+
+      // Find closest rat or surface along camera ray
+      const stageRats = rats.filter(r => r.userData.alive && r.userData.stageIdx === state.currentStageIdx);
+      let impactPoint = raycaster.ray.origin.clone().add(aimDir.clone().multiplyScalar(32));
+      let directHitRat = null;
+      let bestDist = 32;
+
+      stageRats.forEach(rat => {
+        const ratCenter = rat.position.clone().add(new THREE.Vector3(0, 0.45 * rat.userData.scale, 0));
+        const toRat = ratCenter.clone().sub(raycaster.ray.origin);
+        const proj = toRat.dot(aimDir);
+        if (proj > 0 && proj < bestDist) {
+          const closestPt = raycaster.ray.origin.clone().add(aimDir.clone().multiplyScalar(proj));
+          const perpDist = closestPt.distanceTo(ratCenter);
+          const hitRadius = (state.bulletType === 'boom' ? 1.25 : 0.9) * rat.userData.scale;
+          if (perpDist <= hitRadius) {
+            bestDist = proj;
+            directHitRat = rat;
+            impactPoint = ratCenter;
           }
-          break;
-        case 'ShiftLeft':
-        case 'ShiftRight': state.isRunning = true; break;
-        case 'KeyE': switchWeapon(); break;
-        case 'KeyF': trySleep(); break;
-        case 'KeyR':
-          if (state.gameOver || state.won) restartGame();
-          break;
+        }
+      });
+
+      // Clamp impact point to floor if aiming downward
+      if (aimDir.y < -0.02) {
+        const tFloor = -raycaster.ray.origin.y / aimDir.y;
+        if (tFloor > 0 && tFloor < bestDist) {
+          impactPoint = raycaster.ray.origin.clone().add(aimDir.clone().multiplyScalar(tFloor));
+        }
       }
-    };
 
-    const onKeyUp = (event) => {
-      switch (event.code) {
-        case 'KeyW': state.moveForward = false; break;
-        case 'KeyS': state.moveBackward = false; break;
-        case 'KeyA': state.moveLeft = false; break;
-        case 'KeyD': state.moveRight = false; break;
-        case 'ShiftLeft':
-        case 'ShiftRight': state.isRunning = false; break;
+      spawnTracer(barrelWorldPos, impactPoint, state.bulletType === 'boom');
+
+      if (state.bulletType === 'boom') {
+        // BIG BOOM SHOT: Explodes in 4.6m radius and eliminates up to 3 BIG RATS at a time!
+        const blastRadius = 4.6;
+        const candidates = stageRats
+          .map(r => ({ rat: r, d: r.position.distanceTo(impactPoint) }))
+          .filter(item => item.d <= blastRadius)
+          .sort((a, b) => a.d - b.d)
+          .slice(0, 3); // Hits up to 3 rats in one shot!
+
+        candidates.forEach(item => {
+          const push = item.rat.position.clone().sub(impactPoint);
+          if (push.lengthSq() < 0.01) push.copy(aimDir);
+          push.y = 0;
+          push.normalize();
+          damageRat(item.rat, 3, push); // Instant kill even on Big Rats!
+        });
+      } else if (directHitRat) {
+        const dmg = state.weapon === 'long' ? 2 : 1;
+        const push = aimDir.clone();
+        push.y = 0;
+        push.normalize();
+        damageRat(directHitRat, dmg, push);
       }
-    };
+    }
 
-    document.addEventListener('keydown', onKeyDown);
-    document.addEventListener('keyup', onKeyUp);
+    // =========================================================================
+    // 10. MISSION PROGRESSION, VICTORY & GAME OVER
+    // =========================================================================
+    function showToast(title, sub, duration = 3400) {
+      const toast = document.getElementById('banner-toast');
+      document.getElementById('banner-title').textContent = title;
+      document.getElementById('banner-sub').textContent = sub;
+      toast.classList.add('visible');
+      clearTimeout(toast._t);
+      toast._t = setTimeout(() => toast.classList.remove('visible'), duration);
+    }
 
-    // Mouse
+    function updateMissionHUD() {
+      const mission = MISSIONS[state.currentStageIdx];
+      const stageRatsAlive = rats.filter(r => r.userData.alive && r.userData.stageIdx === state.currentStageIdx).length;
+      const totalAlive = rats.filter(r => r.userData.alive).length;
+      const totalRats = rats.length;
+      const cleared = totalRats - totalAlive;
+
+      document.getElementById('stage-num').textContent = mission.stage;
+      document.getElementById('current-room-name').textContent = mission.name;
+      document.getElementById('mission-objective').textContent = mission.objective;
+      document.getElementById('zoneRatsLeft').textContent = stageRatsAlive;
+      document.getElementById('ratsLeft').textContent = totalAlive;
+      document.getElementById('killCount').textContent = state.kills;
+      document.getElementById('mission-progress-fill').style.width = `${(cleared / totalRats) * 100}%`;
+
+      missionBeacon.position.copy(mission.beaconPos);
+    }
+
+    function checkMissionProgress() {
+      const stageRatsAlive = rats.filter(r => r.userData.alive && r.userData.stageIdx === state.currentStageIdx).length;
+      updateMissionHUD();
+
+      if (stageRatsAlive === 0) {
+        const clearedMission = MISSIONS[state.currentStageIdx];
+
+        if (state.currentStageIdx < MISSIONS.length - 1) {
+          state.currentStageIdx++;
+          sfx.playMissionClear();
+          showToast(`✅ ${clearedMission.name} CLEARED!`, clearedMission.unlockHint, 4500);
+
+          // Activate next room's rat swarm
+          rats.forEach(r => {
+            if (r.userData.stageIdx === state.currentStageIdx) {
+              r.visible = true;
+            }
+          });
+          updateMissionHUD();
+        } else {
+          // Final backyard rat killed -> VICTORY!
+          triggerVictory();
+        }
+      }
+    }
+
+    function triggerVictory() {
+      state.won = true;
+      sfx.playVictory();
+      if (document.pointerLockElement) document.exitPointerLock();
+
+      const modal = document.getElementById('modal-overlay');
+      const card = document.getElementById('modal-card');
+      card.style.borderColor = '#76b900';
+      document.getElementById('modal-title').innerHTML = '🏆 BACKYARD VICTORY! 🏆';
+      document.getElementById('modal-title').style.color = '#76b900';
+      document.getElementById('modal-desc').innerHTML =
+        `You fought room-by-room from the Front Door through the entire Manor and wiped out the Backyard Swarm!<br><br>
+         <strong>Total Rats Eliminated:</strong> ${state.kills} &nbsp;|&nbsp; <strong>Remaining HP:</strong> ${Math.ceil(state.health)}%`;
+      document.getElementById('start-btn').textContent = 'PLAY AGAIN [R]';
+      modal.style.display = 'flex';
+    }
+
+    function triggerGameOver() {
+      if (state.gameOver) return;
+      state.gameOver = true;
+      state.health = 0;
+      updateHealthUI();
+      sfx.playGameOver();
+      if (document.pointerLockElement) document.exitPointerLock();
+
+      // Exterminator falls down as rats swarm
+      playerGroup.rotation.x = -Math.PI / 2;
+      playerGroup.position.y = 0.25;
+
+      const modal = document.getElementById('modal-overlay');
+      const card = document.getElementById('modal-card');
+      card.style.borderColor = '#ff3b30';
+      document.getElementById('modal-title').innerHTML = '💀 GAME OVER — RATS ATE YOU 💀';
+      document.getElementById('modal-title').style.color = '#ff3b30';
+      document.getElementById('modal-desc').innerHTML =
+        `The manor rat swarm overwhelmed and devoured you in <strong>${MISSIONS[state.currentStageIdx].name}</strong>.<br><br>
+         Tip: Use <strong>BIG BOOM SHOTS [Q / Right-Click]</strong> when multiple giant rats charge together!`;
+      document.getElementById('start-btn').textContent = 'RETRY MISSION [R]';
+      modal.style.display = 'flex';
+    }
+
+    function updateHealthUI() {
+      const hp = Math.max(0, Math.ceil(state.health));
+      document.getElementById('healthVal').textContent = hp;
+      const bar = document.getElementById('hp-bar-fill');
+      bar.style.width = `${hp}%`;
+      if (hp > 50) {
+        bar.style.background = 'linear-gradient(90deg, #16a34a, #76b900)';
+      } else if (hp > 25) {
+        bar.style.background = 'linear-gradient(90deg, #d97706, #f59e0b)';
+      } else {
+        bar.style.background = 'linear-gradient(90deg, #991b1b, #ff3b30)';
+      }
+    }
+
+    // =========================================================================
+    // 11. WEAPON, AMMO & NVIDIA INTERFACE CONTROLS
+    // =========================================================================
+    function switchWeapon() {
+      sfx.playSwitch();
+      if (state.weapon === 'short') {
+        state.weapon = 'long';
+        shortGunMesh.visible = false;
+        longGunMesh.visible = true;
+        document.getElementById('gun-label').textContent = 'LONG GUN (ASSAULT RIFLE)';
+        document.getElementById('gun-desc').textContent = 'Heavy Rapid-Fire Long Barrel';
+      } else {
+        state.weapon = 'short';
+        longGunMesh.visible = false;
+        shortGunMesh.visible = true;
+        document.getElementById('gun-label').textContent = 'SHORT GUN (SMG)';
+        document.getElementById('gun-desc').textContent = 'Agile Close-Quarters Gun';
+      }
+    }
+
+    function switchAmmoType() {
+      sfx.playSwitch();
+      const slotAmmo = document.getElementById('slot-ammo');
+      const ch = document.getElementById('crosshair');
+
+      if (state.bulletType === 'rifle') {
+        state.bulletType = 'boom';
+        slotAmmo.classList.add('boom-selected');
+        ch.classList.add('boom-mode');
+        tankMat.color.setHex(0xff9500);
+        tankMat.emissive.setHex(0x9a3412);
+        document.getElementById('ammo-label').textContent = 'BIG BOOM SHOTS';
+        document.getElementById('ammo-desc').textContent = 'AoE Blast · Hits 3 Big Rats!';
+        showToast('💥 BIG BOOM AMMO LOADED', 'Explosive shells eliminate up to 3 giant rats at once!', 2000);
+      } else {
+        state.bulletType = 'rifle';
+        slotAmmo.classList.remove('boom-selected');
+        ch.classList.remove('boom-mode');
+        tankMat.color.setHex(0x76b900);
+        tankMat.emissive.setHex(0x365314);
+        document.getElementById('ammo-label').textContent = 'RIFLE AP ROUNDS';
+        document.getElementById('ammo-desc').textContent = 'High-Velocity Piercing';
+        showToast('🔫 RIFLE AP ROUNDS LOADED', 'Fast precision single-target rounds.', 1600);
+      }
+    }
+
+    function toggleCameraMode() {
+      state.cameraMode = state.cameraMode === 'ots' ? 'far' : 'ots';
+      document.getElementById('tag-cam').textContent = state.cameraMode === 'ots' ? 'OTS' : 'WIDE';
+    }
+
+    function trySleepHeal() {
+      if (!state.started || state.gameOver || state.won) return;
+      const dist = state.playerPos.distanceTo(BED_POS);
+      if (dist < 3.6) {
+        state.isSleeping = true;
+        showToast('🛏️ RESTING ON MANOR BED', 'Recovering Exterminator HP to 100%...', 2200);
+        const iv = setInterval(() => {
+          if (!state.isSleeping || state.health >= 100 || state.gameOver) {
+            clearInterval(iv);
+            state.isSleeping = false;
+            return;
+          }
+          state.health = Math.min(100, state.health + 5);
+          updateHealthUI();
+        }, 100);
+        setTimeout(() => { state.isSleeping = false; }, 2200);
+      } else {
+        showToast('🛏️ BED TOO FAR', 'Go to the Master Bedroom (Stage 4) bed to rest & heal!', 2000);
+      }
+    }
+
+    // NVIDIA Panel Button Bindings
+    document.getElementById('btn-dlss').addEventListener('click', (e) => {
+      e.stopPropagation();
+      const modes = [
+        { label: 'PERF', text: 'PERFORMANCE', ratio: 0.85 },
+        { label: 'BAL', text: 'BALANCED', ratio: 1.0 },
+        { label: 'QUAL', text: 'QUALITY', ratio: 1.35 },
+        { label: 'DLAA', text: 'ULTRA RTX', ratio: Math.min(window.devicePixelRatio, 2) }
+      ];
+      const curIdx = modes.findIndex(m => m.label === state.dlssMode);
+      const next = modes[(curIdx + 1) % modes.length];
+      state.dlssMode = next.label;
+      document.getElementById('tag-dlss').textContent = next.label;
+      document.getElementById('dlss-val').textContent = next.text;
+      renderer.setPixelRatio(next.ratio);
+    });
+
+    document.getElementById('btn-rtx').addEventListener('click', (e) => {
+      e.stopPropagation();
+      state.rtxShadows = !state.rtxShadows;
+      renderer.shadowMap.enabled = state.rtxShadows;
+      moonLight.castShadow = state.rtxShadows;
+      document.getElementById('tag-rtx').textContent = state.rtxShadows ? 'ON' : 'OFF';
+      document.getElementById('btn-rtx').classList.toggle('active', state.rtxShadows);
+    });
+
+    document.getElementById('btn-audio').addEventListener('click', (e) => {
+      e.stopPropagation();
+      const on = sfx.toggleMute();
+      document.getElementById('tag-audio').textContent = on ? 'ON' : 'MUTE';
+      document.getElementById('btn-audio').classList.toggle('active', on);
+    });
+
+    document.getElementById('btn-cam').addEventListener('click', (e) => {
+      e.stopPropagation();
+      toggleCameraMode();
+    });
+
+    // =========================================================================
+    // 12. INPUT HANDLING (POINTER LOCK, MOUSE LOOK, KEYBOARD)
+    // =========================================================================
+    function startOrRestartGame() {
+      sfx.init();
+      state.started = true;
+      state.gameOver = false;
+      state.won = false;
+      state.health = 100;
+      state.kills = 0;
+      state.currentStageIdx = 0;
+      state.playerPos.set(0, 0, 9.5);
+      state.yaw = 0;
+      state.pitch = 0.14;
+      state.velocity.set(0, 0, 0);
+
+      playerGroup.rotation.set(0, 0, 0);
+      playerGroup.position.copy(state.playerPos);
+
+      updateHealthUI();
+      initAllRats();
+      updateMissionHUD();
+
+      document.getElementById('modal-overlay').style.display = 'none';
+      renderer.domElement.requestPointerLock?.();
+      showToast('🎯 MISSION 1: FRONT FOYER', 'Clear the entry rats and push deeper into the Manor!', 3500);
+    }
+
+    document.getElementById('start-btn').addEventListener('click', startOrRestartGame);
+
+    renderer.domElement.addEventListener('click', () => {
+      if (state.started && !state.gameOver && !state.won && document.pointerLockElement !== renderer.domElement) {
+        renderer.domElement.requestPointerLock?.();
+      }
+    });
+
+    document.addEventListener('mousemove', (e) => {
+      if (document.pointerLockElement !== renderer.domElement) return;
+      if (state.gameOver || state.won) return;
+      state.yaw -= e.movementX * 0.0024;
+      state.pitch = Math.max(-0.35, Math.min(0.65, state.pitch + e.movementY * 0.002));
+    });
+
     document.addEventListener('mousedown', (e) => {
+      if (!state.started || state.gameOver || state.won) return;
+      if (e.target.closest('button')) return;
+
       if (e.button === 0) {
         state.mouseDown = true;
         shoot();
+      } else if (e.button === 2) {
+        switchAmmoType();
       }
     });
+
     document.addEventListener('mouseup', (e) => {
       if (e.button === 0) state.mouseDown = false;
     });
 
-    // Continuous fire for rifle
-    setInterval(() => {
-      if (state.mouseDown && state.weapon === 'rifle' && controls.isLocked && !state.gameOver && !state.won) {
-        shoot();
-      }
-    }, 120);
+    document.addEventListener('contextmenu', (e) => e.preventDefault());
 
-    // ---------- WEAPON SWITCHING ----------
-    function switchWeapon() {
-      if (state.weapon === 'pistol') {
-        state.weapon = 'rifle';
-        pistolGroup.visible = false;
-        rifleGroup.visible = true;
-        document.getElementById('weapon-name').textContent = '🔫 Rifle (30 ammo)';
-      } else {
-        state.weapon = 'pistol';
-        rifleGroup.visible = false;
-        pistolGroup.visible = true;
-        document.getElementById('weapon-name').textContent = '🔫 Pistol';
-      }
-    }
-
-    // ---------- SHOOTING ----------
-    const raycaster = new THREE.Raycaster();
-    const screenCenter = new THREE.Vector2(0, 0);
-
-    function shoot() {
-      if (state.gameOver || state.won) return;
-      if (!controls.isLocked) return;
-      
-      const now = performance.now();
-      const cooldown = state.weapon === 'rifle' ? state.rifleCooldown : state.shotCooldown;
-      if (now - state.lastShot < cooldown) return;
-      
-      if (state.weapon === 'rifle' && state.ammo.rifle <= 0) {
-        // Out of ammo, switch to pistol
-        switchWeapon();
-        return;
-      }
-      
-      state.lastShot = now;
-      
-      if (state.weapon === 'rifle') {
-        state.ammo.rifle--;
-        document.getElementById('weapon-name').textContent = `🔫 Rifle (${state.ammo.rifle} ammo)`;
-        if (state.ammo.rifle <= 0) {
-          setTimeout(() => switchWeapon(), 200);
-        }
-      }
-
-      // Muzzle flash
-      muzzleFlash.intensity = 2;
-      flashMesh.material.opacity = 0.9;
-      setTimeout(() => {
-        muzzleFlash.intensity = 0;
-        flashMesh.material.opacity = 0;
-      }, 50);
-
-      // Recoil animation
-      const gunGroup = state.weapon === 'rifle' ? rifleGroup : pistolGroup;
-      gunGroup.position.z += 0.15;
-      setTimeout(() => {
-        gunGroup.position.z -= 0.15;
-      }, 50);
-
-      // Raycast from camera center
-      raycaster.setFromCamera(screenCenter, camera);
-      
-      // Check rats
-      let hitRat = null;
-      let closestDist = Infinity;
-      
-      rats.forEach(rat => {
-        if (!rat.userData.alive) return;
-        
-        const ratPos = rat.position.clone();
-        ratPos.y += 0.5 * rat.userData.scale;
-        
-        // Check distance from ray to rat center
-        const ray = raycaster.ray;
-        const toRat = ratPos.clone().sub(ray.origin);
-        const projLength = toRat.dot(ray.direction);
-        
-        if (projLength < 0) return; // Behind
-        
-        const closestPoint = ray.origin.clone().add(ray.direction.clone().multiplyScalar(projLength));
-        const distToRay = closestPoint.distanceTo(ratPos);
-        const hitRadius = 0.8 * rat.userData.scale;
-        
-        if (distToRay < hitRadius && projLength < closestDist) {
-          closestDist = projLength;
-          hitRat = rat;
-        }
-      });
-
-      if (hitRat) {
-        // Damage rat
-        hitRat.userData.health--;
-        
-        // Knockback
-        const knockback = hitRat.position.clone().sub(camera.position).normalize().multiplyScalar(0.3);
-        hitRat.position.x += knockback.x;
-        hitRat.position.z += knockback.z;
-        
-        // Flash red
-        hitRat.traverse(child => {
-          if (child.isMesh && child.material) {
-            child.material.emissive = new THREE.Color(0xff0000);
-            child.material.emissiveIntensity = 1;
-            setTimeout(() => {
-              if (child.material) {
-                child.material.emissive = new THREE.Color(0x000000);
-                child.material.emissiveIntensity = 0;
-              }
-            }, 100);
+    document.addEventListener('keydown', (e) => {
+      switch (e.code) {
+        case 'KeyW': case 'ArrowUp': state.moveForward = true; break;
+        case 'KeyS': case 'ArrowDown': state.moveBackward = true; break;
+        case 'KeyA': case 'ArrowLeft': state.moveLeft = true; break;
+        case 'KeyD': case 'ArrowRight': state.moveRight = true; break;
+        case 'ShiftLeft': case 'ShiftRight': state.isRunning = true; break;
+        case 'Space':
+          if (state.canJump && !state.gameOver) {
+            state.velocity.y = 7.5;
+            state.canJump = false;
           }
-        });
-
-        if (hitRat.userData.health <= 0) {
-          killRat(hitRat);
-        }
+          break;
+        case 'KeyE': switchWeapon(); break;
+        case 'KeyQ': switchAmmoType(); break;
+        case 'KeyV': toggleCameraMode(); break;
+        case 'KeyF': trySleepHeal(); break;
+        case 'KeyR':
+          if (state.gameOver || state.won) startOrRestartGame();
+          break;
       }
-    }
+    });
 
-    function killRat(rat) {
-      rat.userData.alive = false;
-      state.ratsLeft--;
-      document.getElementById('ratsLeft').textContent = state.ratsLeft;
-      
-      // Death animation
-      const startTime = performance.now();
-      const startPos = rat.position.clone();
-      const startRot = rat.rotation.clone();
-      
-      function deathAnim() {
-        const elapsed = performance.now() - startTime;
-        const t = Math.min(elapsed / 500, 1);
-        
-        rat.position.y = startPos.y + t * 0.5;
-        rat.position.x = startPos.x + Math.sin(t * 10) * 0.1 * (1 - t);
-        rat.rotation.z = startRot.z + t * Math.PI;
-        
-        if (t < 1) {
-          requestAnimationFrame(deathAnim);
-        } else {
-          rat.position.y = startPos.y + 0.5;
-          rat.rotation.z = startRot.z + Math.PI;
-        }
+    document.addEventListener('keyup', (e) => {
+      switch (e.code) {
+        case 'KeyW': case 'ArrowUp': state.moveForward = false; break;
+        case 'KeyS': case 'ArrowDown': state.moveBackward = false; break;
+        case 'KeyA': case 'ArrowLeft': state.moveLeft = false; break;
+        case 'KeyD': case 'ArrowRight': state.moveRight = false; break;
+        case 'ShiftLeft': case 'ShiftRight': state.isRunning = false; break;
       }
-      deathAnim();
-      
-      // Scale down after delay
-      setTimeout(() => {
-        rat.visible = false;
-      }, 3000);
+    });
 
-      if (state.ratsLeft <= 0) {
-        winGame();
-      }
-    }
-
-    // ---------- SLEEPING ----------
-    function trySleep() {
-      if (state.gameOver || state.won) return;
-      
-      // Check if near bed
-      const dist = camera.position.distanceTo(BED_POS);
-      if (dist < 3) {
-        state.isSleeping = true;
-        state.sleepTimer = 3000;
-        showMessage('💤 Sleeping... Healing...', 2000);
-        
-        // Heal over time
-        const healInterval = setInterval(() => {
-          if (!state.isSleeping || state.health >= 100) {
-            clearInterval(healInterval);
-            state.isSleeping = false;
-            return;
-          }
-          state.health = Math.min(100, state.health + 2);
-          document.getElementById('healthVal').textContent = Math.floor(state.health);
-        }, 100);
-        
-        // Wake up after 3 seconds
-        setTimeout(() => {
-          state.isSleeping = false;
-          clearInterval(healInterval);
-          showMessage('☀️ Rested and healed!', 1500);
-        }, 3000);
-      } else {
-        showMessage('🛏️ You need to be near the bed to sleep!', 1500);
-      }
-    }
-
-    // ---------- MESSAGES ----------
-    function showMessage(text, duration = 2000) {
-      const el = document.getElementById('message');
-      el.textContent = text;
-      el.style.display = 'block';
-      clearTimeout(el._timeout);
-      el._timeout = setTimeout(() => {
-        el.style.display = 'none';
-      }, duration);
-    }
-
-    // ---------- GAME OVER ----------
-    function gameOver(reason) {
-      state.gameOver = true;
-      state.health = 0;
-      document.getElementById('healthVal').textContent = '0';
-      const el = document.getElementById('message');
-      el.innerHTML = `💀 GAME OVER 💀<br><span style="font-size:20px">${reason}</span><br><span style="font-size:16px">Press R to restart</span>`;
-      el.style.display = 'block';
-      el.style.borderColor = '#ff0000';
-      controls.unlock();
-    }
-
-    // ---------- WIN ----------
-    function winGame() {
-      state.won = true;
-      const el = document.getElementById('message');
-      el.innerHTML = `🏆 VICTORY! 🏆<br><span style="font-size:20px">You cleared the manor of all rats!</span><br><span style="font-size:16px">Press R to play again</span>`;
-      el.style.display = 'block';
-      el.style.borderColor = '#00cc00';
-      controls.unlock();
-    }
-
-    // ---------- RESTART ----------
-    function restartGame() {
-      // Reset state
-      state.health = 100;
-      state.ratsLeft = state.totalRats;
-      state.gameOver = false;
-      state.won = false;
-      state.weapon = 'pistol';
-      state.ammo = { pistol: Infinity, rifle: 30 };
-      state.velocity.set(0, 0, 0);
-      state.canJump = false;
-      state.isSleeping = false;
-      
-      document.getElementById('healthVal').textContent = '100';
-      document.getElementById('ratsLeft').textContent = state.totalRats;
-      document.getElementById('weapon-name').textContent = '🔫 Pistol';
-      document.getElementById('message').style.display = 'none';
-      document.getElementById('message').style.borderColor = '#ffaa00';
-      
-      pistolGroup.visible = true;
-      rifleGroup.visible = false;
-      
-      // Reset camera
-      camera.position.set(0, 1.7, 20);
-      camera.rotation.set(0, 0, 0);
-      
-      // Reset rats
-      rats.forEach(rat => {
-        rat.visible = true;
-        rat.userData.alive = true;
-        rat.userData.health = 2;
-        rat.position.copy(rat.userData.originalPos);
-        rat.rotation.set(0, 0, 0);
-        rat.position.y = 0;
-      });
-      
-      // Re-lock controls
-      controls.lock();
-    }
-
-    // ---------- COLLISION DETECTION ----------
-    const collidableObjects = [];
-    
-    // Add walls as colliders (simple box colliders)
-    const wallColliders = [
-      // Exterior walls
-      { minX: -12.15, maxX: -11.85, minZ: -18, maxZ: 12 }, // left
-      { minX: 11.85, maxX: 12.15, minZ: -18, maxZ: 12 },   // right
-      { minX: -12, maxX: -6, minZ: 11.85, maxZ: 12.15 },   // front left
-      { minX: 6, maxX: 12, minZ: 11.85, maxZ: 12.15 },     // front right
-      { minX: -12, maxX: 12, minZ: -18.15, maxZ: -17.85 }, // back
-      // Interior walls
-      { minX: -4.15, maxX: -3.85, minZ: -18, maxZ: -14 },  // wall x=-4 upper
-      { minX: -4.15, maxX: -3.85, minZ: -10, maxZ: -8 },   // wall x=-4 lower
-      { minX: -12, maxX: -8, minZ: -8.15, maxZ: -7.85 },   // wall z=-8 left
-      { minX: -6, maxX: -4, minZ: -8.15, maxZ: -7.85 },    // wall z=-8 right
-      { minX: 3.85, maxX: 4.15, minZ: -18, maxZ: -14 },    // wall x=4 upper
-      { minX: 3.85, maxX: 4.15, minZ: -10, maxZ: -8 },     // wall x=4 lower
-      { minX: 4, maxX: 7, minZ: -8.15, maxZ: -7.85 },      // wall z=-8 bedroom left
-      { minX: 9, maxX: 12, minZ: -8.15, maxZ: -7.85 },     // wall z=-8 bedroom right
-      // Bed
-      { minX: 6.5, maxX: 9.5, minZ: -16.5, maxZ: -11.5 },
-      // Tables
-      { minX: -9.5, maxX: -6.5, minZ: 1.25, maxZ: 2.75 },
-      { minX: -9.25, maxX: -6.75, minZ: -12.75, maxZ: -11.25 },
-      { minX: 1, maxX: 3, minZ: -2.5, maxZ: -1.5 },
-      // Sofa
-      { minX: -9.75, maxX: -6.25, minZ: 5.4, maxZ: 6.6 },
-      // Bookshelf
-      { minX: -11.3, maxX: -10.7, minZ: -3, maxZ: -1 },
-    ];
-
-    // Boxes
-    wallColliders.push({ minX: -10.6, maxX: -9.4, minZ: -6.6, maxZ: -5.4 });
-    wallColliders.push({ minX: -9.4, maxX: -8.6, minZ: -5.4, maxZ: -4.6 });
-    wallColliders.push({ minX: 9.5, maxX: 10.5, minZ: -16.5, maxZ: -15.5 });
-    wallColliders.push({ minX: 9.1, maxX: 9.9, minZ: -15.4, maxZ: -14.6 });
-    wallColliders.push({ minX: -2.55, maxX: -1.45, minZ: -17.55, maxZ: -16.45 });
-    wallColliders.push({ minX: 2.5, maxX: 3.5, minZ: 7.5, maxZ: 8.5 });
-    wallColliders.push({ minX: -6.5, maxX: -5.5, minZ: 8.5, maxZ: 9.5 });
-
-    // Stairs colliders (simplified - just block the sides)
-    // Actually let's allow walking up stairs, so we need to handle stairs differently
-    // We'll add the stair steps as walkable surfaces by setting the floor height based on position
-
-    function getFloorHeight(pos) {
-      // Check if on stairs
-      if (pos.x > 6.8 && pos.x < 9.2 && pos.z > 1.5 && pos.z < 7.5) {
-        const stepIndex = Math.floor((pos.z - 1.5) / 0.8);
-        if (stepIndex >= 0 && stepIndex < 6) {
-          return stepIndex * 0.3 + 0.3;
-        } else if (stepIndex >= 6) {
-          return 1.8;
-        }
-      }
-      // On landing
-      if (pos.x > 6.8 && pos.x < 9.2 && pos.z >= 7.5 && pos.z < 8.5) {
-        return 1.8;
-      }
-      return 0; // ground floor
-    }
-
-    function checkCollision(newPos) {
-      const playerRadius = 0.4;
-      for (const collider of wallColliders) {
-        // Check if newPos is inside expanded collider
-        if (newPos.x > collider.minX - playerRadius &&
-            newPos.x < collider.maxX + playerRadius &&
-            newPos.z > collider.minZ - playerRadius &&
-            newPos.z < collider.maxZ + playerRadius) {
+    // =========================================================================
+    // 13. COLLISION, RAT AI & THIRD-PERSON CAMERA LOOP
+    // =========================================================================
+    function checkCollision(pos) {
+      const r = 0.42;
+      for (const c of wallColliders) {
+        if (pos.x > c.minX - r && pos.x < c.maxX + r &&
+            pos.z > c.minZ - r && pos.z < c.maxZ + r) {
           return true;
         }
       }
       return false;
     }
 
-    // ---------- RAT AI ----------
-    const courtyardCenter = new THREE.Vector3(0, 0, -28);
-    const courtyardBounds = { minX: -17, maxX: 17, minZ: -33, maxZ: -20 };
-
     function updateRats(delta) {
       rats.forEach(rat => {
-        if (!rat.userData.alive) return;
-        
-        const data = rat.userData;
-        const pos = rat.position;
-        
-        // If all other rats are dead, head to courtyard
-        if (state.ratsLeft <= 2) {
-          data.headingToCourtyard = true;
-        }
+        if (!rat.userData.alive || !rat.visible) return;
+        const d = rat.userData;
 
-        // Direction change timer
-        data.changeDirTimer -= delta;
-        if (data.changeDirTimer <= 0) {
-          data.changeDirTimer = 1 + Math.random() * 3;
-          
-          if (data.headingToCourtyard) {
-            // Head toward courtyard (positive z direction)
-            data.direction.set(
-              (Math.random() - 0.5) * 0.3,
-              0,
-              1
-            ).normalize();
-          } else {
-            // Random direction, but stay within house
-            data.direction.set(
-              Math.random() - 0.5,
-              0,
-              Math.random() - 0.5
-            ).normalize();
-            
-            // Bias toward player if player is close
-            const distToPlayer = pos.distanceTo(camera.position);
-            if (distToPlayer < 8 && !state.isSleeping) {
-              const toPlayer = camera.position.clone().sub(pos).normalize();
-              data.direction.lerp(toPlayer, 0.3).normalize();
-            }
+        // Only active stage rats hunt the player
+        if (d.stageIdx !== state.currentStageIdx) return;
+
+        const toPlayer = state.playerPos.clone().sub(rat.position);
+        toPlayer.y = 0;
+        const dist = toPlayer.length();
+
+        // Chase player aggressively when in same zone or within 16m
+        if (dist < 18 && !state.isSleeping) {
+          toPlayer.normalize();
+          d.dir.lerp(toPlayer, delta * 3.5).normalize();
+        } else {
+          d.wanderTimer -= delta;
+          if (d.wanderTimer <= 0) {
+            d.wanderTimer = 1.2 + Math.random() * 2;
+            d.dir.set(Math.random() - 0.5, 0, Math.random() - 0.5).normalize();
           }
         }
 
-        // Move rat
-        const speed = data.speed * (data.headingToCourtyard ? 2.5 : 1);
-        const newX = pos.x + data.direction.x * speed;
-        const newZ = pos.z + data.direction.z * speed;
-        
-        // House bounds (rats can go to courtyard through door)
-        let minX = -11.5, maxX = 11.5;
-        let minZ = -17.5, maxZ = 11.5;
-        
-        if (data.headingToCourtyard) {
-          minZ = -33;
-          maxZ = 11.5;
-          minX = -17;
-          maxX = 17;
+        // Move rat if not already biting right next to player
+        if (dist > 1.05 * d.scale) {
+          const nextPos = rat.position.clone().addScaledVector(d.dir, d.speed * delta);
+          if (!checkCollision(nextPos)) {
+            rat.position.x = Math.max(-17, Math.min(17, nextPos.x));
+            rat.position.z = Math.max(-34.5, Math.min(11.2, nextPos.z));
+          } else {
+            d.dir.x *= -1;
+            d.dir.z *= -1;
+          }
         }
 
-        // Bounce off walls
-        if (newX < minX || newX > maxX) {
-          data.direction.x *= -1;
-        } else {
-          pos.x = newX;
-        }
-        if (newZ < minZ || newZ > maxZ) {
-          data.direction.z *= -1;
-        } else {
-          pos.z = newZ;
-        }
+        // Face movement direction & scuttle animation
+        rat.rotation.y = Math.atan2(d.dir.x, d.dir.z);
+        rat.position.y = Math.abs(Math.sin(performance.now() * 0.015 + rat.id)) * 0.06;
 
-        // Make rat face movement direction
-        const targetAngle = Math.atan2(data.direction.x, data.direction.z);
-        rat.rotation.y = targetAngle;
+        // Rat Attack / Eating Player!
+        d.biteCooldown = Math.max(0, d.biteCooldown - delta);
+        if (dist < 1.35 * d.scale && d.biteCooldown <= 0 && !state.isSleeping && !state.gameOver) {
+          d.biteCooldown = 0.75;
+          const biteDmg = d.isBig ? 14 : 8;
+          state.health -= biteDmg;
+          updateHealthUI();
+          sfx.playRatBite();
 
-        // Rat attack: if close to player
-        const distToPlayer = pos.distanceTo(camera.position);
-        if (distToPlayer < 1.5 && !state.isSleeping && !state.gameOver) {
-          // Rat bites!
-          if (Math.random() < 0.05) { // 5% chance per frame when close
-            state.health -= 3;
-            document.getElementById('healthVal').textContent = Math.max(0, Math.floor(state.health));
-            
-            // Screen flash red
-            document.body.style.background = 'rgba(255,0,0,0.3)';
-            setTimeout(() => {
-              document.body.style.background = '';
-            }, 150);
-            
-            if (state.health <= 0) {
-              gameOver('The rats devoured you.');
-            }
+          const dmgOverlay = document.getElementById('damage-overlay');
+          dmgOverlay.style.opacity = '1';
+          setTimeout(() => { dmgOverlay.style.opacity = '0'; }, 180);
+
+          if (state.health <= 0) {
+            triggerGameOver();
           }
         }
       });
     }
 
-    // ---------- MOVEMENT & UPDATE ----------
+    // FPS Telemetry Counter
+    let frameCounter = 0;
+    let lastFpsTick = performance.now();
+
     const clock = new THREE.Clock();
 
     function animate() {
       requestAnimationFrame(animate);
-      
       const delta = Math.min(clock.getDelta(), 0.1);
-      
-      if (!state.gameOver && !state.won && controls.isLocked && !state.isSleeping) {
-        // Movement
-        const speed = state.isRunning ? 12 : 6;
-        state.velocity.x -= state.velocity.x * 10 * delta;
-        state.velocity.z -= state.velocity.z * 10 * delta;
-        state.velocity.y -= 25 * delta;
 
-        state.direction.z = Number(state.moveForward) - Number(state.moveBackward);
-        state.direction.x = Number(state.moveRight) - Number(state.moveLeft);
-        state.direction.normalize();
-
-        if (state.moveForward || state.moveBackward) {
-          state.velocity.z -= state.direction.z * speed * delta * 5;
-        }
-        if (state.moveLeft || state.moveRight) {
-          state.velocity.x -= state.direction.x * speed * delta * 5;
-        }
-
-        const oldPos = camera.position.clone();
-        
-        controls.moveRight(-state.velocity.x * delta);
-        controls.moveForward(-state.velocity.z * delta);
-        
-        // Apply vertical velocity
-        camera.position.y += state.velocity.y * delta;
-        
-        // Check floor height (stairs)
-        const floorH = getFloorHeight(camera.position) + 1.7;
-        
-        if (camera.position.y < floorH) {
-          state.velocity.y = 0;
-          camera.position.y = floorH;
-          state.canJump = true;
-        } else if (camera.position.y > floorH + 0.1) {
-          state.canJump = false;
-        }
-        
-        // Collision check (simple)
-        if (checkCollision(camera.position)) {
-          camera.position.x = oldPos.x;
-          camera.position.z = oldPos.z;
-        }
-        
-        // Keep player in bounds (allow courtyard)
-        camera.position.x = Math.max(-17, Math.min(17, camera.position.x));
-        camera.position.z = Math.max(-33, Math.min(12, camera.position.z));
-        
-        // Check if player walked into courtyard - if all rats dead, win
-        if (camera.position.z < -20 && state.ratsLeft <= 0 && !state.won) {
-          winGame();
-        }
+      // Update NVIDIA FPS & Frame Latency Telemetry
+      frameCounter++;
+      const now = performance.now();
+      if (now - lastFpsTick >= 500) {
+        const fps = Math.round((frameCounter * 1000) / (now - lastFpsTick));
+        const ms = (1000 / Math.max(1, fps)).toFixed(1);
+        document.getElementById('fps-val').textContent = fps;
+        document.getElementById('ms-val').textContent = `${ms}ms`;
+        frameCounter = 0;
+        lastFpsTick = now;
       }
 
-      // Update rats
-      if (!state.gameOver && !state.won) {
+      // Continuous automatic fire while holding Left Mouse Button
+      if (state.mouseDown && state.started && !state.gameOver && !state.won) {
+        shoot();
+      }
+
+      // Player Movement & Character Animation
+      if (state.started && !state.gameOver && !state.won && !state.isSleeping) {
+        const moveSpeed = state.isRunning ? 8.2 : 5.2;
+        const forward = new THREE.Vector3(-Math.sin(state.yaw), 0, -Math.cos(state.yaw));
+        const right = new THREE.Vector3(Math.cos(state.yaw), 0, -Math.sin(state.yaw));
+
+        const moveVec = new THREE.Vector3();
+        if (state.moveForward) moveVec.add(forward);
+        if (state.moveBackward) moveVec.sub(forward);
+        if (state.moveRight) moveVec.add(right);
+        if (state.moveLeft) moveVec.sub(right);
+
+        const isMoving = moveVec.lengthSq() > 0.001;
+        if (isMoving) {
+          moveVec.normalize().multiplyScalar(moveSpeed * delta);
+          sfx.playFootstep(state.isRunning);
+
+          // Slide along walls cleanly on X and Z separately
+          const tryX = state.playerPos.clone();
+          tryX.x += moveVec.x;
+          if (!checkCollision(tryX)) state.playerPos.x = tryX.x;
+
+          const tryZ = state.playerPos.clone();
+          tryZ.z += moveVec.z;
+          if (!checkCollision(tryZ)) state.playerPos.z = tryZ.z;
+
+          // Keep inside Manor + Backyard perimeter
+          state.playerPos.x = Math.max(-17.2, Math.min(17.2, state.playerPos.x));
+          state.playerPos.z = Math.max(-34.8, Math.min(11.3, state.playerPos.z));
+
+          // Stride leg & arm animation
+          state.walkCycle += delta * (state.isRunning ? 15 : 10);
+          leftLeg.rotation.x = Math.sin(state.walkCycle) * 0.65;
+          rightLeg.rotation.x = -Math.sin(state.walkCycle) * 0.65;
+          torso.position.y = 1.18 + Math.abs(Math.cos(state.walkCycle)) * 0.04;
+        } else {
+          leftLeg.rotation.x *= 0.8;
+          rightLeg.rotation.x *= 0.8;
+        }
+
+        // Jump & Gravity
+        state.velocity.y -= 20 * delta;
+        state.playerPos.y += state.velocity.y * delta;
+        if (state.playerPos.y <= 0) {
+          state.playerPos.y = 0;
+          state.velocity.y = 0;
+          state.canJump = true;
+        }
+
+        playerGroup.position.copy(state.playerPos);
+        playerGroup.rotation.y = state.yaw;
+      }
+
+      // Weapon recoil recovery & aiming pitch
+      state.recoilKick *= 0.82;
+      weaponArmGroup.rotation.x = -state.pitch * 0.7 + state.recoilKick;
+      weaponArmGroup.position.z = -0.05 + state.recoilKick * 0.25;
+
+      // Update Rats & FX
+      if (state.started && !state.won) {
         updateRats(delta);
       }
+      updateEffects(delta);
 
-      // Bobbing effect when walking
-      if (controls.isLocked && (state.moveForward || state.moveBackward || state.moveLeft || state.moveRight) && !state.isSleeping) {
-        const bobAmount = state.isRunning ? 0.05 : 0.025;
-        pistolGroup.position.y = -0.3 + Math.sin(performance.now() * 0.01) * bobAmount;
-        rifleGroup.position.y = -0.25 + Math.sin(performance.now() * 0.01) * bobAmount;
-      }
+      // Animate Mission Waypoint Beacon
+      missionBeacon.rotation.y += delta * 2;
+      missionBeacon.scale.setScalar(0.9 + Math.sin(performance.now() * 0.005) * 0.15);
 
-      // Weapon sway
-      if (controls.isLocked) {
-        const swayX = Math.sin(performance.now() * 0.002) * 0.005;
-        const swayY = Math.cos(performance.now() * 0.0015) * 0.005;
-        pistolGroup.position.x = 0.3 + swayX;
-        rifleGroup.position.x = 0.3 + swayX;
-      }
+      // Third-Person Over-the-Shoulder Camera Positioning (Sees the shooter clearly!)
+      const camDist = state.cameraMode === 'ots' ? 3.2 : 5.4;
+      const shoulderOffset = state.cameraMode === 'ots' ? 0.72 : 0.4;
+      const camHeight = state.cameraMode === 'ots' ? 1.95 : 2.55;
+
+      const backDir = new THREE.Vector3(Math.sin(state.yaw), 0, Math.cos(state.yaw));
+      const rightDir = new THREE.Vector3(Math.cos(state.yaw), 0, -Math.sin(state.yaw));
+
+      const desiredCamPos = state.playerPos.clone()
+        .addScaledVector(backDir, camDist)
+        .addScaledVector(rightDir, shoulderOffset);
+      desiredCamPos.y = state.playerPos.y + camHeight + Math.sin(state.pitch) * 1.4;
+
+      // Prevent camera from clipping outside exterior walls
+      desiredCamPos.x = Math.max(-17.4, Math.min(17.4, desiredCamPos.x));
+      desiredCamPos.z = Math.max(-35.2, Math.min(11.6, desiredCamPos.z));
+      desiredCamPos.y = Math.max(0.7, Math.min(4.9, desiredCamPos.y));
+
+      camera.position.lerp(desiredCamPos, 0.28);
+
+      const lookTarget = state.playerPos.clone()
+        .addScaledVector(backDir, -10)
+        .addScaledVector(rightDir, shoulderOffset * 0.4);
+      lookTarget.y = state.playerPos.y + 1.45 - Math.sin(state.pitch) * 6;
+      camera.lookAt(lookTarget);
 
       renderer.render(scene, camera);
     }
 
+    initAllRats();
+    updateMissionHUD();
     animate();
 
-    // ---------- RESIZE ----------
     window.addEventListener('resize', () => {
       camera.aspect = window.innerWidth / window.innerHeight;
       camera.updateProjectionMatrix();
       renderer.setSize(window.innerWidth, window.innerHeight);
     });
-
-    // ---------- INITIAL MESSAGE ----------
-    setTimeout(() => {
-      showMessage('Click to lock mouse and start playing!\nWASD to move, Click to shoot, E to switch weapon', 4000);
-    }, 500);
-
   </script>
 </body>
 </html>
