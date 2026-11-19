@@ -3856,6 +3856,22 @@
     function updateCharacterPoseAndFlight(delta, hasMoveInput) {
       let targetPitch = 0;
       let targetRoll = 0;
+
+      // Compute active 3D aim point for shooting hand / weapon arm
+      let aimPointWorld = null;
+      if (state.started && !state.gameOver && !state.won) {
+        if (state.lockedRat && state.lockedRat.userData && state.lockedRat.userData.alive) {
+          aimPointWorld = getRatAimWorldPos(state.lockedRat);
+        } else if (state.lungeTargetRat && state.lungeTargetRat.userData && state.lungeTargetRat.userData.alive && state.isLungingMove) {
+          aimPointWorld = getRatAimWorldPos(state.lungeTargetRat);
+        } else if (state.targetedRat && state.targetedRat.userData && state.targetedRat.userData.alive && state.targetTurnHoldTimer > 0) {
+          aimPointWorld = getRatAimWorldPos(state.targetedRat);
+        } else {
+          raycaster.setFromCamera(getReticleNDC(), camera);
+          aimPointWorld = raycaster.ray.origin.clone().addScaledVector(raycaster.ray.direction, 26);
+        }
+      }
+
       if (state.isFlying) {
         const forward = new THREE.Vector3(-Math.sin(state.yaw), 0, -Math.cos(state.yaw));
         const right = new THREE.Vector3(Math.cos(state.yaw), 0, -Math.sin(state.yaw));
@@ -3886,8 +3902,48 @@
         const climbFactor = state.ascendHeld ? -0.32 : (state.descendHeld ? 0.25 : 0);
         targetPitch = -1.18 + climbFactor;
         targetRoll = 0;
-        leftArmGroup.rotation.set(-1.15, 0.14, 0);
-        weaponArmGroup.rotation.set(-1.15, -0.14, 0);
+
+        // Keep playerGroup and characterBodyGroup matrices up to date so world-to-local arm aiming is exact
+        playerGroup.position.copy(state.playerPos);
+        playerGroup.rotation.set(0, state.yaw, 0);
+        characterBodyGroup.rotation.x = targetPitch;
+        characterBodyGroup.rotation.z = targetRoll;
+        characterBodyGroup.position.y = Math.max(0, -targetPitch) * 0.42;
+        playerGroup.updateMatrixWorld(true);
+
+        if (aimPointWorld) {
+          // Aim weaponArmGroup (shooting hand & gun) directly at the 3D target / shooting direction in characterBodyGroup space
+          const localAim = characterBodyGroup.worldToLocal(aimPointWorld.clone());
+          const armOrigin = weaponArmGroup.position;
+          const dx = localAim.x - armOrigin.x;
+          const dy = localAim.y - armOrigin.y;
+          const dz = localAim.z - armOrigin.z;
+          const horizDist = Math.max(0.001, Math.hypot(dx, dz));
+          const pitchToTarget = Math.atan2(dy, horizDist);
+          const yawToTarget = Math.atan2(-dx, -dz);
+
+          const targetArmRotX = -pitchToTarget;
+          const targetArmRotY = THREE.MathUtils.clamp(yawToTarget, -1.25, 1.25);
+          weaponArmGroup.rotation.x = THREE.MathUtils.lerp(weaponArmGroup.rotation.x, targetArmRotX, Math.min(1, delta * 20));
+          weaponArmGroup.rotation.y = THREE.MathUtils.lerp(weaponArmGroup.rotation.y, targetArmRotY, Math.min(1, delta * 20));
+          weaponArmGroup.rotation.z = THREE.MathUtils.lerp(weaponArmGroup.rotation.z, 0, Math.min(1, delta * 16));
+
+          // Supporting left hand tracks smoothly toward the shooting vector as well
+          const leftOrigin = leftArmGroup.position;
+          const ldx = localAim.x - leftOrigin.x;
+          const ldy = localAim.y - leftOrigin.y;
+          const ldz = localAim.z - leftOrigin.z;
+          const lHoriz = Math.max(0.001, Math.hypot(ldx, ldz));
+          const leftPitch = -Math.atan2(ldy, lHoriz);
+          const leftYaw = THREE.MathUtils.clamp(Math.atan2(-ldx, -ldz) + 0.16, -1.2, 1.2);
+          leftArmGroup.rotation.x = THREE.MathUtils.lerp(leftArmGroup.rotation.x, leftPitch, Math.min(1, delta * 16));
+          leftArmGroup.rotation.y = THREE.MathUtils.lerp(leftArmGroup.rotation.y, leftYaw, Math.min(1, delta * 16));
+          leftArmGroup.rotation.z = THREE.MathUtils.lerp(leftArmGroup.rotation.z, 0, Math.min(1, delta * 16));
+        } else {
+          leftArmGroup.rotation.set(-1.15, 0.14, 0);
+          weaponArmGroup.rotation.set(-1.15, -0.14, 0);
+        }
+
         headGroup.rotation.set(0.45, 0, 0);
         leftLeg.rotation.set(0.24, 0, -0.04);
         rightLeg.rotation.set(0.32, 0, 0.04);
