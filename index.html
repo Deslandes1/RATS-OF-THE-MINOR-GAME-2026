@@ -300,6 +300,12 @@
       color: var(--nv-green-bright);
       box-shadow: 0 0 12px rgba(163, 230, 53, 0.35);
     }
+    .turn-indicator.target-tracking {
+      background: rgba(255, 59, 48, 0.22);
+      border-color: var(--nv-danger);
+      color: #ff9e99;
+      box-shadow: 0 0 12px rgba(255, 59, 48, 0.4);
+    }
     .move-vector-pill {
       display: inline-flex;
       align-items: center;
@@ -1068,7 +1074,6 @@
   </script>
   <script type="module">
     import * as THREE from 'three';
-
     // =========================================================================
     // 1. FIGHTER JET CINEMATIC AUDIO ENGINE (Web Audio API)
     // =========================================================================
@@ -1077,7 +1082,6 @@
     let compressor = null;
     let audioReady = false;
     let audioMuted = false;
-
     function initAudio() {
       if (audioCtx) {
         if (audioCtx.state === 'suspended') audioCtx.resume();
@@ -1100,7 +1104,6 @@
         audioReady = false;
       }
     }
-
     function makeNoiseBuffer(seconds) {
       const len = Math.max(1, Math.floor(audioCtx.sampleRate * seconds));
       const buf = audioCtx.createBuffer(1, len, audioCtx.sampleRate);
@@ -1108,7 +1111,6 @@
       for (let i = 0; i < len; i++) data[i] = Math.random() * 2 - 1;
       return buf;
     }
-
     function playShoot(isLongGun = false) {
       if (!audioReady || audioMuted) return;
       const t = audioCtx.currentTime;
@@ -1125,7 +1127,6 @@
       g1.connect(compressor);
       osc1.start(t);
       osc1.stop(t + 0.13);
-
       const osc2 = audioCtx.createOscillator();
       const g2 = audioCtx.createGain();
       osc2.type = 'sine';
@@ -1138,7 +1139,6 @@
       g2.connect(compressor);
       osc2.start(t);
       osc2.stop(t + 0.17);
-
       const noise = audioCtx.createBufferSource();
       noise.buffer = makeNoiseBuffer(0.08);
       const hp = audioCtx.createBiquadFilter();
@@ -1152,7 +1152,6 @@
       ng.connect(compressor);
       noise.start(t);
       noise.stop(t + 0.08);
-
       const delay = audioCtx.createDelay(0.1);
       delay.delayTime.value = 0.055;
       const fb = audioCtx.createGain();
@@ -1165,7 +1164,6 @@
       delay.connect(dg);
       dg.connect(compressor);
     }
-
     function playBoom() {
       if (!audioReady || audioMuted) return;
       const t = audioCtx.currentTime;
@@ -1181,7 +1179,6 @@
       sg.connect(compressor);
       sub.start(t);
       sub.stop(t + 1.2);
-
       const mid = audioCtx.createOscillator();
       const mg = audioCtx.createGain();
       mid.type = 'triangle';
@@ -1194,7 +1191,6 @@
       mg.connect(compressor);
       mid.start(t);
       mid.stop(t + 0.5);
-
       const noise = audioCtx.createBufferSource();
       noise.buffer = makeNoiseBuffer(1.0);
       const lp = audioCtx.createBiquadFilter();
@@ -1211,7 +1207,6 @@
       ng.connect(compressor);
       noise.start(t);
       noise.stop(t + 1.05);
-
       const crack = audioCtx.createOscillator();
       const cg = audioCtx.createGain();
       crack.type = 'square';
@@ -1223,7 +1218,6 @@
       cg.connect(compressor);
       crack.start(t);
       crack.stop(t + 0.06);
-
       const delay = audioCtx.createDelay(0.5);
       delay.delayTime.value = 0.18;
       const fb = audioCtx.createGain();
@@ -1236,7 +1230,6 @@
       delay.connect(dg);
       dg.connect(compressor);
     }
-
     function playHit() {
       if (!audioReady || audioMuted) return;
       const t = audioCtx.currentTime;
@@ -1252,7 +1245,6 @@
       g.connect(compressor);
       osc.start(t);
       osc.stop(t + 0.38);
-
       const noise = audioCtx.createBufferSource();
       noise.buffer = makeNoiseBuffer(0.18);
       const bp = audioCtx.createBiquadFilter();
@@ -1267,7 +1259,6 @@
       ng.connect(compressor);
       noise.start(t);
       noise.stop(t + 0.2);
-
       const beep = audioCtx.createOscillator();
       const bg = audioCtx.createGain();
       beep.type = 'square';
@@ -1280,7 +1271,6 @@
       beep.start(t + 0.02);
       beep.stop(t + 0.2);
     }
-
     function playLock() {
       if (!audioReady || audioMuted) return;
       const t = audioCtx.currentTime;
@@ -1297,7 +1287,6 @@
       osc.start(t);
       osc.stop(t + 0.13);
     }
-
     function playThrusterSweep(ascending = true) {
       if (!audioReady || audioMuted) return;
       const t = audioCtx.currentTime;
@@ -1314,7 +1303,6 @@
       osc.start(t);
       osc.stop(t + 0.32);
     }
-
     function playLandingThud(heavy = false) {
       if (!audioReady || audioMuted) return;
       const t = audioCtx.currentTime;
@@ -1330,7 +1318,6 @@
       g.connect(compressor);
       osc.start(t);
       osc.stop(t + 0.2);
-
       const noise = audioCtx.createBufferSource();
       noise.buffer = makeNoiseBuffer(0.09);
       const lp = audioCtx.createBiquadFilter();
@@ -1345,7 +1332,6 @@
       noise.start(t);
       noise.stop(t + 0.1);
     }
-
     let ambientNodes = null;
     function startAmbient() {
       if (!audioReady || ambientNodes || audioMuted) return;
@@ -1375,7 +1361,6 @@
       noise.start();
       ambientNodes = { osc, noise, og, ng };
     }
-
     function stopAmbient() {
       if (!ambientNodes || !audioCtx) return;
       try {
@@ -1384,7 +1369,6 @@
       } catch (e) {}
       ambientNodes = null;
     }
-
     function playGameOverStinger() {
       if (!audioReady || audioMuted) return;
       const t = audioCtx.currentTime;
@@ -1402,7 +1386,6 @@
         osc.stop(t + i * 0.1 + 1.0);
       });
     }
-
     // =========================================================================
     // 2. ROOM / ZONE DETECTION & 5-STAGE MANOR MISSION
     // =========================================================================
@@ -1416,12 +1399,11 @@
       if (pos.x > 5.5 && pos.z >= 1.2) return 'Hallway Stairs & Landing';
       return 'Central Manor Hall';
     }
-
     const MISSIONS = [
       {
         stage: 1,
         name: 'STAGE 1: FRONT DOOR & FOYER',
-        objective: 'Fly Superman-style forward [F], walk/run [WASD], or lunge at rats [G / Shift+Click]!',
+        objective: 'Fly Superman-style forward [F], walk/run [WASD], or lunge at rats [G / Shift+Click]! Body turns to targeted rats.',
         unlockHint: 'Front Door & Foyer cleared! Move left into the Grand Living Room.',
         beaconPos: new THREE.Vector3(-6.5, 0.2, 2.5),
         spawns: [
@@ -1484,7 +1466,6 @@
         ]
       }
     ];
-
     const state = {
       started: false,
       health: 100,
@@ -1534,9 +1515,11 @@
       recoilKick: 0,
       walkCycle: 0,
       stepSoundAccum: 0,
-      lockedRat: null
+      lockedRat: null,
+      targetedRat: null,
+      targetFaceWorldPos: null,
+      targetTurnHoldTimer: 0
     };
-
     // =========================================================================
     // 3. THREE.JS SCENE, CAMERA & RENDERER
     // =========================================================================
@@ -1552,7 +1535,6 @@
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
     renderer.toneMappingExposure = 1.18;
     document.body.appendChild(renderer.domElement);
-
     try {
       const gl = renderer.getContext();
       const dbg = gl.getExtension('WEBGL_debug_renderer_info');
@@ -1561,7 +1543,6 @@
         document.getElementById('nv-gpu-label').textContent = rawGpu.slice(0, 22);
       }
     } catch (e) {}
-
     // =========================================================================
     // 4. LIGHTING & 3D HOUSE + STAIRS + LANDING + BACKYARD + FRONT DOOR
     // =========================================================================
@@ -1573,7 +1554,6 @@
     moonLight.shadow.mapSize.width = 2048;
     moonLight.shadow.mapSize.height = 2048;
     scene.add(moonLight);
-
     function addRoomLight(x, y, z, color = 0xffb36b, intensity = 1.15) {
       const light = new THREE.PointLight(color, intensity, 18);
       light.position.set(x, y, z);
@@ -1585,7 +1565,6 @@
       bulb.position.set(x, y, z);
       scene.add(bulb);
     }
-
     const HOUSE_CEILING_Y = 6.2;
     const floorMat = new THREE.MeshStandardMaterial({ color: 0x4b382a, roughness: 0.85 });
     const wallMat = new THREE.MeshStandardMaterial({ color: 0x7c6f64, roughness: 0.85 });
@@ -1594,18 +1573,15 @@
     const darkWoodMat = new THREE.MeshStandardMaterial({ color: 0x3e2412, roughness: 0.8 });
     const doorAccentMat = new THREE.MeshStandardMaterial({ color: 0x76b900, emissive: 0x263e00, roughness: 0.5 });
     const wallColliders = [];
-
     function addCollider(minX, maxX, minZ, maxZ) {
       wallColliders.push({ minX, maxX, minZ, maxZ });
     }
-
     function createFloor(x, z, w, d, mat = floorMat) {
       const mesh = new THREE.Mesh(new THREE.BoxGeometry(w, 0.2, d), mat);
       mesh.position.set(x, -0.1, z);
       mesh.receiveShadow = true;
       scene.add(mesh);
     }
-
     function createWall(x, y, z, w, h, d, mat = wallMat, solid = true) {
       const mesh = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), mat);
       mesh.position.set(x, y, z);
@@ -1617,7 +1593,6 @@
       }
       return mesh;
     }
-
     createFloor(0, -3, 24, 30, floorMat);
     const yardMat = new THREE.MeshStandardMaterial({ color: 0x223b24, roughness: 0.95 });
     createFloor(0, -27, 40, 18, yardMat);
@@ -1625,25 +1600,21 @@
     const ceilingMesh = new THREE.Mesh(new THREE.BoxGeometry(24, 0.25, 30), ceilingMat);
     ceilingMesh.position.set(0, HOUSE_CEILING_Y + 0.12, -3);
     scene.add(ceilingMesh);
-
     // Front Wall (z = 12) with Front Doorway (x: -2.8 to 2.8)
     createWall(-7.4, 3.1, 12, 9.2, 6.2, 0.35);
     createWall(7.4, 3.1, 12, 9.2, 6.2, 0.35);
     createWall(0, 5.5, 12, 5.6, 1.4, 0.35, wallMat, false);
     createWall(-2.85, 2.4, 12, 0.2, 4.8, 0.45, doorAccentMat, false);
     createWall(2.85, 2.4, 12, 0.2, 4.8, 0.45, doorAccentMat, false);
-
     // North Back Wall (z = -18) with Backyard Exit (x: -3.0 to 3.0)
     createWall(-7.5, 3.1, -18, 9.0, 6.2, 0.35);
     createWall(7.5, 3.1, -18, 9.0, 6.2, 0.35);
     createWall(0, 5.5, -18, 6.0, 1.4, 0.35, wallMat, false);
     createWall(-3.05, 2.4, -18, 0.2, 4.8, 0.45, doorAccentMat, false);
     createWall(3.05, 2.4, -18, 0.2, 4.8, 0.45, doorAccentMat, false);
-
     // Left & Right Exterior Walls
     createWall(-12, 3.1, -3, 0.35, 6.2, 30);
     createWall(12, 3.1, -3, 0.35, 6.2, 30);
-
     // Interior Walls
     createWall(-10.4, 3.1, -8, 3.2, 6.2, 0.3);
     createWall(-4.6, 3.1, -8, 1.2, 6.2, 0.3);
@@ -1657,7 +1628,6 @@
     createWall(5.1, 3.1, -8, 2.2, 6.2, 0.3);
     createWall(10.9, 3.1, -8, 2.2, 6.2, 0.3);
     createWall(8.0, 5.4, -8, 3.6, 1.6, 0.3, wallMat, false);
-
     // Stairs & Landing in Hallway
     for (let i = 0; i < 6; i++) {
       const step = new THREE.Mesh(new THREE.BoxGeometry(2.2, 0.3, 0.8), woodMat);
@@ -1671,7 +1641,6 @@
     landing.castShadow = true;
     landing.receiveShadow = true;
     scene.add(landing);
-
     // Master Bedroom Bed
     const bedGroup = new THREE.Group();
     const bedFrame = new THREE.Mesh(new THREE.BoxGeometry(3.0, 0.4, 4.6), woodMat);
@@ -1687,7 +1656,6 @@
     scene.add(bedGroup);
     addCollider(7.0, 10.0, -16.8, -12.2);
     const BED_POS = new THREE.Vector3(8.5, 0, -14.5);
-
     // Living Room Sofa & Tables
     const sofa = new THREE.Mesh(
       new THREE.BoxGeometry(3.6, 0.75, 1.2),
@@ -1696,7 +1664,6 @@
     sofa.position.set(-8.5, 0.38, 6.2);
     scene.add(sofa);
     addCollider(-10.3, -6.7, 5.6, 6.8);
-
     function createTable(x, z, w = 2.4, d = 1.3) {
       const top = new THREE.Mesh(new THREE.BoxGeometry(w, 0.12, d), woodMat);
       top.position.set(x, 0.85, z);
@@ -1706,14 +1673,12 @@
     }
     createTable(-8.5, 1.5, 2.6, 1.4);
     createTable(-8.2, -13.0, 2.4, 1.4);
-
     // Yard Fences & Trees
     const fenceMat = new THREE.MeshStandardMaterial({ color: 0x5c4938, roughness: 0.9 });
     createWall(-18.5, 1.1, -7, 0.3, 2.2, 58, fenceMat, true);
     createWall(18.5, 1.1, -7, 0.3, 2.2, 58, fenceMat, true);
     createWall(0, 1.1, -35.5, 37, 2.2, 0.3, fenceMat, true);
     createWall(0, 1.1, 22.5, 37, 2.2, 0.3, fenceMat, true);
-
     function createTree(x, z) {
       const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.35, 0.5, 2.8, 8), darkWoodMat);
       trunk.position.set(x, 1.4, z);
@@ -1732,20 +1697,17 @@
     createTree(11, -31);
     createTree(-13, 17);
     createTree(13, 17);
-
     addRoomLight(0, 5.5, 5, 0xffb36b, 1.2);
     addRoomLight(-8, 5.5, 1, 0xffaa55, 1.15);
     addRoomLight(-8, 5.5, -13, 0xffd180, 1.2);
     addRoomLight(8, 5.5, -13, 0xffaa66, 1.2);
     addRoomLight(0, 5.5, -11, 0x93c5fd, 0.95);
     addRoomLight(0, 6.5, -26, 0x76b900, 1.2);
-
     const missionBeacon = new THREE.Mesh(
       new THREE.CylinderGeometry(0.65, 0.65, 0.08, 24),
       new THREE.MeshBasicMaterial({ color: 0x76b900, transparent: true, opacity: 0.65 })
     );
     scene.add(missionBeacon);
-
     // =========================================================================
     // 5. VISIBLE 3D SHOOTER CHARACTER WITH JETPACK, SUPERMAN POSE & DUAL GUNS
     // =========================================================================
@@ -1754,30 +1716,24 @@
     // forward along the -Z travel vector like Superman!
     const playerGroup = new THREE.Group();
     scene.add(playerGroup);
-
     const characterBodyGroup = new THREE.Group();
     playerGroup.add(characterBodyGroup);
-
     const armorMat = new THREE.MeshStandardMaterial({ color: 0x1e293b, roughness: 0.45, metalness: 0.45 });
     const vestMat = new THREE.MeshStandardMaterial({ color: 0x2f3e24, roughness: 0.7 });
     const visorMat = new THREE.MeshStandardMaterial({ color: 0x76b900, emissive: 0x76b900, emissiveIntensity: 1.5 });
     const skinMat = new THREE.MeshStandardMaterial({ color: 0xd9a077, roughness: 0.8 });
     const gunMetalMat = new THREE.MeshStandardMaterial({ color: 0x18181b, metalness: 0.85, roughness: 0.25 });
     const gunAccentMat = new THREE.MeshStandardMaterial({ color: 0x76b900, emissive: 0x3a5c00 });
-
     const torso = new THREE.Mesh(new THREE.BoxGeometry(0.56, 0.72, 0.32), vestMat);
     torso.position.y = 1.18;
     torso.castShadow = true;
     characterBodyGroup.add(torso);
-
     const jetpackGroup = new THREE.Group();
     jetpackGroup.position.set(0, 1.24, 0.22);
     characterBodyGroup.add(jetpackGroup);
-
     const jpHousing = new THREE.Mesh(new THREE.BoxGeometry(0.44, 0.5, 0.2), armorMat);
     jpHousing.castShadow = true;
     jetpackGroup.add(jpHousing);
-
     const thrusterFlameMat = new THREE.MeshBasicMaterial({
       color: 0x00e5ff,
       transparent: true,
@@ -1786,25 +1742,20 @@
     const nozzleL = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.08, 0.26, 10), armorMat);
     nozzleL.position.set(-0.14, -0.18, 0.04);
     jetpackGroup.add(nozzleL);
-
     const flameL = new THREE.Mesh(new THREE.ConeGeometry(0.08, 0.55, 10), thrusterFlameMat);
     flameL.rotation.x = Math.PI;
     flameL.position.set(-0.14, -0.52, 0.04);
     jetpackGroup.add(flameL);
-
     const nozzleR = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.08, 0.26, 10), armorMat);
     nozzleR.position.set(0.14, -0.18, 0.04);
     jetpackGroup.add(nozzleR);
-
     const flameR = new THREE.Mesh(new THREE.ConeGeometry(0.08, 0.55, 10), thrusterFlameMat);
     flameR.rotation.x = Math.PI;
     flameR.position.set(0.14, -0.52, 0.04);
     jetpackGroup.add(flameR);
-
     const jetLight = new THREE.PointLight(0x00e5ff, 0, 6);
     jetLight.position.set(0, -0.5, 0.1);
     jetpackGroup.add(jetLight);
-
     const headGroup = new THREE.Group();
     headGroup.position.set(0, 1.74, 0);
     const helmet = new THREE.Mesh(new THREE.SphereGeometry(0.22, 14, 14), armorMat);
@@ -1814,34 +1765,27 @@
     visor.position.set(0, 0.02, -0.17);
     headGroup.add(visor);
     characterBodyGroup.add(headGroup);
-
     const legGeo = new THREE.BoxGeometry(0.2, 0.78, 0.22);
     const leftLeg = new THREE.Mesh(legGeo, armorMat);
     leftLeg.position.set(-0.15, 0.42, 0);
     leftLeg.castShadow = true;
     characterBodyGroup.add(leftLeg);
-
     const rightLeg = new THREE.Mesh(legGeo, armorMat);
     rightLeg.position.set(0.15, 0.42, 0);
     rightLeg.castShadow = true;
     characterBodyGroup.add(rightLeg);
-
     const weaponArmGroup = new THREE.Group();
     weaponArmGroup.position.set(0.34, 1.42, -0.05);
     characterBodyGroup.add(weaponArmGroup);
-
     const rightArm = new THREE.Mesh(new THREE.BoxGeometry(0.16, 0.16, 0.52), skinMat);
     rightArm.position.set(0, -0.05, -0.2);
     weaponArmGroup.add(rightArm);
-
     const leftArmGroup = new THREE.Group();
     leftArmGroup.position.set(-0.28, 1.38, -0.06);
     characterBodyGroup.add(leftArmGroup);
-
     const leftArm = new THREE.Mesh(new THREE.BoxGeometry(0.15, 0.15, 0.56), skinMat);
     leftArm.position.set(0, 0, -0.24);
     leftArmGroup.add(leftArm);
-
     const shortGunMesh = new THREE.Group();
     const sgBody = new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.15, 0.42), gunMetalMat);
     sgBody.position.set(0, -0.02, -0.52);
@@ -1850,7 +1794,6 @@
     sgStripe.position.set(0, 0.03, -0.52);
     shortGunMesh.add(sgStripe);
     weaponArmGroup.add(shortGunMesh);
-
     const longGunMesh = new THREE.Group();
     const lgBody = new THREE.Mesh(new THREE.BoxGeometry(0.11, 0.16, 0.88), gunMetalMat);
     lgBody.position.set(0, -0.02, -0.68);
@@ -1865,18 +1808,15 @@
     longGunMesh.add(lgScope);
     longGunMesh.visible = false;
     weaponArmGroup.add(longGunMesh);
-
     const muzzleLight = new THREE.PointLight(0xffaa00, 0, 12);
     muzzleLight.position.set(0, 0.02, -1.4);
     weaponArmGroup.add(muzzleLight);
-
     const muzzleSphere = new THREE.Mesh(
       new THREE.SphereGeometry(0.15, 8, 8),
       new THREE.MeshBasicMaterial({ color: 0xffee55, transparent: true, opacity: 0 })
     );
     muzzleSphere.position.set(0, 0.02, -1.35);
     weaponArmGroup.add(muzzleSphere);
-
     // =========================================================================
     // 6. RATS & VISUAL TRACER / EXPLOSION / THRUSTER EFFECTS
     // =========================================================================
@@ -1885,7 +1825,6 @@
     const bigRatMat = new THREE.MeshStandardMaterial({ color: 0x292524, roughness: 0.65, metalness: 0.2 });
     const ratEyeMat = new THREE.MeshStandardMaterial({ color: 0xff2200, emissive: 0xff2200, emissiveIntensity: 2.2 });
     const ratTailMat = new THREE.MeshStandardMaterial({ color: 0xd69e9e, roughness: 0.8 });
-
     function spawnRat(x, z, isBig = false, stageIdx = 0) {
       const scale = isBig ? 1.85 : 1.15;
       const group = new THREE.Group();
@@ -1895,11 +1834,9 @@
       body.position.y = 0.36 * scale;
       body.castShadow = true;
       group.add(body);
-
       const head = new THREE.Mesh(new THREE.SphereGeometry(0.32 * scale, 10, 10), bodyMaterial);
       head.position.set(0, 0.45 * scale, 0.72 * scale);
       group.add(head);
-
       const earGeo = new THREE.SphereGeometry(0.17 * scale, 8, 8);
       const earL = new THREE.Mesh(earGeo, ratTailMat);
       earL.position.set(-0.24 * scale, 0.68 * scale, 0.62 * scale);
@@ -1907,7 +1844,6 @@
       const earR = new THREE.Mesh(earGeo, ratTailMat);
       earR.position.set(0.24 * scale, 0.68 * scale, 0.62 * scale);
       group.add(earR);
-
       const eyeGeo = new THREE.SphereGeometry(0.085 * scale, 8, 8);
       const eyeL = new THREE.Mesh(eyeGeo, ratEyeMat);
       eyeL.position.set(-0.14 * scale, 0.52 * scale, 0.94 * scale);
@@ -1915,7 +1851,6 @@
       const eyeR = new THREE.Mesh(eyeGeo, ratEyeMat);
       eyeR.position.set(0.14 * scale, 0.52 * scale, 0.94 * scale);
       group.add(eyeR);
-
       const tail = new THREE.Mesh(
         new THREE.CylinderGeometry(0.04 * scale, 0.015 * scale, 1.15 * scale, 6),
         ratTailMat
@@ -1923,7 +1858,6 @@
       tail.position.set(0, 0.22 * scale, -0.78 * scale);
       tail.rotation.x = Math.PI / 2.4;
       group.add(tail);
-
       group.position.set(x, 0, z);
       group.userData = {
         alive: true,
@@ -1940,7 +1874,6 @@
       rats.push(group);
       return group;
     }
-
     function initAllRats() {
       rats.forEach(r => scene.remove(r));
       rats.length = 0;
@@ -1951,7 +1884,6 @@
         });
       });
     }
-
     const activeEffects = [];
     function spawnTracer(startPos, endPos, isBoom) {
       const dist = startPos.distanceTo(endPos);
@@ -1967,7 +1899,6 @@
       beam.lookAt(endPos);
       scene.add(beam);
       activeEffects.push({ mesh: beam, life: 0.14, maxLife: 0.14, type: 'tracer' });
-
       if (isBoom) {
         const ringGeo = new THREE.RingGeometry(0.3, 4.8, 32);
         ringGeo.rotateX(-Math.PI / 2);
@@ -1987,7 +1918,6 @@
         activeEffects.push({ mesh: ring, light: boomLight, life: 0.45, maxLife: 0.45, type: 'boom' });
       }
     }
-
     function spawnJetParticle() {
       const pMesh = new THREE.Mesh(
         new THREE.SphereGeometry(0.085, 6, 6),
@@ -2001,7 +1931,6 @@
       scene.add(pMesh);
       activeEffects.push({ mesh: pMesh, life: 0.24, maxLife: 0.24, type: 'jet' });
     }
-
     function updateEffects(delta) {
       for (let i = activeEffects.length - 1; i >= 0; i--) {
         const fx = activeEffects[i];
@@ -2026,7 +1955,6 @@
         }
       }
     }
-
     // =========================================================================
     // 7. ROTATING TOP-CENTER DIRECTIONAL BAR & TURN/MOVEMENT TELEMETRY
     // =========================================================================
@@ -2048,7 +1976,6 @@
       { label: 'BEDROOM', x: 8.5, z: -14.5 },
       { label: 'FOYER', x: 0, z: 9.0 }
     ];
-
     const compassTrackEl = document.getElementById('compass-track');
     const compassDomNodes = [];
     COMPASS_POINTS.forEach(pt => {
@@ -2059,7 +1986,6 @@
       compassTrackEl.appendChild(el);
       compassDomNodes.push({ type: 'cardinal', deg: pt.deg, el });
     });
-
     LANDMARK_POIS.forEach(poi => {
       const el = document.createElement('div');
       el.className = 'compass-item compass-poi' + (poi.isObjective ? ' objective' : '');
@@ -2067,27 +1993,27 @@
       compassTrackEl.appendChild(el);
       compassDomNodes.push({ type: 'poi', poi, el });
     });
-
     function normalizeAngle(rad) {
       let a = rad % (Math.PI * 2);
       if (a > Math.PI) a -= Math.PI * 2;
       if (a < -Math.PI) a += Math.PI * 2;
       return a;
     }
-
     function getCardinalFromDeg(deg) {
       const dirs = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'];
       const idx = Math.round((((deg % 360) + 360) % 360) / 45) % 8;
       return dirs[idx];
     }
-
     function updateDirectionBar(delta) {
       const dYaw = normalizeAngle(state.yaw - state.prevYaw);
       state.prevYaw = state.yaw;
       state.turnAccum += dYaw;
       if (Math.abs(dYaw) > 0.003) {
         state.turnStatusTimer = 0.28;
-        if (Math.abs(state.turnAccum) >= Math.PI * 0.78) {
+        if (state.targetedRat && state.targetedRat.userData && state.targetedRat.userData.alive) {
+          state.turnLabel = dYaw > 0 ? '🎯 LOCK-TURN LEFT' : '🎯 LOCK-TURN RIGHT';
+          state.turnClass = 'target-tracking';
+        } else if (Math.abs(state.turnAccum) >= Math.PI * 0.78) {
           state.turnLabel = dYaw > 0 ? '↻ U-TURN LEFT (180°)' : '↺ U-TURN RIGHT (180°)';
           state.turnClass = 'u-turn';
         } else if (dYaw > 0) {
@@ -2101,11 +2027,14 @@
         state.turnStatusTimer -= delta;
         if (state.turnStatusTimer <= 0) {
           state.turnAccum = 0;
-          state.turnLabel = '● STEADY';
-          state.turnClass = '';
+          state.turnLabel = (state.targetedRat && state.targetedRat.userData && state.targetedRat.userData.alive)
+            ? '🎯 FACING RAT'
+            : '● STEADY';
+          state.turnClass = (state.targetedRat && state.targetedRat.userData && state.targetedRat.userData.alive)
+            ? 'target-tracking'
+            : '';
         }
       }
-
       const moveParts = [];
       if (state.isLungingMove) moveParts.push('⚔ RAT LUNGE');
       if (state.moveForward) moveParts.push(state.isRunning ? 'SPRINT ▲' : 'FWD ▲');
@@ -2115,20 +2044,16 @@
       if (state.isFlying && state.ascendHeld) moveParts.push('SUPERMAN CLIMB ⇑');
       if (state.isFlying && state.descendHeld) moveParts.push('LAND ⇓');
       state.moveLabel = moveParts.length ? moveParts.join(' · ') : '■ IDLE';
-
       const headingRad = normalizeAngle(-state.yaw);
       const headingDeg = Math.round((((headingRad * 180) / Math.PI) % 360 + 360) % 360);
       document.getElementById('heading-deg').textContent = `${String(headingDeg).padStart(3, '0')}°`;
       document.getElementById('heading-cardinal').textContent = getCardinalFromDeg(headingDeg);
-
       const turnEl = document.getElementById('turn-indicator');
       turnEl.textContent = state.turnLabel;
       turnEl.className = `turn-indicator ${state.turnClass}`.trim();
-
       const movePill = document.getElementById('move-vector-pill');
       movePill.textContent = state.moveLabel;
       movePill.className = `move-vector-pill${state.isLungingMove ? ' lunge' : ''}`;
-
       const viewportWidth = compassTrackEl.clientWidth || 440;
       const pxPerDeg = viewportWidth / 150;
       compassDomNodes.forEach(item => {
@@ -2150,19 +2075,16 @@
         }
       });
     }
-
     // =========================================================================
-    // 8. STRATEGIC ATTACK LUNGE TOWARD RATS + FIGHTER-JET RETICLE SHOOTING
+    // 8. FULL-BODY RAT TARGET TURNING, STRATEGIC LUNGE & FIGHTER-JET SHOOTING
     // =========================================================================
     const raycaster = new THREE.Raycaster();
-
     function getReticleNDC() {
       return new THREE.Vector2(
         (state.reticleX / window.innerWidth) * 2 - 1,
         -(state.reticleY / window.innerHeight) * 2 + 1
       );
     }
-
     function syncReticleDOM() {
       const ch = document.getElementById('crosshair');
       const hm = document.getElementById('hitmarker');
@@ -2171,19 +2093,45 @@
       hm.style.left = `${state.reticleX}px`;
       hm.style.top = `${state.reticleY}px`;
     }
-
     function showHitmarker() {
       const hm = document.getElementById('hitmarker');
       hm.style.opacity = '1';
       clearTimeout(hm._t);
       hm._t = setTimeout(() => { hm.style.opacity = '0'; }, 120);
     }
-
+    function getRatAimWorldPos(rat) {
+      const s = rat.userData ? rat.userData.scale : 1;
+      return new THREE.Vector3(rat.position.x, rat.position.y + 0.45 * s, rat.position.z);
+    }
+    function setTargetedRat(rat, holdDuration = 0.65) {
+      if (rat && rat.userData && rat.userData.alive) {
+        state.targetedRat = rat;
+        state.targetFaceWorldPos = getRatAimWorldPos(rat);
+        state.targetTurnHoldTimer = Math.max(state.targetTurnHoldTimer, holdDuration);
+      }
+    }
+    function turnWholeBodyTowardTarget(targetPos, delta, snapStrength = 14) {
+      if (!targetPos) return;
+      const dx = targetPos.x - state.playerPos.x;
+      const dz = targetPos.z - state.playerPos.z;
+      if (dx * dx + dz * dz < 0.0004) return;
+      // Character forward in local space is -Z -> yaw = atan2(-dx, -dz)
+      const desiredYaw = Math.atan2(-dx, -dz);
+      const diff = normalizeAngle(desiredYaw - state.yaw);
+      const step = Math.min(1, delta * snapStrength);
+      state.yaw = normalizeAngle(state.yaw + diff * step);
+      // Keep the entire character root (playerGroup) rotated cleanly toward the rat's position
+      playerGroup.position.copy(state.playerPos);
+      playerGroup.rotation.set(0, state.yaw, 0);
+    }
     function findBestStrategicRat() {
       const stageRats = rats.filter(r => r.userData.alive && r.visible && r.userData.stageIdx === state.currentStageIdx);
       if (!stageRats.length) return null;
       if (state.lockedRat && state.lockedRat.userData.alive && state.lockedRat.userData.stageIdx === state.currentStageIdx) {
         return state.lockedRat;
+      }
+      if (state.targetedRat && state.targetedRat.userData.alive && state.targetedRat.userData.stageIdx === state.currentStageIdx) {
+        return state.targetedRat;
       }
       const forward = new THREE.Vector3(-Math.sin(state.yaw), 0, -Math.cos(state.yaw));
       let bestRat = null;
@@ -2194,7 +2142,7 @@
         const dist = toRat.length();
         if (dist < 0.1 || dist > 26) continue;
         const dir = toRat.clone().normalize();
-        const align = forward.dot(dir); // 1 = directly in front, -1 = behind
+        const align = forward.dot(dir);
         const frontPenalty = align >= -0.15 ? (1 - align) * 6.5 : 25 + Math.abs(align) * 8;
         const score = dist + frontPenalty;
         if (score < bestScore) {
@@ -2204,20 +2152,19 @@
       }
       return bestRat;
     }
-
     function triggerStrategicRatLunge() {
       if (!state.started || state.gameOver || state.won || state.isSleeping) return;
       if (state.lungeCooldown > 0) return;
-
       const targetRat = findBestStrategicRat();
       const forward = new THREE.Vector3(-Math.sin(state.yaw), 0, -Math.cos(state.yaw)).normalize();
-
       if (targetRat) {
+        setTargetedRat(targetRat, 0.85);
         const toRat = targetRat.position.clone().sub(state.playerPos);
         toRat.y = 0;
         if (toRat.lengthSq() > 0.01) {
           state.lungeDir.copy(toRat).normalize();
           state.yaw = Math.atan2(-state.lungeDir.x, -state.lungeDir.z);
+          playerGroup.rotation.set(0, state.yaw, 0);
         } else {
           state.lungeDir.copy(forward);
         }
@@ -2226,7 +2173,6 @@
         state.lungeDir.copy(forward);
         state.lungeTargetRat = null;
       }
-
       state.isLungingMove = true;
       state.lungeTimer = 0.28;
       state.lungeCooldown = 0.42;
@@ -2235,16 +2181,19 @@
       shoot();
       showToast(
         '⚔ STRATEGIC RAT LUNGE',
-        targetRat ? `Charging directly toward ${targetRat.userData.isBig ? 'Alpha Rat' : 'Rat'}!` : 'Lunging forward along attack vector!',
+        targetRat ? `Body & lunge locked onto ${targetRat.userData.isBig ? 'Alpha Rat' : 'Rat'}!` : 'Lunging forward along attack vector!',
         1200
       );
     }
-
     function damageRat(rat, amount, impulseDir) {
       if (!rat.userData.alive) return;
+      setTargetedRat(rat, 0.55);
       rat.userData.hp -= amount;
       rat.position.x += impulseDir.x * 0.7;
       rat.position.z += impulseDir.z * 0.7;
+      if (state.targetedRat === rat) {
+        state.targetFaceWorldPos = getRatAimWorldPos(rat);
+      }
       rat.children[0].material.emissive.setHex(0xff0000);
       rat.children[0].material.emissiveIntensity = 1.3;
       setTimeout(() => {
@@ -2254,11 +2203,16 @@
         }
       }, 110);
       showHitmarker();
-
       if (rat.userData.hp <= 0) {
         rat.userData.alive = false;
         state.kills++;
         state.lastEliminatedArea = getAreaNameAt(rat.position);
+        if (state.lockedRat === rat) state.lockedRat = null;
+        if (state.targetedRat === rat) {
+          state.targetedRat = null;
+          state.targetFaceWorldPos = null;
+          state.targetTurnHoldTimer = 0;
+        }
         playBoom();
         rat.rotation.z = Math.PI;
         rat.position.y = 0.35 * rat.userData.scale;
@@ -2266,7 +2220,6 @@
         checkMissionProgress();
       }
     }
-
     function shoot() {
       if (!state.started || state.gameOver || state.won || state.isSleeping) return;
       const now = performance.now();
@@ -2275,13 +2228,11 @@
         : (state.weapon === 'long' ? 115 : 180);
       if (now - state.lastShot < cooldown) return;
       state.lastShot = now;
-
       if (state.bulletType === 'boom') {
         playBoom();
       } else {
         playShoot(state.weapon === 'long');
       }
-
       state.recoilKick = state.bulletType === 'boom' ? 0.34 : 0.15;
       muzzleLight.color.setHex(state.bulletType === 'boom' ? 0xff8800 : 0xffee55);
       muzzleLight.intensity = 3.6;
@@ -2291,28 +2242,21 @@
         muzzleLight.intensity = 0;
         muzzleSphere.material.opacity = 0;
       }, 65);
-
       raycaster.setFromCamera(getReticleNDC(), camera);
       const aimOrigin = raycaster.ray.origin.clone();
       const aimDir = raycaster.ray.direction.clone().normalize();
-      state.yaw = Math.atan2(-aimDir.x, -aimDir.z);
-
-      const barrelWorldPos = new THREE.Vector3();
-      muzzleSphere.getWorldPosition(barrelWorldPos);
       const stageRats = rats.filter(r => r.userData.alive && r.userData.stageIdx === state.currentStageIdx);
-
       let impactPoint = aimOrigin.clone().addScaledVector(aimDir, 36);
       let bestRat = null;
       let bestScore = Infinity;
-
       for (const rat of stageRats) {
-        const ratCenter = rat.position.clone().add(new THREE.Vector3(0, 0.45 * rat.userData.scale, 0));
+        const ratCenter = getRatAimWorldPos(rat);
         const toRat = ratCenter.clone().sub(aimOrigin);
         const proj = toRat.dot(aimDir);
         if (proj > 0 && proj < 38) {
           const closestPt = aimOrigin.clone().addScaledVector(aimDir, proj);
           const perpDist = closestPt.distanceTo(ratCenter);
-          const lockRadius = (state.bulletType === 'boom' ? 1.55 : 1.15) * rat.userData.scale;
+          const lockRadius = (state.bulletType === 'boom' ? 1.65 : 1.25) * rat.userData.scale;
           if (perpDist <= lockRadius && perpDist < bestScore) {
             bestScore = perpDist;
             bestRat = rat;
@@ -2320,16 +2264,44 @@
           }
         }
       }
-
-      if (!bestRat && aimDir.y < -0.015) {
-        const tFloor = -aimOrigin.y / aimDir.y;
-        if (tFloor > 0 && tFloor < 38) {
-          impactPoint = aimOrigin.clone().addScaledVector(aimDir, tFloor);
+      // If no rat directly on ray, check if aiming near a rat or turn whole body toward the aimed rat/point
+      if (!bestRat) {
+        let nearestAimedRat = null;
+        let minBeamDist = 2.4;
+        for (const rat of stageRats) {
+          const ratCenter = getRatAimWorldPos(rat);
+          const toRat = ratCenter.clone().sub(aimOrigin);
+          const proj = toRat.dot(aimDir);
+          if (proj > 0 && proj < 38) {
+            const closestPt = aimOrigin.clone().addScaledVector(aimDir, proj);
+            const perpDist = closestPt.distanceTo(ratCenter);
+            if (perpDist < minBeamDist * rat.userData.scale) {
+              minBeamDist = perpDist / rat.userData.scale;
+              nearestAimedRat = rat;
+            }
+          }
         }
+        if (nearestAimedRat) {
+          setTargetedRat(nearestAimedRat, 0.75);
+          turnWholeBodyTowardTarget(getRatAimWorldPos(nearestAimedRat), 0.12, 22);
+        } else if (aimDir.y < -0.015) {
+          const tFloor = -aimOrigin.y / aimDir.y;
+          if (tFloor > 0 && tFloor < 38) {
+            impactPoint = aimOrigin.clone().addScaledVector(aimDir, tFloor);
+          }
+          state.yaw = Math.atan2(-aimDir.x, -aimDir.z);
+          playerGroup.rotation.set(0, state.yaw, 0);
+        } else {
+          state.yaw = Math.atan2(-aimDir.x, -aimDir.z);
+          playerGroup.rotation.set(0, state.yaw, 0);
+        }
+      } else {
+        setTargetedRat(bestRat, 0.85);
+        turnWholeBodyTowardTarget(impactPoint, 0.15, 24);
       }
-
+      const barrelWorldPos = new THREE.Vector3();
+      muzzleSphere.getWorldPosition(barrelWorldPos);
       spawnTracer(barrelWorldPos, impactPoint, state.bulletType === 'boom');
-
       if (state.bulletType === 'boom') {
         const blastRadius = 5.2;
         const targets = stageRats
@@ -2337,6 +2309,10 @@
           .filter(item => item.d <= blastRadius)
           .sort((a, b) => a.d - b.d)
           .slice(0, 3);
+        if (targets.length > 0) {
+          setTargetedRat(targets[0].rat, 0.85);
+          turnWholeBodyTowardTarget(getRatAimWorldPos(targets[0].rat), 0.15, 24);
+        }
         targets.forEach(item => {
           const push = item.rat.position.clone().sub(impactPoint);
           if (push.lengthSq() < 0.01) push.copy(aimDir);
@@ -2352,7 +2328,6 @@
         damageRat(bestRat, dmg, push);
       }
     }
-
     // =========================================================================
     // 9. SUPERMAN FLIGHT & LANDING ('F' KEY) + JUMP ('SPACE')
     // =========================================================================
@@ -2366,13 +2341,11 @@
         badge.className = '';
       }
     }
-
     function toggleFlightMode(forceState = null) {
       if (!state.started || state.gameOver || state.won) return;
       const nextFlying = forceState !== null ? forceState : !state.isFlying;
       if (nextFlying === state.isFlying) return;
       state.isFlying = nextFlying;
-
       if (state.isFlying) {
         playThrusterSweep(true);
         state.velocity.y = Math.max(state.velocity.y, 5.2);
@@ -2392,7 +2365,6 @@
       syncFlightBadge();
     }
     window.toggleFlightMode = toggleFlightMode;
-
     function handleSpaceAction() {
       if (!state.started || state.gameOver || state.won || state.isSleeping) return;
       const now = performance.now();
@@ -2402,12 +2374,10 @@
         return;
       }
       state.lastSpaceTap = now;
-
       if (state.isFlying) {
         state.ascendHeld = true;
         return;
       }
-
       if (state.canJump) {
         const underAttack = (now - state.lastAttackedTime) < 2500;
         const jumpVel = underAttack ? 12.6 : 10.4;
@@ -2422,7 +2392,6 @@
         }
       }
     }
-
     // =========================================================================
     // 10. MISSION PROGRESSION, VICTORY & GAME OVER
     // =========================================================================
@@ -2434,7 +2403,6 @@
       clearTimeout(toast._t);
       toast._t = setTimeout(() => toast.classList.remove('visible'), duration);
     }
-
     function updateMissionHUD() {
       const m = MISSIONS[state.currentStageIdx];
       const stageAlive = rats.filter(r => r.userData.alive && r.userData.stageIdx === state.currentStageIdx).length;
@@ -2450,7 +2418,6 @@
       document.getElementById('mission-progress-fill').style.width = `${(cleared / total) * 100}%`;
       missionBeacon.position.copy(m.beaconPos);
     }
-
     function checkMissionProgress() {
       const stageAlive = rats.filter(r => r.userData.alive && r.userData.stageIdx === state.currentStageIdx).length;
       updateMissionHUD();
@@ -2468,11 +2435,12 @@
         }
       }
     }
-
     function triggerVictory() {
       state.won = true;
       state.isFlying = false;
       state.isLungingMove = false;
+      state.targetedRat = null;
+      state.targetFaceWorldPos = null;
       thrusterFlameMat.opacity = 0;
       jetLight.intensity = 0;
       stopAmbient();
@@ -2487,7 +2455,6 @@
       document.getElementById('start-btn').textContent = 'PLAY AGAIN [R]';
       modal.style.display = 'flex';
     }
-
     function triggerGameOver() {
       if (state.gameOver) return;
       state.gameOver = true;
@@ -2512,7 +2479,6 @@
       document.getElementById('start-btn').textContent = 'RESTART MISSION [R]';
       modal.style.display = 'flex';
     }
-
     function updateHealthUI() {
       const hp = Math.max(0, Math.ceil(state.health));
       document.getElementById('healthVal').textContent = hp;
@@ -2522,7 +2488,6 @@
         ? 'linear-gradient(90deg, #16a34a, #76b900)'
         : (hp > 25 ? 'linear-gradient(90deg, #d97706, #f59e0b)' : 'linear-gradient(90deg, #991b1b, #ff3b30)');
     }
-
     // =========================================================================
     // 11. WEAPON, AMMO & NVIDIA APP CONTROLS
     // =========================================================================
@@ -2542,7 +2507,6 @@
         document.getElementById('gun-desc').textContent = 'Agile Fighter Jet Cannon';
       }
     };
-
     window.switchAmmoType = function () {
       playLock();
       const slotAmmo = document.getElementById('slot-ammo');
@@ -2562,7 +2526,6 @@
         document.getElementById('ammo-desc').textContent = 'Precision Lock-On Laser';
       }
     };
-
     function trySleepHeal() {
       if (!state.started || state.gameOver || state.won) return;
       if (state.playerPos.distanceTo(BED_POS) < 4.0) {
@@ -2582,14 +2545,12 @@
         showToast('🛏️ MOVE NEAR THE BED', 'Walk or fly to the Master Bedroom bed and press B to heal.', 1800);
       }
     }
-
     window.switchNvTab = function (el, tabName) {
       document.querySelectorAll('.appTab').forEach(t => t.classList.remove('active'));
       el.classList.add('active');
       document.querySelectorAll('.tabPane').forEach(p => p.style.display = 'none');
       document.getElementById('tab-' + tabName).style.display = 'block';
     };
-
     window.toggleNvApp = function () {
       const app = document.getElementById('nvidiaApp');
       const btn = document.getElementById('appToggle');
@@ -2597,28 +2558,24 @@
       btn.classList.toggle('collapsed');
       btn.textContent = app.classList.contains('collapsed') ? 'NV APP ▶' : '◀ NV APP';
     };
-
     window.toggleOverlayHud = function () {
       const hud = document.getElementById('overlayHud');
       hud.classList.toggle('hidden');
       const t = document.getElementById('toggleOverlay');
       if (t) t.classList.toggle('on', !hud.classList.contains('hidden'));
     };
-
     window.toggleRtxShadows = function (el) {
       el.classList.toggle('on');
       const on = el.classList.contains('on');
       renderer.shadowMap.enabled = on;
       moonLight.castShadow = on;
     };
-
     window.toggleGameSound = function (el) {
       el.classList.toggle('on');
       audioMuted = !el.classList.contains('on');
       if (audioMuted) stopAmbient();
       else if (state.started && !state.gameOver && !state.won) startAmbient();
     };
-
     window.updateNvSlider = function (type, val) {
       val = parseFloat(val);
       if (type === 'power') document.getElementById('valPower').textContent = `${val}%`;
@@ -2643,7 +2600,6 @@
         hud.style.transform = `scale(${val / 100})`;
       }
     };
-
     const CHART_BARS = 24;
     const fpsHistory = [];
     const chartEl = document.getElementById('hudChart');
@@ -2652,7 +2608,6 @@
       b.className = 'bar';
       chartEl.appendChild(b);
     }
-
     // =========================================================================
     // 12. INPUT LISTENERS (MOUSE AIM + SHOOTING + LUNGE + FLIGHT/LANDING)
     // =========================================================================
@@ -2670,6 +2625,10 @@
       state.lungeTimer = 0;
       state.lungeCooldown = 0;
       state.flightPitchVisual = 0;
+      state.lockedRat = null;
+      state.targetedRat = null;
+      state.targetFaceWorldPos = null;
+      state.targetTurnHoldTimer = 0;
       state.playerPos.set(0, 0, 9.2);
       state.yaw = 0;
       state.prevYaw = 0;
@@ -2692,20 +2651,17 @@
       document.getElementById('modal-overlay').style.display = 'none';
       showToast('🎯 MISSION 1: FRONT DOOR & FOYER', 'Fly Superman-style [F], walk/run [WASD], or lunge at rats [G / Shift+Click]!', 3400);
     }
-
     document.getElementById('start-btn').addEventListener('click', startOrRestartGame);
-
     window.addEventListener('mousemove', (e) => {
       if (!state.started || state.gameOver || state.won) return;
       state.reticleX = Math.max(24, Math.min(window.innerWidth - 24, e.clientX));
       state.reticleY = Math.max(24, Math.min(window.innerHeight - 24, e.clientY));
       syncReticleDOM();
       const nx = (state.reticleX / window.innerWidth) * 2 - 1;
-      if (Math.abs(nx) > 0.25) {
+      if (Math.abs(nx) > 0.25 && !state.lockedRat) {
         state.yaw -= (nx - Math.sign(nx) * 0.25) * 0.032 * state.aimSensitivity;
       }
     });
-
     window.addEventListener('mousedown', (e) => {
       if (!state.started || state.gameOver || state.won) return;
       if (e.target.closest('button') || e.target.closest('#nvidiaApp') || e.target.closest('.weapon-slot') || e.target.closest('#flight-badge')) return;
@@ -2721,13 +2677,10 @@
         window.switchAmmoType();
       }
     });
-
     window.addEventListener('mouseup', (e) => {
       if (e.button === 0) state.mouseDown = false;
     });
-
     window.addEventListener('contextmenu', (e) => e.preventDefault());
-
     window.addEventListener('touchstart', (e) => {
       if (!state.started || state.gameOver || state.won) return;
       if (e.target.closest('button') || e.target.closest('#nvidiaApp') || e.target.closest('.weapon-slot')) return;
@@ -2739,7 +2692,6 @@
       state.mouseDown = true;
       shoot();
     }, { passive: true });
-
     window.addEventListener('touchmove', (e) => {
       if (!state.started || state.gameOver || state.won) return;
       const t = e.touches[0];
@@ -2747,11 +2699,9 @@
       state.reticleY = t.clientY;
       syncReticleDOM();
     }, { passive: true });
-
     window.addEventListener('touchend', () => {
       state.mouseDown = false;
     });
-
     window.addEventListener('keydown', (e) => {
       if (e.altKey && e.key.toLowerCase() === 'z') {
         e.preventDefault();
@@ -2799,7 +2749,6 @@
           break;
       }
     });
-
     window.addEventListener('keyup', (e) => {
       switch (e.code) {
         case 'KeyW': case 'ArrowUp': state.moveForward = false; break;
@@ -2816,17 +2765,14 @@
         case 'KeyC': case 'ControlLeft': state.descendHeld = false; break;
       }
     });
-
     // =========================================================================
     // 13. SOLID RAT COLLISION, SUPERMAN POSE, RAT AI & MAIN ANIMATION LOOP
     // =========================================================================
     const PLAYER_SOLID_RADIUS = 0.56;
-
     function clampToArenaBounds(pos) {
       pos.x = Math.max(-18.0, Math.min(18.0, pos.x));
       pos.z = Math.max(-35.0, Math.min(22.0, pos.z));
     }
-
     function checkCollision(pos) {
       const r = PLAYER_SOLID_RADIUS;
       for (const c of wallColliders) {
@@ -2837,7 +2783,6 @@
       }
       return false;
     }
-
     function resolveSolidRatCollisions(delta) {
       if (!state.started || state.gameOver || state.won) return;
       for (const rat of rats) {
@@ -2848,7 +2793,6 @@
         const minDist = PLAYER_SOLID_RADIUS + ratRadius;
         const verticalClearance = state.playerPos.y - (rat.position.y + 0.72 * d.scale);
         if (verticalClearance > 0.45) continue;
-
         const dx = state.playerPos.x - rat.position.x;
         const dz = state.playerPos.z - rat.position.z;
         const distSq = dx * dx + dz * dz;
@@ -2857,7 +2801,6 @@
           const nx = dx / dist;
           const nz = dz / dist;
           const overlap = minDist - dist;
-
           const playerPush = new THREE.Vector3(
             state.playerPos.x + nx * overlap * 0.68,
             state.playerPos.y,
@@ -2877,17 +2820,14 @@
               rat.position.z = ratPush.z;
             }
           }
-
           if (state.isLungingMove && state.lungeTargetRat === rat) {
             state.isLungingMove = false;
             state.lungeTimer = 0;
             damageRat(rat, 2, new THREE.Vector3(-nx, 0, -nz));
           }
-
           clampToArenaBounds(state.playerPos);
           clampToArenaBounds(rat.position);
           d.dir.set(-nx, 0, -nz).normalize();
-
           d.biteCooldown = Math.max(0, d.biteCooldown - delta);
           if (state.playerPos.y < 1.35 && d.biteCooldown <= 0 && !state.isSleeping && !state.isLungingMove) {
             d.biteCooldown = 0.75;
@@ -2906,7 +2846,6 @@
         }
       }
     }
-
     function getGroundOrFloorHeight(pos) {
       if (pos.x > 7.3 && pos.x < 9.7 && pos.z > 1.6 && pos.z < 6.6) {
         const idx = Math.floor((pos.z - 1.6) / 0.8);
@@ -2917,11 +2856,9 @@
       }
       return 0;
     }
-
     function isInsideHouse(pos) {
       return pos.x >= -12.2 && pos.x <= 12.2 && pos.z >= -18.2 && pos.z <= 12.2;
     }
-
     function updateRats(delta) {
       rats.forEach(rat => {
         if (!rat.userData.alive || !rat.visible) return;
@@ -2957,38 +2894,60 @@
         d.biteCooldown = Math.max(0, d.biteCooldown - delta);
       });
     }
-
     function updateReticleLock() {
       if (!state.started || state.gameOver || state.won) return;
       raycaster.setFromCamera(getReticleNDC(), camera);
       const aimDir = raycaster.ray.direction;
       const stageRats = rats.filter(r => r.userData.alive && r.userData.stageIdx === state.currentStageIdx);
       let foundLock = null;
+      let bestPerp = Infinity;
       for (const rat of stageRats) {
-        const ratCenter = rat.position.clone().add(new THREE.Vector3(0, 0.45 * rat.userData.scale, 0));
+        const ratCenter = getRatAimWorldPos(rat);
         const toRat = ratCenter.clone().sub(raycaster.ray.origin);
         const proj = toRat.dot(aimDir);
         if (proj > 0 && proj < 38) {
-          const closestPt = raycaster.ray.origin.clone().add(aimDir.clone().multiplyScalar(proj));
-          if (closestPt.distanceTo(ratCenter) <= 1.2 * rat.userData.scale) {
+          const closestPt = raycaster.ray.origin.clone().addScaledVector(aimDir, proj);
+          const perp = closestPt.distanceTo(ratCenter);
+          if (perp <= 1.25 * rat.userData.scale && perp < bestPerp) {
+            bestPerp = perp;
             foundLock = rat;
-            break;
           }
         }
       }
       const ch = document.getElementById('crosshair');
-      if (foundLock && state.lockedRat !== foundLock) {
-        playLock();
+      if (foundLock) {
+        if (state.lockedRat !== foundLock) {
+          playLock();
+        }
+        setTargetedRat(foundLock, 0.55);
       }
       state.lockedRat = foundLock;
       ch.classList.toggle('locked', !!foundLock);
     }
-
+    function updateWholeBodyTargetOrientation(delta) {
+      if (!state.started || state.gameOver || state.won || state.isSleeping) return;
+      if (state.lockedRat && state.lockedRat.userData.alive && state.lockedRat.userData.stageIdx === state.currentStageIdx) {
+        state.targetedRat = state.lockedRat;
+        state.targetFaceWorldPos = getRatAimWorldPos(state.lockedRat);
+        state.targetTurnHoldTimer = Math.max(state.targetTurnHoldTimer, 0.45);
+      } else if (state.targetedRat && state.targetedRat.userData.alive && state.targetedRat.userData.stageIdx === state.currentStageIdx) {
+        state.targetFaceWorldPos = getRatAimWorldPos(state.targetedRat);
+      } else {
+        state.targetedRat = null;
+      }
+      if (state.targetTurnHoldTimer > 0) {
+        state.targetTurnHoldTimer = Math.max(0, state.targetTurnHoldTimer - delta);
+      }
+      if (state.targetFaceWorldPos && (state.lockedRat || state.targetTurnHoldTimer > 0 || state.isLungingMove || state.mouseDown)) {
+        turnWholeBodyTowardTarget(state.targetFaceWorldPos, delta, state.isLungingMove ? 24 : 15);
+      } else if (state.targetTurnHoldTimer <= 0 && !state.lockedRat && !state.isLungingMove && !state.mouseDown) {
+        state.targetFaceWorldPos = null;
+      }
+    }
     function updateCharacterPoseAndFlight(delta, hasMoveInput) {
       // Negative rotation.x tilts top/head (-Y/-Z) forward along the -Z local travel axis (Superman dive/flight)
       let targetPitch = 0;
       let targetRoll = 0;
-
       if (state.isFlying) {
         const forward = new THREE.Vector3(-Math.sin(state.yaw), 0, -Math.cos(state.yaw));
         const right = new THREE.Vector3(Math.cos(state.yaw), 0, -Math.sin(state.yaw));
@@ -2997,21 +2956,24 @@
         if (state.moveBackward) travel.sub(forward);
         if (state.moveRight) travel.add(right);
         if (state.moveLeft) travel.sub(right);
-        if (travel.lengthSq() < 0.001) {
-          travel.copy(forward);
-        } else {
+        if (state.targetFaceWorldPos && (state.lockedRat || state.targetTurnHoldTimer > 0)) {
+          const toTarget = state.targetFaceWorldPos.clone().sub(state.playerPos);
+          toTarget.y = 0;
+          if (toTarget.lengthSq() > 0.01) {
+            toTarget.normalize();
+            const desiredYaw = Math.atan2(-toTarget.x, -toTarget.z);
+            const diff = normalizeAngle(desiredYaw - state.yaw);
+            state.yaw = normalizeAngle(state.yaw + diff * Math.min(1, delta * 15));
+          }
+        } else if (travel.lengthSq() >= 0.001) {
           travel.normalize();
-          // Orient yaw directly toward forward travel vector so character never crabs sideways
           const desiredYaw = Math.atan2(-travel.x, -travel.z);
           const diff = normalizeAngle(desiredYaw - state.yaw);
           state.yaw = normalizeAngle(state.yaw + diff * Math.min(1, delta * 12));
         }
-
         const climbFactor = state.ascendHeld ? -0.32 : (state.descendHeld ? 0.25 : 0);
         targetPitch = -1.18 + climbFactor;
         targetRoll = 0;
-
-        // Superman extended-forward arms & trailing legs
         leftArmGroup.rotation.set(-1.15, 0.14, 0);
         weaponArmGroup.rotation.set(-1.15, -0.14, 0);
         headGroup.rotation.set(0.45, 0, 0);
@@ -3036,25 +2998,20 @@
           rightLeg.rotation.set(-0.25, 0, 0);
         }
       }
-
       state.flightPitchVisual += (targetPitch - state.flightPitchVisual) * Math.min(1, delta * 11);
       characterBodyGroup.rotation.x = state.flightPitchVisual;
       characterBodyGroup.rotation.z = targetRoll;
-      // Lift body center slightly when pitched horizontal so Superman chest/head clears ground/ceiling cleanly
       const pitchLift = Math.max(0, -state.flightPitchVisual) * 0.42;
       characterBodyGroup.position.y = pitchLift;
     }
-
     let frameCounter = 0;
     let lastFpsTick = performance.now();
     const clock = new THREE.Clock();
-
     function animate() {
       requestAnimationFrame(animate);
       const delta = Math.min(clock.getDelta(), 0.1);
       frameCounter++;
       const now = performance.now();
-
       if (now - lastFpsTick >= 350) {
         const fps = Math.min(240, Math.round((frameCounter * 1000) / (now - lastFpsTick)));
         const ms = (1000 / Math.max(1, fps)).toFixed(1);
@@ -3083,30 +3040,27 @@
         frameCounter = 0;
         lastFpsTick = now;
       }
-
       if (state.mouseDown && state.started && !state.gameOver && !state.won) {
         shoot();
       }
-
       let hasMoveInput = false;
       if (state.started && !state.gameOver && !state.won && !state.isSleeping) {
         state.lungeCooldown = Math.max(0, state.lungeCooldown - delta);
-
         const turnSpeed = 2.35 * state.aimSensitivity;
         if (state.turnLeftHeld) state.yaw += turnSpeed * delta;
         if (state.turnRightHeld) state.yaw -= turnSpeed * delta;
         state.yaw = normalizeAngle(state.yaw);
-
         const baseSpeed = state.isFlying ? (state.isRunning ? 11.6 : 8.2) : (state.isRunning ? 8.8 : 5.5);
         const speed = baseSpeed * state.thrustPower;
         const forward = new THREE.Vector3(-Math.sin(state.yaw), 0, -Math.cos(state.yaw));
         const right = new THREE.Vector3(Math.cos(state.yaw), 0, -Math.sin(state.yaw));
         const moveVec = new THREE.Vector3();
-
         if (state.lungeTimer > 0) {
           state.lungeTimer -= delta;
           if (state.lungeTargetRat && state.lungeTargetRat.userData.alive && state.lungeTargetRat.visible) {
-            const toRat = state.lungeTargetRat.position.clone().sub(state.playerPos);
+            const aimTarget = getRatAimWorldPos(state.lungeTargetRat);
+            state.targetFaceWorldPos = aimTarget.clone();
+            const toRat = aimTarget.clone().sub(state.playerPos);
             toRat.y = 0;
             if (toRat.lengthSq() > 0.02) {
               state.lungeDir.copy(toRat).normalize();
@@ -3129,7 +3083,6 @@
             moveVec.normalize().multiplyScalar(speed * delta);
           }
         }
-
         if (moveVec.lengthSq() > 0.0001) {
           const tryX = state.playerPos.clone();
           tryX.x += moveVec.x;
@@ -3138,7 +3091,6 @@
           tryZ.z += moveVec.z;
           if (!checkCollision(tryZ)) state.playerPos.z = tryZ.z;
           clampToArenaBounds(state.playerPos);
-
           if (!state.isFlying && !state.isLungingMove && state.canJump) {
             const stepRate = state.isRunning ? 15 : 10;
             state.walkCycle += delta * stepRate;
@@ -3154,12 +3106,10 @@
           leftLeg.rotation.x *= 0.8;
           rightLeg.rotation.x *= 0.8;
         }
-
         const wasAirborne = !state.canJump || state.playerPos.y > getGroundOrFloorHeight(state.playerPos) + 0.05;
         const prevVy = state.velocity.y;
         const groundY = getGroundOrFloorHeight(state.playerPos);
         const maxCeilingY = isInsideHouse(state.playerPos) ? (HOUSE_CEILING_Y - 1.85) : 14.0;
-
         if (state.isFlying) {
           const vertSpeed = 6.6 * state.thrustPower;
           if (state.ascendHeld) {
@@ -3204,28 +3154,23 @@
             state.canJump = true;
           }
         }
-
         resolveSolidRatCollisions(delta);
+        if (state.started && !state.won) {
+          updateRats(delta);
+          updateReticleLock();
+          updateWholeBodyTargetOrientation(delta);
+        }
         updateCharacterPoseAndFlight(delta, hasMoveInput);
-
         document.getElementById('alt-val').textContent = `${state.playerPos.y.toFixed(1)}m`;
         playerGroup.position.copy(state.playerPos);
         playerGroup.rotation.set(0, state.yaw, 0);
       }
-
       updateDirectionBar(delta);
       state.recoilKick *= 0.82;
       weaponArmGroup.position.z = -0.05 + state.recoilKick * 0.25;
-
-      if (state.started && !state.won) {
-        updateRats(delta);
-        updateReticleLock();
-      }
       updateEffects(delta);
-
       missionBeacon.rotation.y += delta * 2;
       missionBeacon.scale.setScalar(0.9 + Math.sin(performance.now() * 0.005) * 0.15);
-
       const camDist = state.cameraMode === 'ots' ? 3.3 : 5.5;
       const shoulderOffset = state.cameraMode === 'ots' ? 0.72 : 0.4;
       const camHeight = state.cameraMode === 'ots' ? 1.85 : 2.45;
@@ -3239,7 +3184,6 @@
       desiredCamPos.x = Math.max(-18.2, Math.min(18.2, desiredCamPos.x));
       desiredCamPos.z = Math.max(-35.2, Math.min(22.2, desiredCamPos.z));
       camera.position.lerp(desiredCamPos, 0.3);
-
       const lookTarget = state.playerPos.clone()
         .addScaledVector(backDir, -11)
         .addScaledVector(rightDir, shoulderOffset * 0.35);
@@ -3247,13 +3191,11 @@
       camera.lookAt(lookTarget);
       renderer.render(scene, camera);
     }
-
     initAllRats();
     updateMissionHUD();
     syncReticleDOM();
     updateDirectionBar(0.016);
     animate();
-
     window.addEventListener('resize', () => {
       camera.aspect = window.innerWidth / window.innerHeight;
       camera.updateProjectionMatrix();
